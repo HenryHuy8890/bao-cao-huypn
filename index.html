@@ -2,10 +2,85 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Trang Web Đầu Tiên Của Tôi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng điều khiển Báo cáo - HDSTEEL.COM.VN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Nền xám nhạt */
+        }
+        .report-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+        }
+    </style>
 </head>
-<body>
-    <h1>Xin chào thế giới! 👋</h1>
-    <p>Tôi đang học cách sử dụng GitHub.</p>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-12">
+            <img src="https://hdsteel.com.vn/wp-content/uploads/2021/10/logo-cong-ty-hd-steel-chuan-1.png" alt="Logo HDSTEEL" class="mx-auto mb-4 h-16">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-[#003f5c]">Báo Cáo Hiệu Suất Website</h1>
+            <p class="text-xl text-gray-600 mt-2">hdsteel.com.vn</p>
+        </header>
+
+        <main>
+            <div class="max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    <div class="report-card flex flex-col">
+                        <div class="p-6 flex-grow">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-chart-line fa-2x text-[#003f5c] mr-4"></i>
+                                <h2 class="text-2xl font-bold text-[#003f5c]">Báo Cáo Tháng 6</h2>
+                            </div>
+                            <p class="text-gray-600">Phân tích chi tiết hiệu suất, lưu lượng truy cập và hành vi người dùng trong tháng 6/2025.</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-b-lg mt-auto">
+                            <a href="https://henryhuy8890.github.io/bao-cao-huypn/bao-cao-website-thang-6/" 
+                               class="w-full inline-block text-center bg-[#003f5c] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#002f45] transition-colors duration-300">
+                                Xem Chi Tiết
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="report-card flex flex-col">
+                        <div class="p-6 flex-grow">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-calendar-alt fa-2x text-gray-400 mr-4"></i>
+                                <h2 class="text-2xl font-bold text-gray-500">Báo Cáo Tháng 7</h2>
+                            </div>
+                            <p class="text-gray-500">Dữ liệu cho tháng 7/2025 sẽ được cập nhật vào đầu tháng 8.</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-b-lg mt-auto">
+                            <a href="https://henryhuy8890.github.io/bao-cao-huypn/bao-cao-website-thang-7/" 
+                               class="w-full inline-block text-center bg-gray-400 text-white font-bold py-3 px-6 rounded-lg cursor-not-allowed">
+                                Sắp có
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-16 text-gray-500 text-sm">
+            <p>&copy; 2025 - Trang báo cáo nội bộ của HDSTEEL.</p>
+        </footer>
+
+    </div>
+
 </body>
 </html>
