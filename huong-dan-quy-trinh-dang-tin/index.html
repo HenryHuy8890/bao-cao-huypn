@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: Quy Trình Đăng Bài Cho Team Nội Dung</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background-color: #e9ecef;
+        }
+        @media (min-width: 768px) {
+            .timeline-container::before {
+                left: 1.75rem;
+                transform: translateX(0);
+            }
+        }
+        .timeline-item {
+            position: relative;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border: 4px solid #f8f9fa;
+        }
+        @media (min-width: 768px) {
+            .timeline-icon {
+                left: 0;
+                transform: translateX(0);
+            }
+        }
+        .action-button {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-black text-[#073B4C] uppercase">Quy Trình Đăng Bài</h1>
+            <p class="text-xl text-[#118AB2] mt-2">Hướng dẫn cho Team Nội dung HDSTEEL</p>
+        </header>
+
+        <div class="relative timeline-container">
+            
+            <!-- Step 1 -->
+            <div class="timeline-item mb-12 md:pl-20">
+                <div class="timeline-icon bg-[#FF6B6B]">
+                    <i class="fas fa-glasses text-2xl text-white"></i>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-8 border-[#FF6B6B] ml-0 md:ml-8">
+                    <span class="text-sm font-bold text-[#FF6B6B]">BƯỚC 1</span>
+                    <h2 class="text-2xl font-bold text-[#073B4C] mt-1">Đọc và Chọn Lọc Tin</h2>
+                    <p class="mt-2 text-gray-600">Truy cập "Kho Nội dung Thô" trên Google Sheet. Đọc và sàng lọc các bài viết do AI tạo ra, chọn những bài chất lượng nhất để chuẩn bị đăng.</p>
+                    <a href="https://docs.google.com/spreadsheets/d/1pJ0ObLhLDNHPd2Z4G5e6AcdeyOAD7C24zLgg4qD_26g/edit?gid=1825461842#gid=1825461842" target="_blank" class="action-button bg-[#06D6A0] text-white">
+                        <i class="fas fa-table mr-2"></i> Mở Kho Nội dung
+                    </a>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="timeline-item mb-12 md:pl-20">
+                <div class="timeline-icon bg-[#FFD166]">
+                    <i class="fas fa-image text-2xl text-[#073B4C]"></i>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-8 border-[#FFD166] ml-0 md:ml-8">
+                    <span class="text-sm font-bold text-[#c3a04a]">BƯỚC 2</span>
+                    <h2 class="text-2xl font-bold text-[#073B4C] mt-1">Tạo và Xử Lý Ảnh</h2>
+                    <p class="mt-2 text-gray-600">Dùng prompt có sẵn trong Sheet để tạo ảnh 16:9 tại Google AI Studio. Tải ảnh về và gắn logo thương hiệu bằng Photoshop Portable.</p>
+                    <div class="mt-4 flex flex-wrap gap-3">
+                        <a href="https://aistudio.google.com/prompts/new_image" target="_blank" class="action-button bg-[#118AB2] text-white">
+                            <i class="fas fa-magic mr-2"></i> Mở Google AI Studio
+                        </a>
+                        <a href="https://drive.google.com/drive/folders/18vI1ar_eMna3ALDIZcoMfecHMguKdzyr?usp=sharing" target="_blank" class="action-button bg-[#073B4C] text-white">
+                            <i class="fas fa-folder-open mr-2"></i> Mở Thư mục Photoshop
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="timeline-item mb-12 md:pl-20">
+                <div class="timeline-icon bg-[#06D6A0]">
+                    <i class="fas fa-upload text-2xl text-white"></i>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-8 border-[#06D6A0] ml-0 md:ml-8">
+                    <span class="text-sm font-bold text-[#049d71]">BƯỚC 3</span>
+                    <h2 class="text-2xl font-bold text-[#073B4C] mt-1">Đăng Bài Lên Website</h2>
+                    <p class="mt-2 text-gray-600">Copy và Paste toàn bộ dữ liệu từ các cột trong Sheet vào trang quản trị website. Đảm bảo điền đủ các trường.</p>
+                    <a href="https://hdsteel.com.vn/cms_admin/post" target="_blank" class="action-button bg-[#06D6A0] text-white">
+                        <i class="fas fa-globe mr-2"></i> Mở Trang Quản trị
+                    </a>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="timeline-item mb-12 md:pl-20">
+                <div class="timeline-icon bg-[#118AB2]">
+                    <i class="fas fa-edit text-2xl text-white"></i>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-8 border-[#118AB2] ml-0 md:ml-8">
+                    <span class="text-sm font-bold text-[#118AB2]">BƯỚC 4</span>
+                    <h2 class="text-2xl font-bold text-[#073B4C] mt-1">Đọc và Hiệu Chỉnh</h2>
+                    <p class="mt-2 text-gray-600">Sau khi đăng, đọc lại bài viết trên website. Kiểm tra và sửa các lỗi câu từ, định dạng để đảm bảo chất lượng cao nhất.</p>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="timeline-item md:pl-20">
+                <div class="timeline-icon bg-[#073B4C]">
+                    <i class="fab fa-facebook-square text-2xl text-white"></i>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-8 border-[#073B4C] ml-0 md:ml-8">
+                    <span class="text-sm font-bold text-[#073B4C]">BƯỚC 5</span>
+                    <h2 class="text-2xl font-bold text-[#073B4C] mt-1">Đăng Bài Lên Fanpage</h2>
+                    <p class="mt-2 text-gray-600">Dùng dữ liệu từ cột "Status" và "comment" để tạo bài đăng. <strong class="text-[#FF6B6B]">Lưu ý:</strong> Không đăng ngay, hãy hẹn giờ đăng vào các khung giờ vàng.</p>
+                    <a href="https://business.facebook.com/latest/composer/?asset_id=1467727833527264&nav_ref=internal_nav&ref=biz_web_home_create_post&context_ref=HOME" target="_blank" class="action-button bg-[#118AB2] text-white">
+                        <i class="fab fa-facebook-f mr-2"></i> Mở Trình soạn thảo Fanpage
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
