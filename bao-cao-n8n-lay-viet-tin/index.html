@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: Hệ Thống Tự Động Hóa Tin Tức N8N</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .flowchart-card::before {
+            content: '';
+            position: absolute;
+            left: -2.05rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.5rem;
+            height: 1.5rem;
+            background-color: #ff764a;
+            border-radius: 9999px;
+            border: 4px solid #f3f4f6;
+            z-index: 10;
+        }
+        .flowchart-line {
+            position: absolute;
+            left: -1.5rem;
+            top: 50%;
+            width: 2px;
+            height: 100%;
+            background-color: #ffa600;
+        }
+        .flowchart-item:first-child .flowchart-line {
+            height: 50%;
+            top: 50%;
+        }
+        .flowchart-item:last-child .flowchart-line {
+            height: 50%;
+            bottom: 50%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-black uppercase tracking-wider text-[#003f5c]">Hệ Thống Tự Động Hóa Tin Tức</h1>
+            <p class="text-xl md:text-2xl font-light text-gray-600 mt-2">Phân Tích Quy Trình Vận Hành & Hiệu Suất</p>
+        </header>
+
+        <section class="mb-8 bg-white rounded-2xl shadow-xl p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-6 text-center text-[#003f5c]">Sơ Đồ Workflow Toàn Cảnh</h2>
+            <div class="bg-gray-200 p-2 md:p-4 rounded-lg">
+                <img src="https://drive.google.com/uc?export=view&id=1gUvZHHveOpQwUHBZJtXHuhKLI1wPiqDu" alt="Sơ đồ chi tiết của toàn bộ workflow n8n" class="w-full h-auto rounded-lg shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/1200x400/e2e8f0/4a5568?text=Khong+the+tai+anh';">
+            </div>
+        </section>
+
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+            <section class="lg:col-span-3">
+                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                    <h2 class="text-3xl font-bold mb-8 text-center text-[#003f5c]">5 Giai Đoạn Vận Hành Tự Động</h2>
+                    <div class="relative pl-8">
+                        <div class="flowchart-item relative mb-8">
+                            <div class="flowchart-line"></div>
+                            <div class="flowchart-card relative bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 class="text-2xl font-bold text-[#ff764a]">1. Thu thập & Sơ chế Dữ liệu 📥</h3>
+                                <p class="mt-2 text-gray-700">Hệ thống tự động quét Gmail, trích xuất và làm sạch các link tin tức thô từ Google Alerts, chuẩn bị nguồn dữ liệu đầu vào.</p>
+                            </div>
+                        </div>
+                        <div class="flowchart-item relative mb-8">
+                            <div class="flowchart-line"></div>
+                            <div class="flowchart-card relative bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 class="text-2xl font-bold text-[#ff764a]">2. Lựa chọn Tin tức bằng AI 🤖</h3>
+                                <p class="mt-2 text-gray-700">AI Gemini đóng vai trò biên tập viên, phân loại và lựa chọn các link phù hợp nhất theo các chuyên mục đã định sẵn (Thị trường, Chuyên ngành, Dự án).</p>
+                            </div>
+                        </div>
+                        <div class="flowchart-item relative mb-8">
+                            <div class="flowchart-line"></div>
+                            <div class="flowchart-card relative bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 class="text-2xl font-bold text-[#ff764a]">3. Sản xuất Nội dung bằng AI Agent ✍️</h3>
+                                <p class="mt-2 text-gray-700">AI Agent thông minh sử dụng các công cụ (Perplexity, Google Sheets) để nghiên cứu, xác minh số liệu và viết bài viết chuyên sâu, độc nhất.</p>
+                            </div>
+                        </div>
+                        <div class="flowchart-item relative mb-8">
+                            <div class="flowchart-line"></div>
+                            <div class="flowchart-card relative bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 class="text-2xl font-bold text-[#ff764a]">4. Xử lý Hậu kỳ & Tạo nội dung phụ 📊</h3>
+                                <p class="mt-2 text-gray-700">Hệ thống tự động làm sạch, cấu trúc hóa dữ liệu và sử dụng một AI khác để tạo các nội dung phụ trợ cho mạng xã hội (Status, Comment).</p>
+                            </div>
+                        </div>
+                        <div class="flowchart-item relative">
+                            <div class="flowchart-line"></div>
+                            <div class="flowchart-card relative bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 class="text-2xl font-bold text-[#ff764a]">5. Lưu trữ & Báo cáo 💾</h3>
+                                <p class="mt-2 text-gray-700">Toàn bộ kết quả cuối cùng được tự động ghi vào Google Sheet, tạo thành một cơ sở dữ liệu để lưu trữ và theo dõi hiệu suất.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="lg:col-span-2 space-y-8">
+                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                    <h2 class="text-3xl font-bold mb-6 text-center text-[#003f5c]">Công Nghệ Cốt Lõi</h2>
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h4 class="font-bold text-lg text-[#ef5675]">N8N & Docker</h4>
+                            <p class="text-sm text-gray-700">Nền tảng tự động hóa và self-host, đảm bảo sự linh hoạt và toàn quyền kiểm soát.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h4 class="font-bold text-lg text-[#ef5675]">Google Gemini</h4>
+                            <p class="text-sm text-gray-700">"Bộ não" AI chịu trách nhiệm lập luận, phân loại, và sản xuất nội dung.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h4 class="font-bold text-lg text-[#ef5675]">Perplexity AI</h4>
+                            <p class="text-sm text-gray-700">Công cụ nghiên cứu thông minh, giúp xác minh tính chính xác của dữ liệu.</p>
+                        </div>
+                         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <h4 class="font-bold text-lg text-[#ef5675]">Google Sheets</h4>
+                            <p class="text-sm text-gray-700">Đóng vai trò cơ sở dữ liệu linh hoạt để lưu trữ link và báo cáo kết quả.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
+                    <h2 class="text-3xl font-bold mb-4 text-[#003f5c]">Hiệu Suất Chi Phí</h2>
+                    <p class="text-gray-600 mb-4">Tổng chi phí nghiên cứu, phát triển và vận hành hệ thống tính đến ngày 31/07/2025.</p>
+                    <div class="chart-container relative w-full max-w-xs mx-auto h-64 md:h-72">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                </div>
+            </aside>
+
+        </main>
+        
+        <footer class="text-center mt-12 text-gray-500 text-sm">
+            <p>Infographic được tạo tự động dựa trên báo cáo vận hành hệ thống.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const costCtx = document.getElementById('costChart').getContext('2d');
+        new Chart(costCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Chi phí Vận hành ($)'],
+                datasets: [{
+                    label: 'Chi phí',
+                    data: [8],
+                    backgroundColor: [
+                        '#ff764a'
+                    ],
+                    borderColor: [
+                        '#ffffff'
+                    ],
+                    borderWidth: 4,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const item = tooltipItems[0];
+                                let label = item.chart.data.labels[item.dataIndex];
+                                if (Array.isArray(label)) {
+                                  return label.join(' ');
+                                } else {
+                                  return label;
+                                }
+                            }
+                        },
+                        backgroundColor: '#ffffff',
+                        titleColor: '#003f5c',
+                        bodyColor: '#4a5568',
+                        titleFont: { size: 16, weight: 'bold' },
+                        bodyFont: { size: 14 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        borderColor: '#e2e8f0',
+                        borderWidth: 1
+                    }
+                }
+            },
+            plugins: [{
+                id: 'doughnutText',
+                beforeDraw(chart, args, options) {
+                    const { ctx, width, height } = chart;
+                    ctx.restore();
+                    const fontSize = (height / 114).toFixed(2);
+                    ctx.font = `900 ${fontSize}em Inter`;
+                    ctx.textBaseline = 'middle';
+                    
+                    const text = '$8';
+                    const textX = Math.round((width - ctx.measureText(text).width) / 2);
+                    const textY = height / 2;
+                    
+                    ctx.fillStyle = '#003f5c';
+                    ctx.fillText(text, textX, textY);
+                    ctx.save();
+                }
+            }]
+        });
+    </script>
+
+</body>
+</html>
