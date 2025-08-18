@@ -126,17 +126,22 @@
             </section>
 
             <aside class="lg:col-span-2 space-y-8">
-                <!-- NEW KPI Card -->
+                <!-- UPDATED KPI Card -->
                 <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
-                    <h2 class="text-3xl font-bold mb-4 text-[#003f5c]">Tổng Quan Hiệu Suất</h2>
-                    <div class="flex items-center justify-center text-green-600">
-                        <i class="fas fa-newspaper text-5xl md:text-6xl"></i>
-                        <div class="ml-4 text-left">
-                            <p class="text-5xl md:text-6xl font-black text-[#003f5c]">202</p>
-                            <p class="text-lg text-gray-600">Tin tức đã tạo</p>
+                    <h2 class="text-3xl font-bold mb-6 text-[#003f5c]">Tổng Quan Hiệu Suất</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                            <p class="text-4xl font-black text-[#003f5c]">126</p>
+                            <p class="text-md text-gray-600">Tin thành công</p>
+                        </div>
+                        <div class="text-center">
+                             <i class="fas fa-download text-4xl text-blue-500 mb-2"></i>
+                            <p class="text-4xl font-black text-[#003f5c]">289</p>
+                            <p class="text-md text-gray-600">Tin lấy về</p>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-500 mt-4">Tính từ khi hệ thống bắt đầu hoạt động.</p>
+                    <p class="text-sm text-gray-500 mt-6">Tính từ khi hệ thống bắt đầu hoạt động.</p>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
@@ -161,9 +166,10 @@
                     </div>
                 </div>
 
+                <!-- UPDATED Cost Card -->
                 <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
                     <h2 class="text-3xl font-bold mb-4 text-[#003f5c]">Hiệu Suất Chi Phí</h2>
-                    <p class="text-gray-600 mb-4">Tổng chi phí nghiên cứu, phát triển và vận hành hệ thống tính từ ngày 15/06/2025 đến ngày 31/07/2025.</p>
+                    <p class="text-gray-600 mb-4">Tổng chi phí nghiên cứu, phát triển và vận hành hệ thống tính từ ngày 15/06/2025 đến ngày 18/08/2025.</p>
                     <div class="chart-container relative w-full max-w-xs mx-auto h-64 md:h-72">
                         <canvas id="costChart"></canvas>
                     </div>
@@ -183,14 +189,16 @@
         new Chart(costCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Chi phí Vận hành ($)'],
+                labels: ['API Perplexity ($)', 'API Openrouter ($)'],
                 datasets: [{
                     label: 'Chi phí',
-                    data: [8.8],
+                    data: [6, 5.8],
                     backgroundColor: [
-                        '#ff764a'
+                        '#ff764a',
+                        '#58508d'
                     ],
                     borderColor: [
+                        '#ffffff',
                         '#ffffff'
                     ],
                     borderWidth: 4,
@@ -203,7 +211,11 @@
                 cutout: '70%',
                 plugins: {
                     legend: {
-                        display: false
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            padding: 20
+                        }
                     },
                     tooltip: {
                         callbacks: {
@@ -239,7 +251,7 @@
                     ctx.font = `900 ${fontSize}em Inter`;
                     ctx.textBaseline = 'middle';
                     
-                    const text = '$8.8';
+                    const text = '$11.8';
                     const textX = Math.round((width - ctx.measureText(text).width) / 2);
                     const textY = height / 2;
                     
