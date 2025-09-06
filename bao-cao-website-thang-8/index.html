@@ -173,7 +173,7 @@
         <section id="daily-trend" class="mb-16">
             <div class="bg-white p-6 rounded-lg shadow-md">
                 <h2 class="text-3xl font-bold text-center mb-8 text-[#003f5c]">Xu Hướng Truy Cập Trong Tháng 8</h2>
-                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Biểu đồ thể hiện sự tăng trưởng mạnh mẽ và ổn định của lượt hiển thị (đường màu xanh) trong suốt tháng, kéo theo sự gia tăng tương ứng của lượt nhấp (đường màu cam).</p>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Biểu đồ thể hiện sự tăng trưởng mạnh mẽ và ổn định của lượt hiển thị (cột màu xanh) trong suốt tháng, kéo theo sự gia tăng tương ứng của lượt nhấp (đường màu cam).</p>
                 <div class="chart-container mx-auto" style="max-width: 1000px;">
                     <canvas id="dailyTrendChart"></canvas>
                 </div>
@@ -248,7 +248,7 @@
                 data: {
                     labels: ['Từ khóa Thương hiệu', 'Từ khóa Sản phẩm/Khác'],
                     datasets: [{
-                        data: [31, 24], // Dữ liệu tháng 7
+                        data: [31, 24], 
                         backgroundColor: [COLORS.purple, COLORS.lightGray],
                         borderColor: '#ffffff',
                         borderWidth: 4
@@ -262,7 +262,7 @@
                 data: {
                     labels: ['Từ khóa Sản phẩm/Khác', 'Từ khóa Thương hiệu'],
                     datasets: [{
-                        data: [205, 25], // Dữ liệu tháng 8
+                        data: [205, 25], 
                         backgroundColor: [COLORS.coral, COLORS.purple],
                         borderColor: '#ffffff',
                         borderWidth: 4
@@ -397,29 +397,30 @@
                 options: { ...commonTooltipOptions, responsive: true, maintainAspectRatio: false, plugins: { ...commonTooltipOptions.plugins, legend: { position: 'bottom' } } }
             });
 
-            const dailyClicks = [4,5,7,9,11,5,14,7,2,4,11,12,12,7,11,10,13,8,9,12,11,11,6,9,11,8,13,11,10,7,4];
-            const dailyImpressions = [358,310,403,437,442,394,442,421,488,307,417,407,381,353,401,365,404,364,302,298,269,252,231,223,235,174,182,189,170,165,145];
+            const dailyClicks = [4,7,10,11,13,8,11,9,6,11,11,12,11,9,8,13,10,11,7,12,12,11,4,2,7,14,5,11,9,7,5,4];
+            const dailyImpressions = [145,165,170,189,182,174,235,223,231,252,269,298,302,364,404,365,401,353,381,407,417,307,488,421,442,394,442,437,403,310,358];
 
             new Chart(document.getElementById('dailyTrendChart').getContext('2d'), {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: Array.from({length: 31}, (_, i) => `${i + 1}/8`),
                     datasets: [{
+                        label: 'Lượt hiển thị',
+                        type: 'bar',
+                        data: dailyImpressions,
+                        backgroundColor: 'rgba(0, 63, 92, 0.6)',
+                        yAxisID: 'y1',
+                        order: 2
+                    },{
                         label: 'Lượt nhấp',
+                        type: 'line',
                         data: dailyClicks,
                         borderColor: COLORS.coral,
-                        backgroundColor: 'rgba(255, 99, 97, 0.2)',
-                        fill: true,
-                        tension: 0.3,
-                        yAxisID: 'y',
-                    }, {
-                        label: 'Lượt hiển thị',
-                        data: dailyImpressions,
-                        borderColor: COLORS.deepBlue,
-                        backgroundColor: 'rgba(0, 63, 92, 0.2)',
+                        backgroundColor: 'rgba(255, 99, 97, 0.5)',
                         fill: false,
                         tension: 0.3,
-                        yAxisID: 'y1',
+                        yAxisID: 'y',
+                        order: 1
                     }]
                 },
                 options: {
@@ -427,8 +428,26 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { position: 'left', title: { display: true, text: 'Lượt nhấp' } },
-                        y1: { position: 'right', title: { display: true, text: 'Lượt hiển thị' }, grid: { drawOnChartArea: false } }
+                        x: {
+                            stacked: true,
+                        },
+                        y: { 
+                            position: 'left', 
+                            title: { 
+                                display: true, 
+                                text: 'Lượt nhấp (Đường)' 
+                            } 
+                        },
+                        y1: { 
+                            position: 'right', 
+                            title: { 
+                                display: true, 
+                                text: 'Lượt hiển thị (Cột)' 
+                            }, 
+                            grid: { 
+                                drawOnChartArea: false 
+                            } 
+                        }
                     },
                     plugins: { ...commonTooltipOptions.plugins, legend: { position: 'bottom' } }
                 }
