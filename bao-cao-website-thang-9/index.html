@@ -25,6 +25,14 @@
             height: 350px;
             max-height: 400px;
         }
+        .chart-container-tall {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 500px; 
+        }
         .map-container {
              width: 100%;
              height: 450px;
@@ -32,6 +40,9 @@
         @media (max-width: 768px) {
             .chart-container {
                 height: 300px;
+            }
+            .chart-container-tall {
+                height: 450px;
             }
         }
         .kpi-card {
@@ -120,11 +131,19 @@
 
         <section id="adwords-performance" class="mb-16">
             <h2 class="text-3xl font-bold text-center mb-8 section-title">"Điểm Sáng" từ Chiến dịch Google Ads</h2>
-            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Các nhóm quảng cáo tập trung vào báo giá và thông tin chi tiết về các loại nhôm tấm cụ thể đang hoạt động hiệu quả nhất, thu hút đúng đối tượng khách hàng đang có nhu cầu.</p>
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Nhóm Quảng Cáo Hiệu Quả Nhất</h3>
-                <div class="chart-container" style="max-width: 800px;">
-                    <canvas id="topAdGroupsChart"></canvas>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Các nhóm quảng cáo tập trung vào báo giá và thông tin chi tiết về các loại nhôm tấm cụ thể đang hoạt động hiệu quả nhất, thu hút đúng đối tượng khách hàng đang có nhu cầu. Đặc biệt, quảng cáo của chúng ta có tới 41.5% tỷ lệ hiển thị ở vị trí top 1.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 10 Nhóm Quảng Cáo Hiệu Quả Nhất</h3>
+                    <div class="chart-container-tall">
+                        <canvas id="topAdGroupsChart"></canvas>
+                    </div>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Phân Bố Vị Trí Hiển Thị Quảng Cáo</h3>
+                    <div class="chart-container-tall">
+                        <canvas id="adPositionChart"></canvas>
+                    </div>
                 </div>
             </div>
         </section>
@@ -134,14 +153,14 @@
              <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Dù quảng cáo dẫn dắt, kênh tìm kiếm tự nhiên vẫn cho thấy sức mạnh bền bỉ. Các bài viết chuyên sâu về kỹ thuật và so sánh sản phẩm tiếp tục là "thỏi nam châm" thu hút hàng trăm lượt truy cập chất lượng mỗi tháng mà không tốn chi phí.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Trang Tự Nhiên Theo Lượt Nhấp</h3>
-                    <div class="chart-container">
+                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 10 Trang Tự Nhiên Theo Lượt Nhấp</h3>
+                    <div class="chart-container-tall">
                         <canvas id="topOrganicPagesChart"></canvas>
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Trang Tự Nhiên Theo Lượt Hiển Thị</h3>
-                    <div class="chart-container">
+                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 10 Trang Tự Nhiên Theo Lượt Hiển Thị</h3>
+                    <div class="chart-container-tall">
                         <canvas id="topOrganicImpressionsChart"></canvas>
                     </div>
                 </div>
@@ -181,7 +200,8 @@
             lightBlue: '#42a5f5',
             accentBlue: '#81d4fa',
             softBlue: '#bbdefb',
-            orange: '#ffa600'
+            orange: '#ffa600',
+            grey: '#9e9e9e'
         };
 
         function wrapLabel(label, maxWidth) {
@@ -251,12 +271,20 @@
                         wrapLabel('Tấm Nhôm', 20),
                         wrapLabel('Nhôm A6061', 20),
                         wrapLabel('Bảng giá nhôm (Cuộn/lá/tấm)', 20),
-                        wrapLabel('Nhôm Tấm Chung', 20)
+                        wrapLabel('Nhôm Tấm Chung', 20),
+                        wrapLabel('Nhôm A5052', 20),
+                        wrapLabel('Vật Liệu Aluminum', 20),
+                        wrapLabel('Nhôm Là Gì', 20),
+                        wrapLabel('Nhôm Nhám', 20),
+                        wrapLabel('Báo giá nhôm tấm (độ dày/mác)', 20)
                     ],
                     datasets: [{
                         label: 'Lượt nhấp',
-                        data: [155, 138, 94, 87, 87],
-                        backgroundColor: [COLORS.darkBlue, COLORS.mediumBlue, COLORS.lightBlue, COLORS.accentBlue, COLORS.softBlue],
+                        data: [155, 138, 94, 87, 87, 42, 28, 22, 18, 13],
+                        backgroundColor: [
+                            '#0d47a1', '#155fa0', '#1e78c0', '#2f90d5', '#42a5f5',
+                            '#64b5f6', '#81d4fa', '#90caf9', '#bbdefb', '#e3f2fd'
+                        ],
                         borderRadius: 4
                     }]
                 },
@@ -278,6 +306,37 @@
                     scales: { x: { beginAtZero: true } }
                 }
             });
+            
+            new Chart(document.getElementById('adPositionChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Trên cùng tuyệt đối (Vị trí #1)', 'Ở đầu trang (Vị trí #2-#4)', 'Ngoài top đầu'],
+                    datasets: [{
+                        data: [41.51, 31.31, 27.18], 
+                        backgroundColor: [COLORS.darkBlue, COLORS.lightBlue, COLORS.grey],
+                        borderColor: '#ffffff',
+                        borderWidth: 4
+                    }]
+                },
+                options: { 
+                    ...commonTooltipOptions, 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        ...commonTooltipOptions.plugins, 
+                        legend: { position: 'bottom' },
+                        datalabels: {
+                            formatter: (value, ctx) => {
+                                return value.toFixed(2) + '%';
+                            },
+                            color: '#fff',
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    } 
+                }
+            });
 
             new Chart(document.getElementById('topOrganicPagesChart').getContext('2d'), {
                 type: 'bar',
@@ -287,12 +346,20 @@
                         wrapLabel('Nhôm 7075-T6...', 16),
                         wrapLabel('Quy trình luyện nhôm...', 16),
                         wrapLabel('Hướng dẫn tra cứu mác nhôm...', 16),
-                        wrapLabel('Tính chất hóa học của nhôm...', 16)
+                        wrapLabel('Trang chủ (Tiếng Anh)', 16),
+                        wrapLabel('Tính chất hóa học của nhôm...', 16),
+                        wrapLabel('Tiêu chuẩn ASTM B209...', 16),
+                        wrapLabel('So sánh nhôm 1050 và 1060...', 16),
+                        wrapLabel('Nhôm tấm A3003...', 16),
+                        wrapLabel('Nhôm 3104-O giải pháp...', 16)
                     ],
                     datasets: [{
                         label: 'Lượt nhấp',
-                        data: [64, 25, 22, 16, 15],
-                        backgroundColor: [COLORS.darkBlue, COLORS.mediumBlue, COLORS.lightBlue, COLORS.accentBlue, COLORS.softBlue],
+                        data: [64, 25, 22, 16, 16, 15, 7, 5, 5, 4],
+                         backgroundColor: [
+                            '#0d47a1', '#155fa0', '#1e78c0', '#2f90d5', '#42a5f5',
+                            '#64b5f6', '#81d4fa', '#90caf9', '#bbdefb', '#e3f2fd'
+                        ],
                         borderRadius: 4
                     }]
                 },
@@ -314,12 +381,20 @@
                         wrapLabel('Trang chủ', 16),
                         wrapLabel('Nhôm 7075-T6...', 16),
                         wrapLabel('Hướng dẫn tra cứu mác nhôm...', 16),
-                        wrapLabel('Quy trình luyện nhôm...', 16)
+                        wrapLabel('Quy trình luyện nhôm...', 16),
+                        wrapLabel('Trang chủ (Tiếng Anh)', 16),
+                        wrapLabel('Nhôm tấm A3003...', 16),
+                        wrapLabel('Tiêu chuẩn ASTM B209...', 16),
+                        wrapLabel('So sánh nhôm 1050 và 1060...', 16),
+                        wrapLabel('Nhôm 6061-T6...', 16)
                     ],
                     datasets: [{
                         label: 'Lượt hiển thị',
-                        data: [2092, 572, 543, 390, 365],
-                        backgroundColor: [COLORS.darkBlue, COLORS.mediumBlue, COLORS.lightBlue, COLORS.accentBlue, COLORS.softBlue],
+                        data: [2092, 572, 543, 390, 365, 193, 184, 147, 120, 111],
+                         backgroundColor: [
+                            '#0d47a1', '#155fa0', '#1e78c0', '#2f90d5', '#42a5f5',
+                            '#64b5f6', '#81d4fa', '#90caf9', '#bbdefb', '#e3f2fd'
+                        ],
                         borderRadius: 4
                     }]
                 },
