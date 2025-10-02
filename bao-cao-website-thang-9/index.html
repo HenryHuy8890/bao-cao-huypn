@@ -134,15 +134,15 @@
              <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Dù quảng cáo dẫn dắt, kênh tìm kiếm tự nhiên vẫn cho thấy sức mạnh bền bỉ. Các bài viết chuyên sâu về kỹ thuật và so sánh sản phẩm tiếp tục là "thỏi nam châm" thu hút hàng trăm lượt truy cập chất lượng mỗi tháng mà không tốn chi phí.</p>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Trang Đích Tự Nhiên</h3>
+                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Trang Tự Nhiên Theo Lượt Nhấp</h3>
                     <div class="chart-container">
                         <canvas id="topOrganicPagesChart"></canvas>
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Từ Khóa Tự Nhiên (Ngoài thương hiệu)</h3>
+                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Trang Tự Nhiên Theo Lượt Hiển Thị</h3>
                     <div class="chart-container">
-                        <canvas id="topOrganicKeywordsChart"></canvas>
+                        <canvas id="topOrganicImpressionsChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -306,20 +306,20 @@
                 }
             });
 
-            new Chart(document.getElementById('topOrganicKeywordsChart').getContext('2d'), {
+            new Chart(document.getElementById('topOrganicImpressionsChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: [
-                        wrapLabel('nhôm 7075 cứng hơn thép', 16),
-                        wrapLabel('nhôm 7075', 16),
-                        wrapLabel('astm b209', 16),
-                        wrapLabel('thép không gỉ', 16),
-                        wrapLabel('nhôm tấm đà nẵng', 16)
+                        wrapLabel('Tính chất hóa học của nhôm...', 16),
+                        wrapLabel('Trang chủ', 16),
+                        wrapLabel('Nhôm 7075-T6...', 16),
+                        wrapLabel('Hướng dẫn tra cứu mác nhôm...', 16),
+                        wrapLabel('Quy trình luyện nhôm...', 16)
                     ],
                     datasets: [{
-                        label: 'Lượt nhấp',
-                        data: [2, 1, 1, 1, 1],
-                        backgroundColor: [COLORS.lightBlue, COLORS.accentBlue, COLORS.softBlue, '#cccccc', '#dddddd'],
+                        label: 'Lượt hiển thị',
+                        data: [2092, 572, 543, 390, 365],
+                        backgroundColor: [COLORS.darkBlue, COLORS.mediumBlue, COLORS.lightBlue, COLORS.accentBlue, COLORS.softBlue],
                         borderRadius: 4
                     }]
                 },
@@ -328,8 +328,17 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { ...commonTooltipOptions.plugins, legend: { display: false } },
-                    scales: { x: { beginAtZero: true, max: 3 } }
+                    plugins: {
+                        ...commonTooltipOptions.plugins,
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#333',
+                            font: { weight: 'bold' }
+                        }
+                    },
+                    scales: { x: { beginAtZero: true } }
                 }
             });
 
@@ -411,3 +420,4 @@
     </script>
 </body>
 </html>
+
