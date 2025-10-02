@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: Báo cáo Hiệu suất Website HDSTEEL Tháng 9/2025 (Chi tiết)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .map-container {
+             width: 100%;
+             height: 450px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .kpi-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            color: #0d47a1; /* Darker Blue */
+        }
+        .kpi-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #7a8288;
+            margin-top: 0.5rem;
+        }
+        .kpi-growth {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+        .text-success {
+            color: #22c55e;
+        }
+        .section-title {
+            color: #0d47a1;
+        }
+        .section-subtitle {
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold section-title mb-2">Toàn cảnh Website HDSTEEL</h1>
+            <p class="text-xl text-gray-600">Báo cáo hiệu suất tháng 9 năm 2025</p>
+        </header>
+
+        <section id="kpis" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 section-title">Tháng 9: Sức mạnh Cộng hưởng</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Tháng 9 ghi nhận sự bùng nổ về lượng người dùng, chủ yếu được dẫn dắt bởi hiệu quả vượt trội của chiến dịch quảng cáo Google Ads, kết hợp với nền tảng SEO bền vững.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="kpi-card">
+                    <div class="kpi-value">1,326</div>
+                    <div class="kpi-label">Tổng Người Dùng</div>
+                    <div class="kpi-growth text-success">+205.5% (so với T8)</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">1,277</div>
+                    <div class="kpi-label">Tổng Lượt Nhấp (Ads + Organic)</div>
+                    <div class="kpi-growth text-success">Tăng trưởng mạnh</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">22,113</div>
+                    <div class="kpi-label">Tổng Lượt Hiển Thị (Ads + Organic)</div>
+                     <div class="kpi-growth text-success">Độ phủ rộng rãi</div>
+                </div>
+                 <div class="kpi-card">
+                    <div class="kpi-value">11.68%</div>
+                    <div class="kpi-label">CTR Quảng Cáo</div>
+                    <div class="kpi-growth text-success">Vượt trội</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="traffic-source" class="mb-16">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-3xl font-bold text-center mb-2 section-title">Động Lực Tăng Trưởng Mới: Quảng Cáo Dẫn Dắt</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Lần đầu tiên, Quảng cáo trả phí (Paid Search) đã vượt qua Tìm kiếm tự nhiên (Organic Search) để trở thành nguồn mang lại truy cập lớn nhất, chiếm gần 73% tổng số người dùng. Đây là minh chứng cho hiệu quả của chiến dịch quảng cáo.</p>
+                <div class="chart-container">
+                    <canvas id="trafficSourceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="adwords-performance" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 section-title">"Điểm Sáng" từ Chiến dịch Google Ads</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Các nhóm quảng cáo tập trung vào báo giá và thông tin chi tiết về các loại nhôm tấm cụ thể đang hoạt động hiệu quả nhất, thu hút đúng đối tượng khách hàng đang có nhu cầu.</p>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Nhóm Quảng Cáo Hiệu Quả Nhất</h3>
+                <div class="chart-container" style="max-width: 800px;">
+                    <canvas id="topAdGroupsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="organic-performance" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 section-title">Nền Tảng Bền Vững từ SEO</h2>
+             <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Dù quảng cáo dẫn dắt, kênh tìm kiếm tự nhiên vẫn cho thấy sức mạnh bền bỉ. Các bài viết chuyên sâu về kỹ thuật và so sánh sản phẩm tiếp tục là "thỏi nam châm" thu hút hàng trăm lượt truy cập chất lượng mỗi tháng mà không tốn chi phí.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Trang Đích Tự Nhiên</h3>
+                    <div class="chart-container">
+                        <canvas id="topOrganicPagesChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 5 Từ Khóa Tự Nhiên (Ngoài thương hiệu)</h3>
+                    <div class="chart-container">
+                        <canvas id="topOrganicKeywordsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="geo" class="mb-16">
+             <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-3xl font-bold text-center mb-8 section-title">Phân Bố Địa Lý: Vươn Ra Toàn Cầu</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Tháng 9 tiếp tục ghi nhận sự quan tâm từ nhiều quốc gia trên thế giới, đặc biệt là từ các thị trường lớn như Trung Quốc, Hong Kong, Ấn Độ và Hoa Kỳ, khẳng định tiềm năng xuất khẩu.</p>
+                <div id="map" class="map-container"></div>
+            </div>
+        </section>
+
+        <section id="daily-trend" class="mb-16">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-3xl font-bold text-center mb-8 section-title">Xu Hướng Truy Cập Trong Tháng 9</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Biểu đồ thể hiện rõ sự ổn định của Lượt hiển thị (cột) và sự biến động của Lượt nhấp (đường). Đặc biệt, có sự gia tăng đột biến về lượt nhấp vào các ngày giữa tháng, cho thấy hiệu quả của việc tối ưu quảng cáo.</p>
+                <div class="chart-container mx-auto" style="max-width: 1000px;">
+                    <canvas id="dailyTrendChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center mt-16 text-gray-500 text-sm">
+            <p>Báo cáo được tạo tự động dựa trên dữ liệu từ Google Analytics, Google Search Console & Google Ads.</p>
+            <p>HDSTEEL.com.vn | Tháng 9/2025</p>
+        </footer>
+    </div>
+
+    <script>
+        Chart.register(ChartDataLabels);
+
+        const COLORS = {
+            darkBlue: '#0d47a1',
+            mediumBlue: '#1976d2',
+            lightBlue: '#42a5f5',
+            accentBlue: '#81d4fa',
+            softBlue: '#bbdefb',
+            orange: '#ffa600'
+        };
+
+        function wrapLabel(label, maxWidth) {
+            if (!label) return '';
+            if (label.length <= maxWidth) {
+                return label;
+            }
+            const words = label.split(' ');
+            let line = '';
+            const lines = [];
+            for (let i = 0; i < words.length; i++) {
+                const testLine = line + words[i] + ' ';
+                if (testLine.length > maxWidth && i > 0) {
+                    lines.push(line.trim());
+                    line = words[i] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line.trim());
+            return lines;
+        }
+
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
+        
+        const commonTooltipOptions = {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: tooltipTitleCallback
+                    }
+                },
+                datalabels: {
+                    display: false
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            new Chart(document.getElementById('trafficSourceChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Quảng cáo (Paid Search)', 'Tự nhiên (Organic Search)', 'Trực tiếp & Khác'],
+                    datasets: [{
+                        data: [963, 345, 38], 
+                        backgroundColor: [COLORS.darkBlue, COLORS.lightBlue, COLORS.accentBlue],
+                        borderColor: '#ffffff',
+                        borderWidth: 4
+                    }]
+                },
+                options: { ...commonTooltipOptions, responsive: true, maintainAspectRatio: false, plugins: { ...commonTooltipOptions.plugins, legend: { position: 'bottom' } } }
+            });
+
+            new Chart(document.getElementById('topAdGroupsChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: [
+                        wrapLabel('Giá nhôm tấm (theo độ dày)', 20),
+                        wrapLabel('Tấm Nhôm', 20),
+                        wrapLabel('Nhôm A6061', 20),
+                        wrapLabel('Bảng giá nhôm (Cuộn/lá/tấm)', 20),
+                        wrapLabel('Nhôm Tấm Chung', 20)
+                    ],
+                    datasets: [{
+                        label: 'Lượt nhấp',
+                        data: [155, 138, 94, 87, 87],
+                        backgroundColor: [COLORS.darkBlue, COLORS.mediumBlue, COLORS.lightBlue, COLORS.accentBlue, COLORS.softBlue],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonTooltipOptions,
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        ...commonTooltipOptions.plugins, 
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#333',
+                            font: { weight: 'bold' }
+                        }
+                    },
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+
+            new Chart(document.getElementById('topOrganicPagesChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: [
+                        wrapLabel('Trang chủ', 16),
+                        wrapLabel('Nhôm 7075-T6...', 16),
+                        wrapLabel('Quy trình luyện nhôm...', 16),
+                        wrapLabel('Hướng dẫn tra cứu mác nhôm...', 16),
+                        wrapLabel('Tính chất hóa học của nhôm...', 16)
+                    ],
+                    datasets: [{
+                        label: 'Lượt nhấp',
+                        data: [64, 25, 22, 16, 15],
+                        backgroundColor: [COLORS.darkBlue, COLORS.mediumBlue, COLORS.lightBlue, COLORS.accentBlue, COLORS.softBlue],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonTooltipOptions,
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { ...commonTooltipOptions.plugins, legend: { display: false } },
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+
+            new Chart(document.getElementById('topOrganicKeywordsChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: [
+                        wrapLabel('nhôm 7075 cứng hơn thép', 16),
+                        wrapLabel('nhôm 7075', 16),
+                        wrapLabel('astm b209', 16),
+                        wrapLabel('thép không gỉ', 16),
+                        wrapLabel('nhôm tấm đà nẵng', 16)
+                    ],
+                    datasets: [{
+                        label: 'Lượt nhấp',
+                        data: [2, 1, 1, 1, 1],
+                        backgroundColor: [COLORS.lightBlue, COLORS.accentBlue, COLORS.softBlue, '#cccccc', '#dddddd'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonTooltipOptions,
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { ...commonTooltipOptions.plugins, legend: { display: false } },
+                    scales: { x: { beginAtZero: true, max: 3 } }
+                }
+            });
+
+            const dailyLabels = ["1/9","2/9","3/9","4/9","5/9","6/9","7/9","8/9","9/9","10/9","11/9","12/9","13/9","14/9","15/9","16/9","17/9","18/9","19/9","20/9","21/9","22/9","23/9","24/9","25/9","26/9","27/9","28/9","29/9","30/9"];
+            const consoleClicks = [13,12,7,8,11,15,10,12,6,7,9,11,17,8,14,14,15,10,10,8,12,17,15,14,18,8,10,12,21,10];
+            const adsClicks = [0,0,0,0,0,0,0,0,3,5,22,42,37,23,28,29,31,48,43,33,39,37,42,39,45,41,36,29,35,32];
+            const consoleImpressions = [355,302,284,337,390,387,314,357,329,355,420,530,551,460,544,484,606,455,396,353,422,627,621,655,664,538,399,477,640,638];
+            const adsImpressions = [0,0,0,0,0,0,0,0,9,74,169,336,294,180,285,237,249,343,293,205,257,260,289,271,320,312,238,197,250,224];
+            const totalClicks = adsClicks.map((num, idx) => num + consoleClicks[idx]);
+            const totalImpressions = adsImpressions.map((num, idx) => num + consoleImpressions[idx]);
+
+            new Chart(document.getElementById('dailyTrendChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: dailyLabels,
+                    datasets: [{
+                        label: 'Tổng Lượt hiển thị',
+                        type: 'bar',
+                        data: totalImpressions,
+                        backgroundColor: 'rgba(66, 165, 245, 0.6)',
+                        yAxisID: 'y1',
+                        order: 2
+                    },{
+                        label: 'Tổng Lượt nhấp',
+                        type: 'line',
+                        data: totalClicks,
+                        borderColor: COLORS.orange,
+                        backgroundColor: 'rgba(255, 166, 0, 0.5)',
+                        fill: false,
+                        tension: 0.3,
+                        yAxisID: 'y',
+                        order: 1
+                    }]
+                },
+                options: {
+                    ...commonTooltipOptions,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            position: 'left', 
+                            title: { display: true, text: 'Tổng Lượt nhấp (Đường)' } 
+                        },
+                        y1: { 
+                            position: 'right', 
+                            title: { display: true, text: 'Tổng Lượt hiển thị (Cột)' }, 
+                            grid: { drawOnChartArea: false } 
+                        }
+                    },
+                    plugins: { ...commonTooltipOptions.plugins, legend: { position: 'bottom' } }
+                }
+            });
+
+            const mapData = [{
+                type: 'choropleth',
+                locations: ['VNM', 'CHN', 'HKG', 'IND', 'USA', 'RUS', 'FRA', 'ZAF', 'ESP', 'GBR', 'DEU', 'JPN', 'SGP', 'KOR', 'IDN'],
+                z: [319, 15, 12, 7, 6, 4, 3, 3, 2, 1, 1, 1, 1, 1, 1],
+                text: ['Việt Nam', 'Trung Quốc', 'Hong Kong', 'Ấn Độ', 'Hoa Kỳ', 'Nga', 'Pháp', 'Nam Phi', 'Tây Ban Nha', 'Anh', 'Đức', 'Nhật Bản', 'Singapore', 'Hàn Quốc', 'Indonesia'],
+                colorscale: [
+                    [0, '#e3f2fd'],
+                    [1, '#0d47a1']
+                ],
+                colorbar: { title: 'Lượt nhấp (Tự nhiên)' }
+            }];
+
+            const mapLayout = {
+                title: '',
+                geo: {
+                    showframe: false,
+                    showcoastlines: true,
+                    projection: { type: 'mercator' }
+                },
+                margin: { l: 0, r: 0, t: 0, b: 0 }
+            };
+
+            Plotly.newPlot('map', mapData, mapLayout, {showLink: false, displayModeBar: false});
+
+        });
+    </script>
+</body>
+</html>
