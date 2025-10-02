@@ -169,7 +169,7 @@
             </div>
             <div class="bg-white p-6 rounded-lg shadow-md mt-8">
                 <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Phân Bổ Lượt Nhấp Quảng Cáo Theo Tỉnh</h3>
-                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Hà Nội và TP. Hồ Chí Minh là hai thị trường mang lại nhiều lượt nhấp nhất, theo sau là các tỉnh công nghiệp trọng điểm phía Bắc và phía Nam.</p>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Hà Nội là thị trường mang lại nhiều lượt nhấp vượt trội, theo sau là các tỉnh công nghiệp trọng điểm phía Bắc và thành phố Đà Nẵng.</p>
                 <div class="chart-container-tall">
                     <canvas id="adLocationChart"></canvas>
                 </div>
@@ -369,10 +369,10 @@
             new Chart(document.getElementById('adLocationChart').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: ['Hà Nội', 'TP. Hồ Chí Minh', 'Hải Phòng', 'Đồng Nai', 'Bình Dương', 'Bắc Ninh', 'Hưng Yên', 'Hải Dương', 'Vĩnh Phúc', 'Đà Nẵng'],
+                    labels: ['Hà Nội', 'Bắc Ninh', 'Đà Nẵng', 'Hải Phòng', 'Hải Dương', 'Nghệ An', 'Bắc Giang', 'Vĩnh Phúc', 'Quảng Ninh', 'Thanh Hóa'],
                     datasets: [{
                         label: 'Lượt nhấp quảng cáo',
-                        data: [172, 137, 59, 49, 44, 28, 27, 22, 18, 16],
+                        data: [383, 77, 58, 41, 36, 32, 29, 28, 28, 22],
                         backgroundColor: [
                             '#0d47a1', '#155fa0', '#1e78c0', '#2f90d5', '#42a5f5',
                             '#64b5f6', '#81d4fa', '#90caf9', '#bbdefb', '#e3f2fd'
