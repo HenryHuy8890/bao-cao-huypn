@@ -132,7 +132,7 @@
         <section id="adwords-performance" class="mb-16">
             <h2 class="text-3xl font-bold text-center mb-8 section-title">"Điểm Sáng" từ Chiến dịch Google Ads</h2>
             <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Các nhóm quảng cáo tập trung vào báo giá và thông tin chi tiết về các loại nhôm tấm cụ thể đang hoạt động hiệu quả nhất, thu hút đúng đối tượng khách hàng đang có nhu cầu. Đặc biệt, quảng cáo của chúng ta có tới 41.5% tỷ lệ hiển thị ở vị trí top 1.</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Top 10 Nhóm Quảng Cáo Hiệu Quả Nhất</h3>
                     <div class="chart-container-tall">
@@ -144,6 +144,13 @@
                     <div class="chart-container-tall">
                         <canvas id="adPositionChart"></canvas>
                     </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md mt-8">
+                <h3 class="text-xl font-bold text-center mb-4 section-subtitle">Phân Bổ Lượt Nhấp Quảng Cáo Theo Tỉnh</h3>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Hà Nội và TP. Hồ Chí Minh là hai thị trường mang lại nhiều lượt nhấp nhất, theo sau là các tỉnh công nghiệp trọng điểm phía Bắc và phía Nam.</p>
+                <div class="chart-container-tall">
+                    <canvas id="adLocationChart"></canvas>
                 </div>
             </div>
         </section>
@@ -169,8 +176,8 @@
         
         <section id="geo" class="mb-16">
              <div class="bg-white p-6 rounded-lg shadow-md">
-                <h2 class="text-3xl font-bold text-center mb-8 section-title">Phân Bố Địa Lý: Vươn Ra Toàn Cầu</h2>
-                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Tháng 9 tiếp tục ghi nhận sự quan tâm từ nhiều quốc gia trên thế giới, đặc biệt là từ các thị trường lớn như Trung Quốc, Hong Kong, Ấn Độ và Hoa Kỳ, khẳng định tiềm năng xuất khẩu.</p>
+                <h2 class="text-3xl font-bold text-center mb-8 section-title">Phân Bố Địa Lý (Tự nhiên): Vươn Ra Toàn Cầu</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Kênh tự nhiên tiếp tục ghi nhận sự quan tâm từ nhiều quốc gia trên thế giới, đặc biệt là từ các thị trường lớn như Trung Quốc, Hong Kong, Ấn Độ và Hoa Kỳ, khẳng định tiềm năng xuất khẩu.</p>
                 <div id="map" class="map-container"></div>
             </div>
         </section>
@@ -335,6 +342,39 @@
                             }
                         }
                     } 
+                }
+            });
+
+            new Chart(document.getElementById('adLocationChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Hà Nội', 'TP. Hồ Chí Minh', 'Hải Phòng', 'Đồng Nai', 'Bình Dương', 'Bắc Ninh', 'Hưng Yên', 'Hải Dương', 'Vĩnh Phúc', 'Đà Nẵng'],
+                    datasets: [{
+                        label: 'Lượt nhấp quảng cáo',
+                        data: [172, 137, 59, 49, 44, 28, 27, 22, 18, 16],
+                        backgroundColor: [
+                            '#0d47a1', '#155fa0', '#1e78c0', '#2f90d5', '#42a5f5',
+                            '#64b5f6', '#81d4fa', '#90caf9', '#bbdefb', '#e3f2fd'
+                        ],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonTooltipOptions,
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        ...commonTooltipOptions.plugins,
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#333',
+                            font: { weight: 'bold' }
+                        }
+                    },
+                    scales: { x: { beginAtZero: true } }
                 }
             });
 
