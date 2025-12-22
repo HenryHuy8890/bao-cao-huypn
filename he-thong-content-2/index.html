@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Hệ Thống Content Automation - H&D Steel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1e3a8a; /* Xanh đậm kỹ thuật */
+            --secondary: #64748b; /* Xám thép */
+            --accent: #f59e0b; /* Vàng cam điểm nhấn */
+            --success: #10b981;
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg-gradient);
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .card-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-connector {
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 30px;
+            height: 2px;
+            background: #cbd5e1;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .step-connector::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 8px solid #cbd5e1;
+        }
+        
+        /* Hiệu ứng mũi tên động cho sơ đồ */
+        .arrow-down {
+            width: 0; 
+            height: 0; 
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #94a3b8;
+            margin: 10px auto;
+        }
+
+        .highlight-box {
+            border-left: 4px solid var(--primary);
+        }
+        
+        .tech-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        /* Responsive timeline */
+        @media (max-width: 768px) {
+            .step-connector { display: none; }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-10 min-h-screen">
+
+    <!-- HEADER -->
+    <header class="max-w-6xl mx-auto mb-12 text-center">
+        <div class="inline-block p-4 rounded-full bg-white shadow-lg mb-4">
+            <i class="fa-solid fa-industry text-4xl text-blue-900"></i>
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black text-slate-800 tracking-tight mb-2">HỆ THỐNG CONTENT AUTOMATION 2.0</h1>
+        <p class="text-lg text-slate-500 font-medium">Báo cáo vận hành & Hiệu suất - H&D Steel</p>
+        <div class="mt-4 flex justify-center gap-2">
+            <span class="tech-badge">n8n Workflow</span>
+            <!-- Đã cập nhật phiên bản Gemini theo yêu cầu -->
+            <span class="tech-badge">Google Gemini 2.5</span>
+            <span class="tech-badge">Perplexity AI</span>
+            <span class="tech-badge">Google Search API</span>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- WORKFLOW 1: KEYWORD HUNTER -->
+        <section class="card-glass rounded-2xl p-6 lg:p-8 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10">
+                <i class="fa-solid fa-magnifying-glass-chart text-9xl"></i>
+            </div>
+            
+            <div class="flex items-center gap-3 mb-6 border-b pb-4 border-slate-100">
+                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 font-bold">01</div>
+                <h2 class="text-2xl font-bold text-slate-800">CỖ MÁY SĂN TÌM Ý TƯỞNG</h2>
+                <span class="ml-auto text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded">ACTIVE</span>
+            </div>
+
+            <!-- Quy trình W1 -->
+            <div class="space-y-4 relative">
+                <!-- Step 1 -->
+                <div class="flex gap-4 items-start">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center mt-1">
+                        <i class="fa-solid fa-database text-slate-600 text-sm"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 w-full">
+                        <h3 class="font-bold text-slate-700">1. Nạp Dữ Liệu Lịch Sử</h3>
+                        <p class="text-sm text-slate-500">Hệ thống đọc toàn bộ kho bài viết cũ từ Google Sheet để làm cơ sở dữ liệu đối chiếu.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex gap-4 items-start">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center mt-1">
+                        <i class="fa-brands fa-google text-orange-600 text-sm"></i>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-xl shadow-sm border border-orange-100 w-full highlight-box" style="border-left-color: #f97316;">
+                        <h3 class="font-bold text-orange-800">2. HTTP Request (Google Suggest)</h3>
+                        <p class="text-sm text-slate-600">Gửi từ khóa gốc lên Google để lấy về các truy vấn thực tế của người dùng (Real-time demand).</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex gap-4 items-start">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center mt-1">
+                        <i class="fa-solid fa-filter text-slate-600 text-sm"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 w-full">
+                        <h3 class="font-bold text-slate-700">3. Bộ Lọc Thông Minh & Loop</h3>
+                        <p class="text-sm text-slate-500">So sánh: [Nhu cầu mới] vs [Lịch sử]. Loại bỏ trùng lặp tuyệt đối. Chạy vòng lặp từng từ khóa.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex gap-4 items-start">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mt-1">
+                        <i class="fa-solid fa-robot text-blue-600 text-sm"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 w-full">
+                        <h3 class="font-bold text-slate-700">4. Gemini AI Phân Tích</h3>
+                        <p class="text-sm text-slate-500">Đặt tên tiêu đề bài viết (Title) hấp dẫn, chuyên sâu kỹ thuật dựa trên từ khóa xanh.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 bg-slate-800 text-white p-4 rounded-lg text-sm flex items-center gap-3">
+                <i class="fa-solid fa-check-circle text-green-400 text-xl"></i>
+                <div>
+                    <strong>Kết quả:</strong> File Google Sheet chứa danh sách ý tưởng "độc nhất", sát sườn nhu cầu thị trường.
+                </div>
+            </div>
+        </section>
+
+        <!-- WORKFLOW 2: CONTENT FACTORY -->
+        <section class="card-glass rounded-2xl p-6 lg:p-8 relative overflow-hidden border-t-4 border-blue-800">
+            <div class="absolute top-0 right-0 p-4 opacity-10">
+                <i class="fa-solid fa-pen-nib text-9xl"></i>
+            </div>
+
+            <div class="flex items-center gap-3 mb-6 border-b pb-4 border-slate-100">
+                <div class="w-10 h-10 rounded-lg bg-blue-800 text-white flex items-center justify-center font-bold">02</div>
+                <h2 class="text-2xl font-bold text-slate-800">NHÀ MÁY SẢN XUẤT CONTENT</h2>
+                <span class="ml-auto text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded">ACTIVE</span>
+            </div>
+
+            <!-- Quy trình W2 (Dạng Grid) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Input -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 col-span-1 md:col-span-2 flex items-center gap-3">
+                    <i class="fa-solid fa-file-import text-slate-400"></i>
+                    <span class="font-bold text-slate-700">Nhận Ý Tưởng từ W1</span>
+                </div>
+
+                <!-- Research -->
+                <div class="bg-purple-50 p-4 rounded-xl border border-purple-100 col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-microscope text-purple-600"></i>
+                        <h3 class="font-bold text-purple-800">Nghiên Cứu (Perplexity)</h3>
+                    </div>
+                    <ul class="text-xs text-purple-900 list-disc ml-4 space-y-1">
+                        <li>Tra cứu tiêu chuẩn ASTM/JIS</li>
+                        <li>Lấy bảng thành phần hóa học thực tế</li>
+                        <li>Tìm xu hướng thị trường mới nhất</li>
+                    </ul>
+                </div>
+
+                <!-- Writing -->
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-pen-fancy text-blue-600"></i>
+                        <h3 class="font-bold text-blue-800">Viết Bài & Code</h3>
+                    </div>
+                    <p class="text-xs text-slate-600">Viết song ngữ Việt/Anh. Tự động đóng gói HTML (Heading, Bold, Table).</p>
+                </div>
+
+                <!-- Image & SEO -->
+                <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-image text-green-600"></i>
+                        <h3 class="font-bold text-green-800">Ảnh & SEO</h3>
+                    </div>
+                    <p class="text-xs text-slate-600">Tạo Prompt ảnh. Đặt tên file ảnh chuẩn SEO + Timestamp chống trùng.</p>
+                </div>
+
+            </div>
+
+            <div class="mt-6 border-t border-dashed border-slate-300 pt-4">
+                 <h3 class="font-bold text-slate-700 mb-2">Thành Phẩm Đầu Ra:</h3>
+                 <div class="grid grid-cols-3 gap-2 text-center text-xs font-semibold text-white">
+                     <div class="bg-blue-600 py-2 rounded">Bài viết HTML</div>
+                     <div class="bg-blue-600 py-2 rounded">Code Ảnh</div>
+                     <div class="bg-blue-600 py-2 rounded">Meta SEO</div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- HUMAN IN THE LOOP -->
+        <section class="card-glass rounded-2xl p-6 lg:p-8 relative overflow-hidden border-t-4 border-yellow-500 col-span-1 lg:col-span-2">
+            <div class="absolute top-0 right-0 p-4 opacity-10">
+                <i class="fa-solid fa-users-gear text-9xl"></i>
+            </div>
+
+            <div class="flex items-center gap-3 mb-6 border-b pb-4 border-slate-100">
+                <div class="w-10 h-10 rounded-lg bg-yellow-500 text-white flex items-center justify-center font-bold">03</div>
+                <h2 class="text-2xl font-bold text-slate-800">VAI TRÒ CỦA NHÂN SỰ (HUMAN IN THE LOOP)</h2>
+            </div>
+            
+            <p class="text-slate-600 mb-6 font-medium">Với hệ thống này, nhân viên Content không cần tốn thời gian nghĩ chủ đề hay viết nháp. Quy trình làm việc mới sẽ là:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Step 1 -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group hover:-translate-y-1 transition-transform duration-300">
+                    <div class="absolute -top-3 -left-3 w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                    <div class="text-center mb-3 text-4xl text-green-500"><i class="fa-solid fa-file-excel"></i></div>
+                    <h3 class="font-bold text-slate-700 text-center mb-2">Mở Google Sheet</h3>
+                    <p class="text-xs text-slate-500 text-center">Mở file "Thành phẩm" để lấy dữ liệu đã được AI xử lý.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group hover:-translate-y-1 transition-transform duration-300">
+                    <div class="absolute -top-3 -left-3 w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-sm">2</div>
+                    <div class="text-center mb-3 text-4xl text-purple-500"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <h3 class="font-bold text-slate-700 text-center mb-2">Tạo Ảnh AI</h3>
+                    <p class="text-xs text-slate-500 text-center">Sử dụng Prompt có sẵn để tạo ảnh trên Google AI Studio.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group hover:-translate-y-1 transition-transform duration-300">
+                     <div class="absolute -top-3 -left-3 w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                    <div class="text-center mb-3 text-4xl text-blue-500"><i class="fa-brands fa-wordpress"></i></div>
+                    <h3 class="font-bold text-slate-700 text-center mb-2">Đăng Website</h3>
+                    <p class="text-xs text-slate-500 text-center">Copy mã HTML và các trường dữ liệu dán vào trình quản trị.</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group hover:-translate-y-1 transition-transform duration-300">
+                     <div class="absolute -top-3 -left-3 w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-sm">4</div>
+                    <div class="text-center mb-3 text-4xl text-red-500"><i class="fa-solid fa-check-double"></i></div>
+                    <h3 class="font-bold text-slate-700 text-center mb-2">Rà Soát & Publish</h3>
+                    <p class="text-xs text-slate-500 text-center">Sửa lỗi hiển thị nhờ AI (Gemini/ChatGPT) rồi bấm "Đăng bài".</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER SUMMARY -->
+        <section class="card-glass rounded-2xl p-8 col-span-1 lg:col-span-2 flex flex-col md:flex-row items-center justify-between gap-6 bg-slate-900 text-white">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">Hiệu Quả Vận Hành</h2>
+                <ul class="space-y-2 text-slate-300 text-sm">
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i>Tiết kiệm 95% thời gian sản xuất (3 giờ -> 10 phút).</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i>Độ chính xác kỹ thuật cao nhờ tra cứu Real-time.</li>
+                    <li><i class="fa-solid fa-check text-green-400 mr-2"></i>Tuyệt đối không trùng lặp nội dung (Duplicate Content).</li>
+                </ul>
+            </div>
+            <div class="text-right">
+                <div class="text-4xl font-black text-yellow-400">AUTOMATED</div>
+                <div class="text-sm text-slate-400">Since Dec 2025</div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center mt-12 text-slate-400 text-sm pb-6">
+        <p>© 2025 H&D Steel Automation Report. Internal Use Only.</p>
+    </footer>
+
+</body>
+</html>
