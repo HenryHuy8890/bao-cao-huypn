@@ -1,433 +1,497 @@
-import React, { useState, useEffect } from 'react';
-import { Calculator, AlertTriangle, TrendingUp, TrendingDown, DollarSign, Clock, CheckCircle, XCircle, RefreshCcw, ShieldAlert, Users, Award, Siren, CreditCard, Percent, ArrowRightCircle, History, Zap } from 'lucide-react';
-
-const PAKD_App = () => {
-  // --- STATE QUẢN LÝ DỮ LIỆU ĐẦU VÀO ---
-  const [inputs, setInputs] = useState({
-    // 1. Hàng hóa & Giá
-    productName: 'Nhôm cuộn A3003',
-    quantity: 1000, // kg
-    sellPrice: 101000,
-    historicalCost: 91000,
-    replacementCost: 110000,
-    competitorPrice: 105000,
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAKD 4.0 - Thép H&D</title>
     
-    // 2. Thông tin Khách hàng
-    customerName: 'Butraco',
-    customerRevenue2025: 1.3, // Tỷ đồng
-    customerRank: 'VIP', // VIP, MEDIUM, SMALL
-    buyFrequency: 'REGULAR', // REGULAR (Đều), WALKIN (Vãng lai)
-
-    // 3. Rủi ro & Chi phí
-    inventoryAge: 7, // tháng
-    interestRate: 0.63, // %/tháng
-    riskProvision: 1.5, // % (Dự phòng ẩn)
-    paymentDays: 30, // Ngày công nợ
-  });
-
-  const [metrics, setMetrics] = useState({
-    revenue: 0,
-    accountingProfit: 0,
-    accountingMargin: 0,
-    realProfit: 0,
-    realMargin: 0,
-    replacementGap: 0,
-    sunkCost: 0,
-    sunkCostRatio: 0,
-    capitalPreservationRatio: 0,
+    <!-- 1. Thư viện React & ReactDOM (Phiên bản chạy trực tiếp trên trình duyệt) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    // Kết quả ra quyết định
-    status: 'RED', 
-    recommendation: '',
-    reason: '',
-    warningLevel: '' // SAFE, WARN, CRITICAL
-  });
-
-  // --- HÀM FORMAT ---
-  const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-  const formatPercent = (value) => new Intl.NumberFormat('vi-VN', { style: 'percent', minimumFractionDigits: 2 }).format(value / 100);
-
-  // --- CORE ENGINE (MA TRẬN 3 LỚP) ---
-  useEffect(() => {
-    const {
-      quantity, sellPrice, historicalCost, replacementCost,
-      inventoryAge, interestRate, riskProvision, paymentDays,
-      customerRank
-    } = inputs;
-
-    // --- TÍNH TOÁN TÀI CHÍNH ---
-    const revenue = quantity * sellPrice;
-    const cogsHistory = quantity * historicalCost;
+    <!-- 2. Thư viện Babel (Để dịch code React ngay trong trình duyệt) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    // Lợi nhuận
-    const accountingProfit = revenue - cogsHistory;
-    const futureFinCost = revenue * (interestRate / 100 / 30 * paymentDays); 
-    const riskCost = revenue * (riskProvision / 100);
-    const realProfit = accountingProfit - futureFinCost - riskCost;
-    const realMargin = revenue > 0 ? (realProfit / revenue) * 100 : 0;
+    <!-- 3. Thư viện Tailwind CSS (Để trang trí giao diện) -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    // Sunk Cost (Holding Cost)
-    const sunkCost = cogsHistory * (interestRate / 100) * inventoryAge;
-    const sunkCostRatio = cogsHistory > 0 ? (sunkCost / cogsHistory) * 100 : 0;
-
-    // Vốn & Bảo toàn (Capital Preservation)
-    // Dương: Hao hụt (Mất sức mua). Âm: Tăng trưởng.
-    const capitalPreservationRatio = (1 - (sellPrice / replacementCost)) * 100; 
-
-    // --- LOGIC QUYẾT ĐỊNH 3 LỚP ---
-    
-    let status = '';
-    let recommendation = '';
-    let reason = '';
-    let warningLevel = '';
-
-    // 1. Đánh giá mức độ hao hụt vốn
-    if (capitalPreservationRatio > 5) warningLevel = 'CRITICAL';
-    else if (capitalPreservationRatio >= 2) warningLevel = 'WARN';
-    else warningLevel = 'SAFE';
-
-    // 2. Logic Xử lý
-    const isStrategicClearance = inventoryAge > 6 || sunkCostRatio > 5;
-
-    // LỚP 1: CHIẾN LƯỢC XẢ HÀNG (Ưu tiên cao nhất)
-    if (isStrategicClearance) {
-        status = 'PURPLE';
-        recommendation = 'ƯU TIÊN XẢ HÀNG (CHIẾN LƯỢC)';
-        reason = `BÁO ĐỘNG TÍM: Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay >5%. BẮT BUỘC BÁN để thu hồi tiền mặt bất chấp hao hụt vốn (${formatPercent(capitalPreservationRatio)}).`;
-    } 
-    else {
-        // LỚP 2: KIỂM TRA LỢI NHUẬN (Theo khách hàng)
-        let isProfitPass = false;
-        let profitNote = '';
-
-        if (customerRank === 'VIP' || customerRank === 'MEDIUM') {
-            if (realMargin > 1.0) {
-                isProfitPass = true;
-                profitNote = `Lãi thực ${formatPercent(realMargin)} (Đạt)`;
-            }
-        } else {
-            if (realMargin > 3.0) {
-                isProfitPass = true;
-                profitNote = `Lãi thực ${formatPercent(realMargin)} (Đạt)`;
-            }
-        }
-
-        // LỚP 3: KIỂM TRA BẢO TOÀN VỐN (Chốt chặn cuối cùng)
-        if (isProfitPass) {
-            if (warningLevel === 'CRITICAL') { // Hụt > 5%
-                status = 'RED_CAPITAL';
-                recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)';
-                reason = `${profitNote} NHƯNG bị chặn bởi Hao hụt vốn quá lớn (${formatPercent(capitalPreservationRatio)}). Bán xong không đủ tiền nhập lại hàng.`;
-            } else if (warningLevel === 'WARN') { // Hụt 2-5%
-                status = 'YELLOW_CAPITAL';
-                recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (ĐÈN VÀNG)';
-                reason = `${profitNote} nhưng Hao hụt vốn ${formatPercent(capitalPreservationRatio)} (2-5%). Yêu cầu: Thu tiền mặt ngay hoặc có kế hoạch nhập hàng bù giá thấp.`;
-            } else { // Hụt < 2% (An toàn)
-                status = 'GREEN';
-                recommendation = 'DUYỆT NGAY (ĐÈN XANH)';
-                reason = `${profitNote} & Bảo toàn vốn an toàn (${formatPercent(capitalPreservationRatio)} < 2%). Phương án kinh doanh bền vững.`;
-            }
-        } else {
-            // Nếu Lợi nhuận đã không đạt
-            if (realMargin >= 0 && (customerRank === 'VIP' || customerRank === 'MEDIUM')) {
-                // Lãi mỏng (0-1%) với khách VIP
-                if (warningLevel === 'CRITICAL') {
-                    status = 'RED_CAPITAL';
-                    recommendation = 'DỪNG LẠI (RỦI RO KÉP)';
-                    reason = `Lãi quá mỏng (${formatPercent(realMargin)}) VÀ Hao hụt vốn lớn. Không có lý do để duyệt.`;
-                } else {
-                    status = 'YELLOW_APPROVE';
-                    recommendation = 'CÂN NHẮC (LÃI MỎNG)';
-                    reason = `Lãi thực thấp (${formatPercent(realMargin)}). Cần Sếp duyệt vì lý do giữ khách VIP.`;
+    <!-- Cấu hình Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
                 }
-            } else {
-                status = 'RED_STOP';
-                recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)';
-                reason = `Lợi nhuận thực (${formatPercent(realMargin)}) không đạt kỳ vọng của phân khúc khách hàng này.`;
             }
         }
-    }
+    </script>
+</head>
+<body class="bg-slate-50">
+    <div id="root"></div>
 
-    setMetrics({
-      revenue, accountingProfit, realProfit, realMargin,
-      sunkCost, sunkCostRatio, capitalPreservationRatio,
-      status, recommendation, reason, warningLevel
-    });
+    <!-- CODE REACT JAVASCRIPT -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-  }, [inputs]);
-
-  // --- UI HELPERS ---
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setInputs(prev => ({ ...prev, [name]: parseFloat(value) || value }));
-  };
-
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case 'GREEN': return 'bg-green-50 border-green-500 text-green-800';
-      case 'YELLOW_CAPITAL': return 'bg-yellow-50 border-yellow-500 text-yellow-900';
-      case 'YELLOW_APPROVE': return 'bg-yellow-50 border-yellow-500 text-yellow-800';
-      case 'PURPLE': return 'bg-purple-100 border-purple-600 text-purple-900 animate-pulse-slow';
-      case 'RED_CAPITAL': return 'bg-red-50 border-red-600 text-red-900';
-      case 'RED_STOP': return 'bg-red-50 border-red-500 text-red-800';
-      default: return 'bg-gray-50 border-gray-400 text-gray-700';
-    }
-  };
-
-  const getIcon = (status) => {
-    if (status === 'GREEN') return <CheckCircle className="w-12 h-12 text-green-600" />;
-    if (status === 'YELLOW_CAPITAL' || status === 'YELLOW_APPROVE') return <Award className="w-12 h-12 text-yellow-600" />;
-    if (status === 'PURPLE') return <Siren className="w-12 h-12 text-purple-600 animate-bounce" />;
-    if (status === 'RED_CAPITAL') return <ShieldAlert className="w-12 h-12 text-red-600" />;
-    return <XCircle className="w-12 h-12 text-red-600" />;
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12">
-      {/* HEADER */}
-      <header className="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2">
-                <Calculator className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" />
-                PAKD 4.0 - Thép H&D
-              </h1>
-            </div>
-            <div className="mt-2 md:mt-0 bg-blue-800 px-3 py-1 rounded text-xs md:text-sm border border-blue-600">
-              <span className="text-blue-300">Logic Final:</span> "Lợi nhuận + Tồn kho + Bảo toàn vốn"
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        // --- KHAI BÁO ICONS (Thay thế Lucide-React bằng SVG trực tiếp để chạy không cần cài đặt) ---
+        const IconBase = ({ d, className, color }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={{color: color}}>
+                <path d={d} />
+            </svg>
+        );
         
-        {/* === LEFT COLUMN: INPUTS === */}
-        <div className="lg:col-span-4 space-y-6">
-          
-          {/* 1. Hàng hóa */}
-          <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-            <div className="bg-gray-100 px-5 py-3 border-b border-gray-200">
-              <h2 className="font-bold text-gray-700 flex items-center gap-2 text-sm uppercase">
-                <RefreshCcw className="w-4 h-4 text-blue-600" /> 1. Hàng hóa & Giá
-              </h2>
-            </div>
-            <div className="p-5 space-y-3">
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase">Tên Hàng</label>
-                <input type="text" name="productName" value={inputs.productName} onChange={handleInputChange} className="w-full border rounded px-3 py-2 text-sm font-medium outline-none" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase">Khối Lượng (Kg)</label>
-                  <input type="number" name="quantity" value={inputs.quantity} onChange={handleInputChange} className="w-full border rounded px-3 py-2 text-sm font-mono" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-blue-600 uppercase">Giá Bán (VNĐ)</label>
-                  <input type="number" name="sellPrice" value={inputs.sellPrice} onChange={handleInputChange} className="w-full border-2 border-blue-500 rounded px-3 py-2 text-sm font-bold text-blue-700" />
-                </div>
-              </div>
-              <div className="pt-2 border-t border-dashed border-gray-200 space-y-2">
-                <div className="flex justify-between items-center">
-                   <label className="text-xs text-gray-600">Giá Vốn Lịch Sử</label>
-                   <input type="number" name="historicalCost" value={inputs.historicalCost} onChange={handleInputChange} className="w-24 border bg-gray-50 text-right px-2 py-1 text-xs rounded" />
-                </div>
-                <div className="flex justify-between items-center">
-                   <label className="text-xs text-purple-700 font-bold">Giá Nhập Mới</label>
-                   <input type="number" name="replacementCost" value={inputs.replacementCost} onChange={handleInputChange} className="w-24 border border-purple-300 bg-purple-50 text-purple-800 font-bold text-right px-2 py-1 text-xs rounded" />
-                </div>
-              </div>
-            </div>
-          </div>
+        // Các Icons cụ thể
+        const Calculator = (props) => <IconBase {...props} d="M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z M16 7h-6 M8 11h.01 M12 11h.01 M16 11h.01 M8 15h.01 M12 15h.01 M16 15h.01" />;
+        const AlertTriangle = (props) => <IconBase {...props} d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01" />;
+        const TrendingUp = (props) => <IconBase {...props} d="M23 6l-9.5 9.5-5-5L1 18" />; // Simplified path for demo
+        const TrendingDown = (props) => <IconBase {...props} d="M23 18l-9.5-9.5-5 5L1 6" />;
+        const Clock = (props) => <IconBase {...props} d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2" />;
+        const CheckCircle = (props) => <IconBase {...props} d="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3" />;
+        const XCircle = (props) => <IconBase {...props} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />;
+        const RefreshCcw = (props) => <IconBase {...props} d="M3 2v6h6 M21 12A9 9 0 0 0 6 5.3L3 8 M21 22v-6h-6 M3 12a9 9 0 0 0 15 6.7l3-2.7" />;
+        const ShieldAlert = (props) => <IconBase {...props} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M12 8v4 M12 16h.01" />;
+        const Users = (props) => <IconBase {...props} d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M16 3.13a4 4 0 0 1 0 7.75 M23 21v-2a4 4 0 0 0-3-3.87" />;
+        const Award = (props) => <IconBase {...props} d="M12 15l-2 5l2 5l2-5l2-5 M12 8a6 6 0 1 0 0-12a6 6 0 0 0 0 12z" />; // Simplified
+        const Siren = (props) => <IconBase {...props} d="M7 18v-6a5 5 0 1 1 10 0v6 M5 21h14 M12 3v2" />; // Simplified
+        const CreditCard = (props) => <IconBase {...props} d="M1 4h22v16H1z M1 10h22" />;
+        const Percent = (props) => <IconBase {...props} d="M19 5L5 19 M6.5 6.5h.01 M17.5 17.5h.01" />;
+        const History = (props) => <IconBase {...props} d="M3 3v5h5 M3.05 13A9 9 0 1 0 6 5.3L3 8" />;
+        const Zap = (props) => <IconBase {...props} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />;
 
-          {/* 2. Khách hàng */}
-          <div className="bg-white rounded-xl shadow-md border border-blue-200 overflow-hidden relative">
-            <div className="bg-blue-50 px-5 py-3 border-b border-blue-100">
-              <h2 className="font-bold text-blue-800 flex items-center gap-2 text-sm uppercase">
-                <Users className="w-4 h-4" /> 2. Thông tin Khách hàng
-              </h2>
-            </div>
-            <div className="p-5 space-y-3 relative z-10">
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase">Tên Khách Hàng</label>
-                <input type="text" name="customerName" value={inputs.customerName} onChange={e => setInputs({...inputs, customerName: e.target.value})} className="w-full border rounded px-3 py-2 text-sm font-medium" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                 <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase">Phân Hạng</label>
-                    <select name="customerRank" value={inputs.customerRank} onChange={e => setInputs({...inputs, customerRank: e.target.value})} className={`w-full border rounded px-2 py-2 text-sm font-bold outline-none ${inputs.customerRank === 'VIP' ? 'text-yellow-600 border-yellow-400 bg-yellow-50' : 'text-gray-700'}`}>
-                      <option value="VIP">★ VIP / Sản xuất</option>
-                      <option value="MEDIUM">Thân thiết</option>
-                      <option value="SMALL">Vãng lai / Lẻ</option>
-                    </select>
-                 </div>
-                 <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase">Tần Suất</label>
-                    <select name="buyFrequency" value={inputs.buyFrequency} onChange={e => setInputs({...inputs, buyFrequency: e.target.value})} className="w-full border rounded px-2 py-2 text-sm outline-none">
-                      <option value="REGULAR">Đều đặn</option>
-                      <option value="WALKIN">Vãng lai</option>
-                    </select>
-                 </div>
-              </div>
-            </div>
-          </div>
+        // --- APP LOGIC CHÍNH ---
+        const PAKD_App = () => {
+            // --- STATE QUẢN LÝ DỮ LIỆU ĐẦU VÀO ---
+            const [inputs, setInputs] = useState({
+                // 1. Hàng hóa & Giá
+                productName: 'Nhôm cuộn A3003',
+                quantity: 1000, // kg
+                sellPrice: 101000,
+                historicalCost: 91000,
+                replacementCost: 110000,
+                competitorPrice: 105000,
+                
+                // 2. Thông tin Khách hàng
+                customerName: 'Butraco',
+                customerRevenue2025: 1.3, // Tỷ đồng
+                customerRank: 'VIP', // VIP, MEDIUM, SMALL
+                buyFrequency: 'REGULAR', // REGULAR (Đều), WALKIN (Vãng lai)
 
-          {/* 3. Thanh toán & Rủi ro */}
-          <div className="bg-white rounded-xl shadow-md border border-orange-200 overflow-hidden">
-             <div className="bg-orange-50 px-5 py-3 border-b border-orange-200">
-               <h2 className="font-bold text-orange-800 flex items-center gap-2 text-sm uppercase">
-                 <ShieldAlert className="w-4 h-4" /> 3. Thanh toán & Rủi ro
-               </h2>
-             </div>
-             <div className="p-5 grid grid-cols-2 gap-3">
-                <div className="space-y-3">
-                   <div>
-                     <label className="text-xs font-bold text-gray-600 block flex items-center gap-1"><CreditCard className="w-3 h-3" /> Công nợ (Ngày)</label>
-                     <input type="number" name="paymentDays" value={inputs.paymentDays} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1 focus:border-orange-500" />
-                   </div>
-                   <div>
-                     <label className="text-xs font-bold text-gray-600 block flex items-center gap-1"><Clock className="w-3 h-3" /> Tuổi kho (Tháng)</label>
-                     <input type="number" name="inventoryAge" value={inputs.inventoryAge} onChange={handleInputChange} className={`w-full border rounded px-2 py-1.5 text-sm mt-1 ${inputs.inventoryAge > 6 ? 'bg-purple-100 text-purple-800 font-bold border-purple-400' : ''}`} />
-                   </div>
-                </div>
-                <div className="space-y-3">
-                   <div>
-                     <label className="text-xs font-bold text-gray-600 block flex items-center gap-1"><Percent className="w-3 h-3" /> Dự phòng (%)</label>
-                     <input type="number" name="riskProvision" step="0.1" value={inputs.riskProvision} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1 focus:border-orange-500 bg-yellow-50" />
-                   </div>
-                   <div>
-                     <label className="text-xs font-bold text-gray-600 block">Lãi nội bộ (%)</label>
-                     <input type="number" name="interestRate" step="0.01" value={inputs.interestRate} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" />
-                   </div>
-                </div>
-             </div>
-          </div>
-        </div>
+                // 3. Rủi ro & Chi phí
+                inventoryAge: 7, // tháng
+                interestRate: 0.63, // %/tháng
+                riskProvision: 1.5, // % (Dự phòng ẩn)
+                paymentDays: 30, // Ngày công nợ
+            });
 
-        {/* === RIGHT COLUMN: DASHBOARD === */}
-        <div className="lg:col-span-8 space-y-6">
-          
-          {/* 1. DECISION MATRIX */}
-          <div className={`rounded-xl shadow-lg border-2 overflow-hidden transition-all duration-300 ${getStatusStyle(metrics.status)}`}>
-            <div className="p-6 flex flex-col md:flex-row items-center gap-6">
-              <div className="flex-shrink-0">{getIcon(metrics.status)}</div>
-              <div className="flex-1 text-center md:text-left">
-                <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Hệ thống khuyến nghị:</div>
-                <h3 className="text-2xl font-bold mb-2 uppercase tracking-tight">{metrics.recommendation}</h3>
-                <div className="text-sm md:text-base font-medium opacity-90 space-y-1"><p>➤ {metrics.reason}</p></div>
-              </div>
-              <div className="hidden md:block border-l border-current opacity-30 h-16 mx-2"></div>
-              <div className="hidden md:block text-right min-w-[120px]">
-                <div className="text-xs uppercase opacity-70 mb-1">Dự báo Lãi/Lỗ</div>
-                <div className={`text-2xl font-bold ${metrics.realMargin > 0 ? '' : 'text-red-700'}`}>{formatPercent(metrics.realMargin)}</div>
-                <div className="text-xs font-medium">Margin Thực</div>
-              </div>
-            </div>
-            <div className="h-1 w-full bg-black/10"><div className="h-full bg-current opacity-30 w-full animate-pulse"></div></div>
-          </div>
+            const [metrics, setMetrics] = useState({
+                revenue: 0,
+                accountingProfit: 0,
+                accountingMargin: 0,
+                realProfit: 0,
+                realMargin: 0,
+                replacementGap: 0,
+                sunkCost: 0,
+                sunkCostRatio: 0,
+                capitalPreservationRatio: 0,
+                
+                // Kết quả ra quyết định
+                status: 'RED', 
+                recommendation: '',
+                reason: '',
+                warningLevel: '' // SAFE, WARN, CRITICAL
+            });
 
-          {/* 2. CONTEXT ANALYSIS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             
-             {/* Box 1: Financial Health */}
-             <div className="bg-white rounded-xl shadow border border-gray-200 p-5">
-                <div className="flex justify-between items-start mb-4">
-                  <h4 className="font-bold text-gray-700 text-sm uppercase">Sức khỏe Tài chính</h4>
-                  {metrics.realProfit > 0 ? <TrendingUp className="text-green-500" /> : <TrendingDown className="text-red-500" />}
-                </div>
-                <div className="space-y-3">
-                   <div className="flex justify-between items-baseline border-b border-dashed pb-2">
-                      <span className="text-sm text-gray-500">Lợi nhuận Kế toán</span>
-                      <span className="font-medium text-gray-800">{formatCurrency(metrics.accountingProfit)}</span>
-                   </div>
-                   <div className="bg-blue-50 rounded p-3 mt-2 border border-blue-100">
-                      <div className="flex justify-between items-baseline pb-1">
-                          <span className="text-sm text-blue-800 font-bold">Lợi nhuận Thực (Net)</span>
-                          <span className={`text-lg font-bold ${metrics.realProfit > 0 ? 'text-blue-600' : 'text-red-600'}`}>{formatCurrency(metrics.realProfit)}</span>
-                      </div>
-                      <div className="text-xs text-blue-600 flex justify-between">
-                          <span>Đã trừ:</span><span>Lãi {inputs.paymentDays} ngày + {inputs.riskProvision}% dự phòng</span>
-                      </div>
-                   </div>
-                </div>
-             </div>
+            // --- HÀM FORMAT ---
+            const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+            const formatPercent = (value) => new Intl.NumberFormat('vi-VN', { style: 'percent', minimumFractionDigits: 2 }).format(value / 100);
 
-             {/* Box 2: RISK & CAPITAL PRESERVATION (UPDATED WITH SEPARATION) */}
-             <div className={`rounded-xl shadow border p-5 ${metrics.warningLevel === 'CRITICAL' ? 'bg-red-50 border-red-200' : metrics.warningLevel === 'WARN' ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-200'}`}>
-                <div className="flex justify-between items-start mb-4">
-                  <h4 className={`font-bold text-sm uppercase ${metrics.warningLevel === 'SAFE' ? 'text-gray-700' : 'text-red-700'}`}>
-                     Vốn & Chi phí lưu kho
-                  </h4>
-                  {metrics.warningLevel === 'SAFE' ? <ShieldAlert className="text-gray-400" /> : <AlertTriangle className="text-red-600 animate-pulse" />}
-                </div>
+            // --- CORE ENGINE (MA TRẬN 3 LỚP) ---
+            useEffect(() => {
+                const {
+                quantity, sellPrice, historicalCost, replacementCost,
+                inventoryAge, interestRate, riskProvision, paymentDays,
+                customerRank
+                } = inputs;
 
-                <div className="space-y-4 divide-y divide-gray-200">
-                   
-                   {/* PHẦN 1: QUÁ KHỨ (Sunk Cost) */}
-                   <div className="pb-2">
-                      <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
-                             <History className="w-3 h-3" /> Lãi vay đã tiêu tốn (Đã mất)
-                          </span>
-                          <span className="font-bold text-red-600 text-sm">-{formatCurrency(metrics.sunkCost)}</span>
-                      </div>
-                      <div className="flex justify-between text-[10px] text-gray-400">
-                         <span>Chi phí giữ hàng {inputs.inventoryAge} tháng</span>
-                         <span className={metrics.sunkCostRatio > 5 ? 'text-purple-600 font-bold' : ''}>Tỷ lệ: {formatPercent(metrics.sunkCostRatio)} vốn gốc</span>
-                      </div>
-                      <div className="mt-1 text-[10px] text-red-400 italic">
-                         *Lưu ý: Giá nhôm tăng phải bù đắp được khoản lãi này.
-                      </div>
-                   </div>
+                // --- TÍNH TOÁN TÀI CHÍNH ---
+                const revenue = quantity * sellPrice;
+                const cogsHistory = quantity * historicalCost;
+                
+                // Lợi nhuận
+                const accountingProfit = revenue - cogsHistory;
+                const futureFinCost = revenue * (interestRate / 100 / 30 * paymentDays); 
+                const riskCost = revenue * (riskProvision / 100);
+                const realProfit = accountingProfit - futureFinCost - riskCost;
+                const realMargin = revenue > 0 ? (realProfit / revenue) * 100 : 0;
 
-                   {/* PHẦN 2: TƯƠNG LAI (Capital Preservation) */}
-                   <div className="pt-2">
-                      <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
-                             <Zap className="w-3 h-3" /> Rủi ro tái nhập hàng (Hao hụt vốn)
-                          </span>
-                          <span className={`text-sm font-bold ${metrics.capitalPreservationRatio > 5 ? 'text-red-700' : metrics.capitalPreservationRatio > 2 ? 'text-yellow-700' : 'text-green-700'}`}>
-                              {formatPercent(metrics.capitalPreservationRatio)}
-                          </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                          <div className={`h-full ${metrics.capitalPreservationRatio > 5 ? 'bg-red-600' : metrics.capitalPreservationRatio > 2 ? 'bg-yellow-500' : 'bg-green-500'}`} 
-                               style={{ width: `${Math.max(0, Math.min(metrics.capitalPreservationRatio * 10, 100))}%` }}></div>
-                      </div>
-                      <div className="text-[10px] text-right mt-1 opacity-70">
-                         Ngưỡng đỏ: &gt;5% | Ngưỡng vàng: 2-5%
-                      </div>
-                   </div>
+                // Sunk Cost (Holding Cost)
+                const sunkCost = cogsHistory * (interestRate / 100) * inventoryAge;
+                const sunkCostRatio = cogsHistory > 0 ? (sunkCost / cogsHistory) * 100 : 0;
 
-                </div>
-             </div>
-          </div>
+                // Vốn & Bảo toàn (Capital Preservation)
+                // Dương: Hao hụt (Mất sức mua). Âm: Tăng trưởng.
+                const capitalPreservationRatio = (1 - (sellPrice / replacementCost)) * 100; 
 
-          {/* 3. VISUALIZATION BARS */}
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-             <h4 className="text-xs font-bold text-gray-500 uppercase mb-6 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-blue-600" /> Trực quan hóa vị thế giá</h4>
-             <div className="relative h-12 bg-gray-100 rounded-full w-full flex items-center mt-4">
-                <div className="absolute h-8 w-1 bg-gray-400 top-2 z-10 transition-all duration-500" style={{ left: `${Math.min((inputs.historicalCost / (inputs.replacementCost * 1.2)) * 100, 100)}%` }}>
-                  <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 text-[10px] text-gray-500 font-bold whitespace-nowrap bg-white px-1 border rounded shadow-sm">Giá Vốn</div>
-                </div>
-                <div className="absolute h-14 w-1 bg-purple-500 -top-1 z-10 transition-all duration-500" style={{ left: `${Math.min((inputs.replacementCost / (inputs.replacementCost * 1.2)) * 100, 100)}%` }}>
-                   <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[10px] text-purple-700 font-bold whitespace-nowrap bg-purple-50 px-1 border border-purple-200 rounded shadow-sm">Giá Nhập Mới</div>
-                </div>
-                <div className="absolute h-5 w-5 bg-blue-600 rounded-full top-3.5 z-20 transition-all duration-500 shadow-lg border-2 border-white cursor-pointer group" style={{ left: `${Math.min((inputs.sellPrice / (inputs.replacementCost * 1.2)) * 100, 100)}%` }}>
-                   <div className="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded font-bold whitespace-nowrap shadow-md">
-                     Bạn bán
-                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-blue-600"></div>
-                   </div>
-                </div>
-             </div>
-             <div className="flex justify-between text-[10px] text-gray-400 mt-8 px-1"><span>0 đ</span><span>Thị trường (Tham chiếu)</span></div>
-          </div>
-          
-        </div>
-      </main>
-    </div>
-  );
-};
+                // --- LOGIC QUYẾT ĐỊNH 3 LỚP ---
+                
+                let status = '';
+                let recommendation = '';
+                let reason = '';
+                let warningLevel = '';
 
-export default PAKD_App;
+                // 1. Đánh giá mức độ hao hụt vốn
+                if (capitalPreservationRatio > 5) warningLevel = 'CRITICAL';
+                else if (capitalPreservationRatio >= 2) warningLevel = 'WARN';
+                else warningLevel = 'SAFE';
+
+                // 2. Logic Xử lý
+                const isStrategicClearance = inventoryAge > 6 || sunkCostRatio > 5;
+
+                // LỚP 1: CHIẾN LƯỢC XẢ HÀNG (Ưu tiên cao nhất)
+                if (isStrategicClearance) {
+                    status = 'PURPLE';
+                    recommendation = 'ƯU TIÊN XẢ HÀNG (CHIẾN LƯỢC)';
+                    reason = `BÁO ĐỘNG TÍM: Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay >5%. BẮT BUỘC BÁN để thu hồi tiền mặt bất chấp hao hụt vốn (${formatPercent(capitalPreservationRatio)}).`;
+                } 
+                else {
+                    // LỚP 2: KIỂM TRA LỢI NHUẬN (Theo khách hàng)
+                    let isProfitPass = false;
+                    let profitNote = '';
+
+                    if (customerRank === 'VIP' || customerRank === 'MEDIUM') {
+                        if (realMargin > 1.0) {
+                            isProfitPass = true;
+                            profitNote = `Lãi thực ${formatPercent(realMargin)} (Đạt)`;
+                        }
+                    } else {
+                        if (realMargin > 3.0) {
+                            isProfitPass = true;
+                            profitNote = `Lãi thực ${formatPercent(realMargin)} (Đạt)`;
+                        }
+                    }
+
+                    // LỚP 3: KIỂM TRA BẢO TOÀN VỐN (Chốt chặn cuối cùng)
+                    if (isProfitPass) {
+                        if (warningLevel === 'CRITICAL') { // Hụt > 5%
+                            status = 'RED_CAPITAL';
+                            recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)';
+                            reason = `${profitNote} NHƯNG bị chặn bởi Hao hụt vốn quá lớn (${formatPercent(capitalPreservationRatio)}). Bán xong không đủ tiền nhập lại hàng.`;
+                        } else if (warningLevel === 'WARN') { // Hụt 2-5%
+                            status = 'YELLOW_CAPITAL';
+                            recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (ĐÈN VÀNG)';
+                            reason = `${profitNote} nhưng Hao hụt vốn ${formatPercent(capitalPreservationRatio)} (2-5%). Yêu cầu: Thu tiền mặt ngay hoặc có kế hoạch nhập hàng bù giá thấp.`;
+                        } else { // Hụt < 2% (An toàn)
+                            status = 'GREEN';
+                            recommendation = 'DUYỆT NGAY (ĐÈN XANH)';
+                            reason = `${profitNote} & Bảo toàn vốn an toàn (${formatPercent(capitalPreservationRatio)} < 2%). Phương án kinh doanh bền vững.`;
+                        }
+                    } else {
+                        // Nếu Lợi nhuận đã không đạt
+                        if (realMargin >= 0 && (customerRank === 'VIP' || customerRank === 'MEDIUM')) {
+                            // Lãi mỏng (0-1%) với khách VIP
+                            if (warningLevel === 'CRITICAL') {
+                                status = 'RED_CAPITAL';
+                                recommendation = 'DỪNG LẠI (RỦI RO KÉP)';
+                                reason = `Lãi quá mỏng (${formatPercent(realMargin)}) VÀ Hao hụt vốn lớn. Không có lý do để duyệt.`;
+                            } else {
+                                status = 'YELLOW_APPROVE';
+                                recommendation = 'CÂN NHẮC (LÃI MỎNG)';
+                                reason = `Lãi thực thấp (${formatPercent(realMargin)}). Cần Sếp duyệt vì lý do giữ khách VIP.`;
+                            }
+                        } else {
+                            status = 'RED_STOP';
+                            recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)';
+                            reason = `Lợi nhuận thực (${formatPercent(realMargin)}) không đạt kỳ vọng của phân khúc khách hàng này.`;
+                        }
+                    }
+                }
+
+                setMetrics({
+                revenue, accountingProfit, realProfit, realMargin,
+                sunkCost, sunkCostRatio, capitalPreservationRatio,
+                status, recommendation, reason, warningLevel
+                });
+
+            }, [inputs]);
+
+            // --- UI HELPERS ---
+            const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setInputs(prev => ({ ...prev, [name]: parseFloat(value) || value }));
+            };
+
+            const getStatusStyle = (status) => {
+                switch (status) {
+                case 'GREEN': return 'bg-green-50 border-green-500 text-green-800';
+                case 'YELLOW_CAPITAL': return 'bg-yellow-50 border-yellow-500 text-yellow-900';
+                case 'YELLOW_APPROVE': return 'bg-yellow-50 border-yellow-500 text-yellow-800';
+                case 'PURPLE': return 'bg-purple-100 border-purple-600 text-purple-900 animate-pulse-slow';
+                case 'RED_CAPITAL': return 'bg-red-50 border-red-600 text-red-900';
+                case 'RED_STOP': return 'bg-red-50 border-red-500 text-red-800';
+                default: return 'bg-gray-50 border-gray-400 text-gray-700';
+                }
+            };
+
+            const getIcon = (status) => {
+                if (status === 'GREEN') return <CheckCircle className="w-12 h-12 text-green-600" />;
+                if (status === 'YELLOW_CAPITAL' || status === 'YELLOW_APPROVE') return <Award className="w-12 h-12 text-yellow-600" />;
+                if (status === 'PURPLE') return <Siren className="w-12 h-12 text-purple-600 animate-bounce" />;
+                if (status === 'RED_CAPITAL') return <ShieldAlert className="w-12 h-12 text-red-600" />;
+                return <XCircle className="w-12 h-12 text-red-600" />;
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12">
+                {/* HEADER */}
+                <header className="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
+                    <div className="max-w-7xl mx-auto px-4 py-4">
+                    <div className="flex flex-col md:flex-row justify-between items-center">
+                        <div>
+                        <h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2">
+                            <Calculator className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" />
+                            PAKD 4.0 - Thép H&D
+                        </h1>
+                        </div>
+                        <div className="mt-2 md:mt-0 bg-blue-800 px-3 py-1 rounded text-xs md:text-sm border border-blue-600">
+                        <span className="text-blue-300">Logic Final:</span> "Lợi nhuận + Tồn kho + Bảo toàn vốn"
+                        </div>
+                    </div>
+                    </div>
+                </header>
+
+                <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    
+                    {/* === LEFT COLUMN: INPUTS === */}
+                    <div className="lg:col-span-4 space-y-6">
+                    
+                    {/* 1. Hàng hóa */}
+                    <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                        <div className="bg-gray-100 px-5 py-3 border-b border-gray-200">
+                        <h2 className="font-bold text-gray-700 flex items-center gap-2 text-sm uppercase">
+                            <RefreshCcw className="w-4 h-4 text-blue-600" /> 1. Hàng hóa & Giá
+                        </h2>
+                        </div>
+                        <div className="p-5 space-y-3">
+                        <div>
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Tên Hàng</label>
+                            <input type="text" name="productName" value={inputs.productName} onChange={handleInputChange} className="w-full border rounded px-3 py-2 text-sm font-medium outline-none" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Khối Lượng (Kg)</label>
+                            <input type="number" name="quantity" value={inputs.quantity} onChange={handleInputChange} className="w-full border rounded px-3 py-2 text-sm font-mono" />
+                            </div>
+                            <div>
+                            <label className="text-xs font-semibold text-blue-600 uppercase">Giá Bán (VNĐ)</label>
+                            <input type="number" name="sellPrice" value={inputs.sellPrice} onChange={handleInputChange} className="w-full border-2 border-blue-500 rounded px-3 py-2 text-sm font-bold text-blue-700" />
+                            </div>
+                        </div>
+                        <div className="pt-2 border-t border-dashed border-gray-200 space-y-2">
+                            <div className="flex justify-between items-center">
+                            <label className="text-xs text-gray-600">Giá Vốn Lịch Sử</label>
+                            <input type="number" name="historicalCost" value={inputs.historicalCost} onChange={handleInputChange} className="w-24 border bg-gray-50 text-right px-2 py-1 text-xs rounded" />
+                            </div>
+                            <div className="flex justify-between items-center">
+                            <label className="text-xs text-purple-700 font-bold">Giá Nhập Mới</label>
+                            <input type="number" name="replacementCost" value={inputs.replacementCost} onChange={handleInputChange} className="w-24 border border-purple-300 bg-purple-50 text-purple-800 font-bold text-right px-2 py-1 text-xs rounded" />
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Khách hàng */}
+                    <div className="bg-white rounded-xl shadow-md border border-blue-200 overflow-hidden relative">
+                        <div className="bg-blue-50 px-5 py-3 border-b border-blue-100">
+                        <h2 className="font-bold text-blue-800 flex items-center gap-2 text-sm uppercase">
+                            <Users className="w-4 h-4" /> 2. Thông tin Khách hàng
+                        </h2>
+                        </div>
+                        <div className="p-5 space-y-3 relative z-10">
+                        <div>
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Tên Khách Hàng</label>
+                            <input type="text" name="customerName" value={inputs.customerName} onChange={e => setInputs({...inputs, customerName: e.target.value})} className="w-full border rounded px-3 py-2 text-sm font-medium" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs font-semibold text-gray-500 uppercase">Phân Hạng</label>
+                                <select name="customerRank" value={inputs.customerRank} onChange={e => setInputs({...inputs, customerRank: e.target.value})} className={`w-full border rounded px-2 py-2 text-sm font-bold outline-none ${inputs.customerRank === 'VIP' ? 'text-yellow-600 border-yellow-400 bg-yellow-50' : 'text-gray-700'}`}>
+                                <option value="VIP">★ VIP / Sản xuất</option>
+                                <option value="MEDIUM">Thân thiết</option>
+                                <option value="SMALL">Vãng lai / Lẻ</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs font-semibold text-gray-500 uppercase">Tần Suất</label>
+                                <select name="buyFrequency" value={inputs.buyFrequency} onChange={e => setInputs({...inputs, buyFrequency: e.target.value})} className="w-full border rounded px-2 py-2 text-sm outline-none">
+                                <option value="REGULAR">Đều đặn</option>
+                                <option value="WALKIN">Vãng lai</option>
+                                </select>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    {/* 3. Thanh toán & Rủi ro */}
+                    <div className="bg-white rounded-xl shadow-md border border-orange-200 overflow-hidden">
+                        <div className="bg-orange-50 px-5 py-3 border-b border-orange-200">
+                        <h2 className="font-bold text-orange-800 flex items-center gap-2 text-sm uppercase">
+                            <ShieldAlert className="w-4 h-4" /> 3. Thanh toán & Rủi ro
+                        </h2>
+                        </div>
+                        <div className="p-5 grid grid-cols-2 gap-3">
+                            <div className="space-y-3">
+                            <div>
+                                <label className="text-xs font-bold text-gray-600 block flex items-center gap-1"><CreditCard className="w-3 h-3" /> Công nợ (Ngày)</label>
+                                <input type="number" name="paymentDays" value={inputs.paymentDays} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1 focus:border-orange-500" />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-600 block flex items-center gap-1"><Clock className="w-3 h-3" /> Tuổi kho (Tháng)</label>
+                                <input type="number" name="inventoryAge" value={inputs.inventoryAge} onChange={handleInputChange} className={`w-full border rounded px-2 py-1.5 text-sm mt-1 ${inputs.inventoryAge > 6 ? 'bg-purple-100 text-purple-800 font-bold border-purple-400' : ''}`} />
+                            </div>
+                            </div>
+                            <div className="space-y-3">
+                            <div>
+                                <label className="text-xs font-bold text-gray-600 block flex items-center gap-1"><Percent className="w-3 h-3" /> Dự phòng (%)</label>
+                                <input type="number" name="riskProvision" step="0.1" value={inputs.riskProvision} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1 focus:border-orange-500 bg-yellow-50" />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-600 block">Lãi nội bộ (%)</label>
+                                <input type="number" name="interestRate" step="0.01" value={inputs.interestRate} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" />
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+
+                    {/* === RIGHT COLUMN: DASHBOARD === */}
+                    <div className="lg:col-span-8 space-y-6">
+                    
+                    {/* 1. DECISION MATRIX */}
+                    <div className={`rounded-xl shadow-lg border-2 overflow-hidden transition-all duration-300 ${getStatusStyle(metrics.status)}`}>
+                        <div className="p-6 flex flex-col md:flex-row items-center gap-6">
+                        <div className="flex-shrink-0">{getIcon(metrics.status)}</div>
+                        <div className="flex-1 text-center md:text-left">
+                            <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Hệ thống khuyến nghị:</div>
+                            <h3 className="text-2xl font-bold mb-2 uppercase tracking-tight">{metrics.recommendation}</h3>
+                            <div className="text-sm md:text-base font-medium opacity-90 space-y-1"><p>➤ {metrics.reason}</p></div>
+                        </div>
+                        <div className="hidden md:block border-l border-current opacity-30 h-16 mx-2"></div>
+                        <div className="hidden md:block text-right min-w-[120px]">
+                            <div className="text-xs uppercase opacity-70 mb-1">Dự báo Lãi/Lỗ</div>
+                            <div className={`text-2xl font-bold ${metrics.realMargin > 0 ? '' : 'text-red-700'}`}>{formatPercent(metrics.realMargin)}</div>
+                            <div className="text-xs font-medium">Margin Thực</div>
+                        </div>
+                        </div>
+                        <div className="h-1 w-full bg-black/10"><div className="h-full bg-current opacity-30 w-full animate-pulse"></div></div>
+                    </div>
+
+                    {/* 2. CONTEXT ANALYSIS */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        {/* Box 1: Financial Health */}
+                        <div className="bg-white rounded-xl shadow border border-gray-200 p-5">
+                            <div className="flex justify-between items-start mb-4">
+                            <h4 className="font-bold text-gray-700 text-sm uppercase">Sức khỏe Tài chính</h4>
+                            {metrics.realProfit > 0 ? <TrendingUp className="text-green-500" /> : <TrendingDown className="text-red-500" />}
+                            </div>
+                            <div className="space-y-3">
+                            <div className="flex justify-between items-baseline border-b border-dashed pb-2">
+                                <span className="text-sm text-gray-500">Lợi nhuận Kế toán</span>
+                                <span className="font-medium text-gray-800">{formatCurrency(metrics.accountingProfit)}</span>
+                            </div>
+                            <div className="bg-blue-50 rounded p-3 mt-2 border border-blue-100">
+                                <div className="flex justify-between items-baseline pb-1">
+                                    <span className="text-sm text-blue-800 font-bold">Lợi nhuận Thực (Net)</span>
+                                    <span className={`text-lg font-bold ${metrics.realProfit > 0 ? 'text-blue-600' : 'text-red-600'}`}>{formatCurrency(metrics.realProfit)}</span>
+                                </div>
+                                <div className="text-xs text-blue-600 flex justify-between">
+                                    <span>Đã trừ:</span><span>Lãi {inputs.paymentDays} ngày + {inputs.riskProvision}% dự phòng</span>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+
+                        {/* Box 2: RISK & CAPITAL PRESERVATION (UPDATED WITH SEPARATION) */}
+                        <div className={`rounded-xl shadow border p-5 ${metrics.warningLevel === 'CRITICAL' ? 'bg-red-50 border-red-200' : metrics.warningLevel === 'WARN' ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-200'}`}>
+                            <div className="flex justify-between items-start mb-4">
+                            <h4 className={`font-bold text-sm uppercase ${metrics.warningLevel === 'SAFE' ? 'text-gray-700' : 'text-red-700'}`}>
+                                Vốn & Chi phí lưu kho
+                            </h4>
+                            {metrics.warningLevel === 'SAFE' ? <ShieldAlert className="text-gray-400" /> : <AlertTriangle className="text-red-600 animate-pulse" />}
+                            </div>
+
+                            <div className="space-y-4 divide-y divide-gray-200">
+                            
+                            {/* PHẦN 1: QUÁ KHỨ (Sunk Cost) */}
+                            <div className="pb-2">
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
+                                        <History className="w-3 h-3" /> Lãi vay đã tiêu tốn (Đã mất)
+                                    </span>
+                                    <span className="font-bold text-red-600 text-sm">-{formatCurrency(metrics.sunkCost)}</span>
+                                </div>
+                                <div className="flex justify-between text-[10px] text-gray-400">
+                                    <span>Chi phí giữ hàng {inputs.inventoryAge} tháng</span>
+                                    <span className={metrics.sunkCostRatio > 5 ? 'text-purple-600 font-bold' : ''}>Tỷ lệ: {formatPercent(metrics.sunkCostRatio)} vốn gốc</span>
+                                </div>
+                                <div className="mt-1 text-[10px] text-red-400 italic">
+                                    *Lưu ý: Giá nhôm tăng phải bù đắp được khoản lãi này.
+                                </div>
+                            </div>
+
+                            {/* PHẦN 2: TƯƠNG LAI (Capital Preservation) */}
+                            <div className="pt-2">
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
+                                        <Zap className="w-3 h-3" /> Rủi ro tái nhập hàng (Hao hụt vốn)
+                                    </span>
+                                    <span className={`text-sm font-bold ${metrics.capitalPreservationRatio > 5 ? 'text-red-700' : metrics.capitalPreservationRatio > 2 ? 'text-yellow-700' : 'text-green-700'}`}>
+                                        {formatPercent(metrics.capitalPreservationRatio)}
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                    <div className={`h-full ${metrics.capitalPreservationRatio > 5 ? 'bg-red-600' : metrics.capitalPreservationRatio > 2 ? 'bg-yellow-500' : 'bg-green-500'}`} 
+                                        style={{ width: `${Math.max(0, Math.min(metrics.capitalPreservationRatio * 10, 100))}%` }}></div>
+                                </div>
+                                <div className="text-[10px] text-right mt-1 opacity-70">
+                                    Ngưỡng đỏ: &gt;5% | Ngưỡng vàng: 2-5%
+                                </div>
+                            </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. VISUALIZATION BARS */}
+                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                        <h4 className="text-xs font-bold text-gray-500 uppercase mb-6 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-blue-600" /> Trực quan hóa vị thế giá</h4>
+                        <div className="relative h-12 bg-gray-100 rounded-full w-full flex items-center mt-4">
+                            <div className="absolute h-8 w-1 bg-gray-400 top-2 z-10 transition-all duration-500" style={{ left: `${Math.min((inputs.historicalCost / (inputs.replacementCost * 1.2)) * 100, 100)}%` }}>
+                            <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 text-[10px] text-gray-500 font-bold whitespace-nowrap bg-white px-1 border rounded shadow-sm">Giá Vốn</div>
+                            </div>
+                            <div className="absolute h-14 w-1 bg-purple-500 -top-1 z-10 transition-all duration-500" style={{ left: `${Math.min((inputs.replacementCost / (inputs.replacementCost * 1.2)) * 100, 100)}%` }}>
+                            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[10px] text-purple-700 font-bold whitespace-nowrap bg-purple-50 px-1 border border-purple-200 rounded shadow-sm">Giá Nhập Mới</div>
+                            </div>
+                            <div className="absolute h-5 w-5 bg-blue-600 rounded-full top-3.5 z-20 transition-all duration-500 shadow-lg border-2 border-white cursor-pointer group" style={{ left: `${Math.min((inputs.sellPrice / (inputs.replacementCost * 1.2)) * 100, 100)}%` }}>
+                            <div className="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded font-bold whitespace-nowrap shadow-md">
+                                Bạn bán
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-blue-600"></div>
+                            </div>
+                            </div>
+                        </div>
+                        <div className="flex justify-between text-[10px] text-gray-400 mt-8 px-1"><span>0 đ</span><span>Thị trường (Tham chiếu)</span></div>
+                    </div>
+                    
+                    </div>
+                </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<PAKD_App />);
+    </script>
+</body>
+</html>
