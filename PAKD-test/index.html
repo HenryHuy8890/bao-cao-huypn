@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAKD 4.0 - Thép H&D</title>
+    <title>PAKD 6.0 - Thép H&D</title>
     
     <!-- 1. Thư viện React & ReactDOM (Phiên bản chạy trực tiếp trên trình duyệt) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -35,7 +35,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- KHAI BÁO ICONS (Thay thế Lucide-React bằng SVG trực tiếp để chạy không cần cài đặt) ---
+        // --- KHAI BÁO ICONS ---
         const IconBase = ({ d, className, color }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={{color: color}}>
                 <path d={d} />
@@ -45,7 +45,7 @@
         // Các Icons cụ thể
         const Calculator = (props) => <IconBase {...props} d="M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z M16 7h-6 M8 11h.01 M12 11h.01 M16 11h.01 M8 15h.01 M12 15h.01 M16 15h.01" />;
         const AlertTriangle = (props) => <IconBase {...props} d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01" />;
-        const TrendingUp = (props) => <IconBase {...props} d="M23 6l-9.5 9.5-5-5L1 18" />; // Simplified path for demo
+        const TrendingUp = (props) => <IconBase {...props} d="M23 6l-9.5 9.5-5-5L1 18" />;
         const TrendingDown = (props) => <IconBase {...props} d="M23 18l-9.5-9.5-5 5L1 6" />;
         const Clock = (props) => <IconBase {...props} d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2" />;
         const CheckCircle = (props) => <IconBase {...props} d="M22 11.08V12a10 10 0 1 1-5.93-9.14 M22 4L12 14.01l-3-3" />;
@@ -53,12 +53,13 @@
         const RefreshCcw = (props) => <IconBase {...props} d="M3 2v6h6 M21 12A9 9 0 0 0 6 5.3L3 8 M21 22v-6h-6 M3 12a9 9 0 0 0 15 6.7l3-2.7" />;
         const ShieldAlert = (props) => <IconBase {...props} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M12 8v4 M12 16h.01" />;
         const Users = (props) => <IconBase {...props} d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M16 3.13a4 4 0 0 1 0 7.75 M23 21v-2a4 4 0 0 0-3-3.87" />;
-        const Award = (props) => <IconBase {...props} d="M12 15l-2 5l2 5l2-5l2-5 M12 8a6 6 0 1 0 0-12a6 6 0 0 0 0 12z" />; // Simplified
-        const Siren = (props) => <IconBase {...props} d="M7 18v-6a5 5 0 1 1 10 0v6 M5 21h14 M12 3v2" />; // Simplified
+        const Award = (props) => <IconBase {...props} d="M12 15l-2 5l2 5l2-5l2-5 M12 8a6 6 0 1 0 0-12a6 6 0 0 0 0 12z" />;
+        const Siren = (props) => <IconBase {...props} d="M7 18v-6a5 5 0 1 1 10 0v6 M5 21h14 M12 3v2" />;
         const CreditCard = (props) => <IconBase {...props} d="M1 4h22v16H1z M1 10h22" />;
         const Percent = (props) => <IconBase {...props} d="M19 5L5 19 M6.5 6.5h.01 M17.5 17.5h.01" />;
         const History = (props) => <IconBase {...props} d="M3 3v5h5 M3.05 13A9 9 0 1 0 6 5.3L3 8" />;
         const Zap = (props) => <IconBase {...props} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />;
+        const Layers = (props) => <IconBase {...props} d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />;
 
         // --- APP LOGIC CHÍNH ---
         const PAKD_App = () => {
@@ -67,47 +68,44 @@
                 // 1. Hàng hóa & Giá
                 productName: 'Nhôm cuộn A3003',
                 quantity: 1000, // kg
-                sellPrice: 101000,
-                historicalCost: 91000,
-                replacementCost: 110000,
-                competitorPrice: 105000,
+                sellPrice: 95000, // Giá ví dụ cho trường hợp Down-trend
+                historicalCost: 100000, // Giá vốn cao
+                replacementCost: 90000, // Giá nhập lại thấp
+                competitorPrice: 94000,
                 
                 // 2. Thông tin Khách hàng
                 customerName: 'Butraco',
-                customerRevenue2025: 1.3, // Tỷ đồng
-                customerRank: 'VIP', // VIP, MEDIUM, SMALL
-                buyFrequency: 'REGULAR', // REGULAR (Đều), WALKIN (Vãng lai)
+                customerRevenue2025: 1.3,
+                customerRank: 'VIP',
+                buyFrequency: 'REGULAR',
 
                 // 3. Rủi ro & Chi phí
-                inventoryAge: 7, // tháng
-                interestRate: 0.63, // %/tháng
-                riskProvision: 1.5, // % (Dự phòng ẩn)
-                paymentDays: 30, // Ngày công nợ
+                inventoryAge: 2, 
+                interestRate: 0.63,
+                riskProvision: 1.5,
+                paymentDays: 30,
             });
 
             const [metrics, setMetrics] = useState({
                 revenue: 0,
                 accountingProfit: 0,
-                accountingMargin: 0,
                 realProfit: 0,
                 realMargin: 0,
-                replacementGap: 0,
                 sunkCost: 0,
                 sunkCostRatio: 0,
-                capitalPreservationRatio: 0,
+                volumeChangeRatio: 0, // Đổi tên biến cho đúng nghĩa
                 
-                // Kết quả ra quyết định
                 status: 'RED', 
                 recommendation: '',
                 reason: '',
-                warningLevel: '' // SAFE, WARN, CRITICAL
+                warningLevel: '' // SAFE, WARN, CRITICAL, GROWTH
             });
 
             // --- HÀM FORMAT ---
             const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
             const formatPercent = (value) => new Intl.NumberFormat('vi-VN', { style: 'percent', minimumFractionDigits: 2 }).format(value / 100);
 
-            // --- CORE ENGINE (MA TRẬN 3 LỚP) ---
+            // --- CORE ENGINE (MA TRẬN 6.0) ---
             useEffect(() => {
                 const {
                 quantity, sellPrice, historicalCost, replacementCost,
@@ -126,91 +124,94 @@
                 const realProfit = accountingProfit - futureFinCost - riskCost;
                 const realMargin = revenue > 0 ? (realProfit / revenue) * 100 : 0;
 
-                // Sunk Cost (Holding Cost)
+                // Sunk Cost
                 const sunkCost = cogsHistory * (interestRate / 100) * inventoryAge;
                 const sunkCostRatio = cogsHistory > 0 ? (sunkCost / cogsHistory) * 100 : 0;
 
-                // Vốn & Bảo toàn (Capital Preservation)
-                // Dương: Hao hụt (Mất sức mua). Âm: Tăng trưởng.
-                const capitalPreservationRatio = (1 - (sellPrice / replacementCost)) * 100; 
+                // Thay đổi Vốn Hiện vật (Capital/Volume Change)
+                // Dương: Mất hàng (Hao hụt). 
+                // Âm: Thêm hàng (Lãi quy mô).
+                const volumeChangeRatio = (1 - (sellPrice / replacementCost)) * 100; 
 
-                // --- LOGIC QUYẾT ĐỊNH 3 LỚP ---
+                // --- LOGIC QUYẾT ĐỊNH ---
                 
                 let status = '';
                 let recommendation = '';
                 let reason = '';
                 let warningLevel = '';
 
-                // 1. Đánh giá mức độ hao hụt vốn
-                if (capitalPreservationRatio > 5) warningLevel = 'CRITICAL';
-                else if (capitalPreservationRatio >= 2) warningLevel = 'WARN';
-                else warningLevel = 'SAFE';
+                // 1. Đánh giá Thay đổi Vốn Hiện vật
+                if (volumeChangeRatio > 5) warningLevel = 'CRITICAL'; // Mất > 5% hàng
+                else if (volumeChangeRatio >= 2) warningLevel = 'WARN'; // Mất 2-5% hàng
+                else if (volumeChangeRatio < -2) warningLevel = 'GROWTH'; // Lãi > 2% hàng (Tốt)
+                else warningLevel = 'SAFE'; // Ổn định (-2% đến 2%)
 
-                // 2. Logic Xử lý
+                // 2. Logic Xử lý 6.0
                 const isStrategicClearance = inventoryAge > 6 || sunkCostRatio > 5;
 
-                // LỚP 1: CHIẾN LƯỢC XẢ HÀNG (Ưu tiên cao nhất)
+                // ƯU TIÊN 1: CHIẾN LƯỢC XẢ HÀNG (TỒN LÂU)
                 if (isStrategicClearance) {
                     status = 'PURPLE';
-                    recommendation = 'ƯU TIÊN XẢ HÀNG (CHIẾN LƯỢC)';
-                    reason = `BÁO ĐỘNG TÍM: Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay >5%. BẮT BUỘC BÁN để thu hồi tiền mặt bất chấp hao hụt vốn (${formatPercent(capitalPreservationRatio)}).`;
+                    recommendation = 'ƯU TIÊN XẢ HÀNG (CẮT LỖ)';
+                    reason = `BÁO ĐỘNG TÍM: Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay >5%. BẮT BUỘC BÁN để thu hồi tiền mặt bất chấp mọi chỉ số khác.`;
                 } 
                 else {
-                    // LỚP 2: KIỂM TRA LỢI NHUẬN (Theo khách hàng)
-                    let isProfitPass = false;
-                    let profitNote = '';
-
-                    if (customerRank === 'VIP' || customerRank === 'MEDIUM') {
-                        if (realMargin > 1.0) {
-                            isProfitPass = true;
-                            profitNote = `Lãi thực ${formatPercent(realMargin)} (Đạt)`;
-                        }
-                    } else {
-                        if (realMargin > 3.0) {
-                            isProfitPass = true;
-                            profitNote = `Lãi thực ${formatPercent(realMargin)} (Đạt)`;
-                        }
+                    // ƯU TIÊN 2: CHIẾN LƯỢC TÍCH SẢN (DOWN-TREND) - ĐÈN XANH DƯƠNG
+                    // Đk: Lỗ kế toán NHƯNG Lãi quy mô > 2% (volumeChangeRatio < -2)
+                    if (sellPrice < historicalCost && warningLevel === 'GROWTH') {
+                        status = 'BLUE';
+                        recommendation = 'CƠ CẤU LẠI VỐN (BLUE)';
+                        reason = `Lỗ kế toán nhưng LÃI QUY MÔ ${formatPercent(Math.abs(volumeChangeRatio))}. Bán xong mua lại được nhiều hàng hơn để hạ giá vốn bình quân (Down-trend).`;
                     }
+                    else {
+                        // ƯU TIÊN 3: CHIẾN LƯỢC LỢI NHUẬN (BÌNH THƯỜNG)
+                        let isProfitPass = false;
+                        let profitNote = '';
 
-                    // LỚP 3: KIỂM TRA BẢO TOÀN VỐN (Chốt chặn cuối cùng)
-                    if (isProfitPass) {
-                        if (warningLevel === 'CRITICAL') { // Hụt > 5%
-                            status = 'RED_CAPITAL';
-                            recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)';
-                            reason = `${profitNote} NHƯNG bị chặn bởi Hao hụt vốn quá lớn (${formatPercent(capitalPreservationRatio)}). Bán xong không đủ tiền nhập lại hàng.`;
-                        } else if (warningLevel === 'WARN') { // Hụt 2-5%
-                            status = 'YELLOW_CAPITAL';
-                            recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (ĐÈN VÀNG)';
-                            reason = `${profitNote} nhưng Hao hụt vốn ${formatPercent(capitalPreservationRatio)} (2-5%). Yêu cầu: Thu tiền mặt ngay hoặc có kế hoạch nhập hàng bù giá thấp.`;
-                        } else { // Hụt < 2% (An toàn)
-                            status = 'GREEN';
-                            recommendation = 'DUYỆT NGAY (ĐÈN XANH)';
-                            reason = `${profitNote} & Bảo toàn vốn an toàn (${formatPercent(capitalPreservationRatio)} < 2%). Phương án kinh doanh bền vững.`;
+                        if (customerRank === 'VIP' || customerRank === 'MEDIUM') {
+                            if (realMargin > 1.0) { isProfitPass = true; profitNote = `Lãi thực ${formatPercent(realMargin)} (Đạt)`; }
+                        } else {
+                            if (realMargin > 3.0) { isProfitPass = true; profitNote = `Lãi thực ${formatPercent(realMargin)} (Đạt)`; }
                         }
-                    } else {
-                        // Nếu Lợi nhuận đã không đạt
-                        if (realMargin >= 0 && (customerRank === 'VIP' || customerRank === 'MEDIUM')) {
-                            // Lãi mỏng (0-1%) với khách VIP
-                            if (warningLevel === 'CRITICAL') {
+
+                        if (isProfitPass) {
+                            if (warningLevel === 'CRITICAL') { 
                                 status = 'RED_CAPITAL';
-                                recommendation = 'DỪNG LẠI (RỦI RO KÉP)';
-                                reason = `Lãi quá mỏng (${formatPercent(realMargin)}) VÀ Hao hụt vốn lớn. Không có lý do để duyệt.`;
-                            } else {
-                                status = 'YELLOW_APPROVE';
-                                recommendation = 'CÂN NHẮC (LÃI MỎNG)';
-                                reason = `Lãi thực thấp (${formatPercent(realMargin)}). Cần Sếp duyệt vì lý do giữ khách VIP.`;
+                                recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)';
+                                reason = `${profitNote} NHƯNG bị chặn bởi Mất hàng quá lớn (${formatPercent(volumeChangeRatio)}). Bán xong kho hàng bị teo tóp.`;
+                            } else if (warningLevel === 'WARN') {
+                                status = 'YELLOW_CAPITAL';
+                                recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (VÀNG)';
+                                reason = `${profitNote} nhưng Mất hàng ${formatPercent(volumeChangeRatio)} (2-5%). Yêu cầu: Thu tiền mặt ngay hoặc có kế hoạch nhập bù.`;
+                            } else { 
+                                status = 'GREEN';
+                                recommendation = 'DUYỆT NGAY (XANH LÁ)';
+                                reason = `${profitNote} & Bảo toàn vốn an toàn. Phương án chuẩn mực trong Up-trend/Sideway.`;
                             }
                         } else {
-                            status = 'RED_STOP';
-                            recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)';
-                            reason = `Lợi nhuận thực (${formatPercent(realMargin)}) không đạt kỳ vọng của phân khúc khách hàng này.`;
+                            // Lãi không đạt
+                            if (realMargin >= 0 && (customerRank === 'VIP' || customerRank === 'MEDIUM')) {
+                                if (warningLevel === 'CRITICAL') {
+                                    status = 'RED_CAPITAL';
+                                    recommendation = 'DỪNG LẠI (RỦI RO KÉP)';
+                                    reason = `Lãi quá mỏng & Mất vốn lớn. Không duyệt.`;
+                                } else {
+                                    status = 'YELLOW_APPROVE';
+                                    recommendation = 'CÂN NHẮC (LÃI MỎNG)';
+                                    reason = `Lãi thực thấp (${formatPercent(realMargin)}). Cần Sếp duyệt vì lý do giữ khách VIP.`;
+                                }
+                            } else {
+                                status = 'RED_STOP';
+                                recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)';
+                                reason = `Lợi nhuận thực (${formatPercent(realMargin)}) không đạt kỳ vọng & không thuộc diện tích sản/xả hàng.`;
+                            }
                         }
                     }
                 }
 
                 setMetrics({
                 revenue, accountingProfit, realProfit, realMargin,
-                sunkCost, sunkCostRatio, capitalPreservationRatio,
+                sunkCost, sunkCostRatio, volumeChangeRatio,
                 status, recommendation, reason, warningLevel
                 });
 
@@ -225,20 +226,21 @@
             const getStatusStyle = (status) => {
                 switch (status) {
                 case 'GREEN': return 'bg-green-50 border-green-500 text-green-800';
-                case 'YELLOW_CAPITAL': return 'bg-yellow-50 border-yellow-500 text-yellow-900';
+                case 'BLUE': return 'bg-blue-50 border-blue-500 text-blue-800'; // Style mới cho Blue
+                case 'YELLOW_CAPITAL': 
                 case 'YELLOW_APPROVE': return 'bg-yellow-50 border-yellow-500 text-yellow-800';
                 case 'PURPLE': return 'bg-purple-100 border-purple-600 text-purple-900 animate-pulse-slow';
-                case 'RED_CAPITAL': return 'bg-red-50 border-red-600 text-red-900';
-                case 'RED_STOP': return 'bg-red-50 border-red-500 text-red-800';
-                default: return 'bg-gray-50 border-gray-400 text-gray-700';
+                case 'RED_CAPITAL': 
+                case 'RED_STOP': 
+                default: return 'bg-red-50 border-red-500 text-red-800';
                 }
             };
 
             const getIcon = (status) => {
                 if (status === 'GREEN') return <CheckCircle className="w-12 h-12 text-green-600" />;
-                if (status === 'YELLOW_CAPITAL' || status === 'YELLOW_APPROVE') return <Award className="w-12 h-12 text-yellow-600" />;
+                if (status === 'BLUE') return <Layers className="w-12 h-12 text-blue-600" />; // Icon mới cho Blue
+                if (status.includes('YELLOW')) return <Award className="w-12 h-12 text-yellow-600" />;
                 if (status === 'PURPLE') return <Siren className="w-12 h-12 text-purple-600 animate-bounce" />;
-                if (status === 'RED_CAPITAL') return <ShieldAlert className="w-12 h-12 text-red-600" />;
                 return <XCircle className="w-12 h-12 text-red-600" />;
             };
 
@@ -251,11 +253,11 @@
                         <div>
                         <h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2">
                             <Calculator className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" />
-                            PAKD 4.0 - Thép H&D
+                            PAKD 6.0 - Thép H&D
                         </h1>
                         </div>
                         <div className="mt-2 md:mt-0 bg-blue-800 px-3 py-1 rounded text-xs md:text-sm border border-blue-600">
-                        <span className="text-blue-300">Logic Final:</span> "Lợi nhuận + Tồn kho + Bảo toàn vốn"
+                        <span className="text-blue-300">Logic 6.0:</span> "Tích sản trong Down-trend"
                         </div>
                     </div>
                     </div>
@@ -413,50 +415,59 @@
                             </div>
                         </div>
 
-                        {/* Box 2: RISK & CAPITAL PRESERVATION (UPDATED WITH SEPARATION) */}
-                        <div className={`rounded-xl shadow border p-5 ${metrics.warningLevel === 'CRITICAL' ? 'bg-red-50 border-red-200' : metrics.warningLevel === 'WARN' ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-200'}`}>
+                        {/* Box 2: VOLUME & CAPITAL (Updated Logic) */}
+                        <div className={`rounded-xl shadow border p-5 ${metrics.warningLevel === 'CRITICAL' ? 'bg-red-50 border-red-200' : metrics.warningLevel === 'GROWTH' ? 'bg-blue-50 border-blue-200' : metrics.warningLevel === 'WARN' ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-200'}`}>
                             <div className="flex justify-between items-start mb-4">
-                            <h4 className={`font-bold text-sm uppercase ${metrics.warningLevel === 'SAFE' ? 'text-gray-700' : 'text-red-700'}`}>
-                                Vốn & Chi phí lưu kho
+                            <h4 className={`font-bold text-sm uppercase ${metrics.warningLevel === 'GROWTH' ? 'text-blue-700' : metrics.warningLevel === 'SAFE' ? 'text-gray-700' : 'text-red-700'}`}>
+                                Vốn & Hiện Vật
                             </h4>
-                            {metrics.warningLevel === 'SAFE' ? <ShieldAlert className="text-gray-400" /> : <AlertTriangle className="text-red-600 animate-pulse" />}
+                            {metrics.warningLevel === 'GROWTH' ? <Zap className="text-blue-600" /> : metrics.warningLevel === 'SAFE' ? <ShieldAlert className="text-gray-400" /> : <AlertTriangle className="text-red-600 animate-pulse" />}
                             </div>
 
                             <div className="space-y-4 divide-y divide-gray-200">
                             
-                            {/* PHẦN 1: QUÁ KHỨ (Sunk Cost) */}
+                            {/* PHẦN 1: QUÁ KHỨ */}
                             <div className="pb-2">
                                 <div className="flex justify-between items-center mb-1">
                                     <span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
-                                        <History className="w-3 h-3" /> Lãi vay đã tiêu tốn (Đã mất)
+                                        <History className="w-3 h-3" /> Lãi vay đã mất
                                     </span>
                                     <span className="font-bold text-red-600 text-sm">-{formatCurrency(metrics.sunkCost)}</span>
                                 </div>
-                                <div className="flex justify-between text-[10px] text-gray-400">
-                                    <span>Chi phí giữ hàng {inputs.inventoryAge} tháng</span>
-                                    <span className={metrics.sunkCostRatio > 5 ? 'text-purple-600 font-bold' : ''}>Tỷ lệ: {formatPercent(metrics.sunkCostRatio)} vốn gốc</span>
-                                </div>
-                                <div className="mt-1 text-[10px] text-red-400 italic">
-                                    *Lưu ý: Giá nhôm tăng phải bù đắp được khoản lãi này.
+                                <div className="text-[10px] text-right text-gray-400">
+                                    Tích lũy: {formatPercent(metrics.sunkCostRatio)} vốn gốc
                                 </div>
                             </div>
 
-                            {/* PHẦN 2: TƯƠNG LAI (Capital Preservation) */}
+                            {/* PHẦN 2: TƯƠNG LAI (Capital/Volume Change) */}
                             <div className="pt-2">
                                 <div className="flex justify-between items-center mb-1">
                                     <span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
-                                        <Zap className="w-3 h-3" /> Rủi ro tái nhập hàng (Hao hụt vốn)
+                                        <Layers className="w-3 h-3" /> Thay đổi Vốn Hiện vật
                                     </span>
-                                    <span className={`text-sm font-bold ${metrics.capitalPreservationRatio > 5 ? 'text-red-700' : metrics.capitalPreservationRatio > 2 ? 'text-yellow-700' : 'text-green-700'}`}>
-                                        {formatPercent(metrics.capitalPreservationRatio)}
+                                    <span className={`text-sm font-bold ${metrics.volumeChangeRatio > 0 ? 'text-red-600' : 'text-blue-600'}`}>
+                                        {metrics.volumeChangeRatio > 0 ? '-' : '+'}{formatPercent(Math.abs(metrics.volumeChangeRatio))}
                                     </span>
                                 </div>
-                                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                                    <div className={`h-full ${metrics.capitalPreservationRatio > 5 ? 'bg-red-600' : metrics.capitalPreservationRatio > 2 ? 'bg-yellow-500' : 'bg-green-500'}`} 
-                                        style={{ width: `${Math.max(0, Math.min(metrics.capitalPreservationRatio * 10, 100))}%` }}></div>
+                                {/* Bar Visual: Left (Growth/Blue) | Center | Right (Loss/Red) */}
+                                <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden">
+                                    {/* Mốc 0 ở giữa */}
+                                    <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-400 z-10"></div>
+                                    
+                                    {/* Thanh hiển thị */}
+                                    {metrics.volumeChangeRatio > 0 ? (
+                                        // Dương -> Mất hàng -> Vẽ sang phải (Màu Đỏ/Vàng)
+                                        <div className={`absolute top-0 bottom-0 left-1/2 ${metrics.volumeChangeRatio > 5 ? 'bg-red-500' : 'bg-yellow-500'}`} 
+                                             style={{ width: `${Math.min(metrics.volumeChangeRatio * 5, 50)}%` }}></div>
+                                    ) : (
+                                        // Âm -> Được hàng -> Vẽ sang trái (Màu Xanh Dương)
+                                        <div className="absolute top-0 bottom-0 right-1/2 bg-blue-500" 
+                                             style={{ width: `${Math.min(Math.abs(metrics.volumeChangeRatio) * 5, 50)}%` }}></div>
+                                    )}
                                 </div>
-                                <div className="text-[10px] text-right mt-1 opacity-70">
-                                    Ngưỡng đỏ: &gt;5% | Ngưỡng vàng: 2-5%
+                                <div className="flex justify-between text-[10px] mt-1 opacity-70 font-medium">
+                                   <span className="text-blue-700">← Lãi quy mô (Thêm hàng)</span>
+                                   <span className="text-red-700">Mất hàng (Hao hụt) →</span>
                                 </div>
                             </div>
 
@@ -468,13 +479,13 @@
                     <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                         <h4 className="text-xs font-bold text-gray-500 uppercase mb-6 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-blue-600" /> Trực quan hóa vị thế giá</h4>
                         <div className="relative h-12 bg-gray-100 rounded-full w-full flex items-center mt-4">
-                            <div className="absolute h-8 w-1 bg-gray-400 top-2 z-10 transition-all duration-500" style={{ left: `${Math.min((inputs.historicalCost / (inputs.replacementCost * 1.2)) * 100, 100)}%` }}>
+                            <div className="absolute h-8 w-1 bg-gray-400 top-2 z-10 transition-all duration-500" style={{ left: `${Math.min((inputs.historicalCost / (Math.max(inputs.replacementCost, inputs.historicalCost) * 1.2)) * 100, 100)}%` }}>
                             <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 text-[10px] text-gray-500 font-bold whitespace-nowrap bg-white px-1 border rounded shadow-sm">Giá Vốn</div>
                             </div>
-                            <div className="absolute h-14 w-1 bg-purple-500 -top-1 z-10 transition-all duration-500" style={{ left: `${Math.min((inputs.replacementCost / (inputs.replacementCost * 1.2)) * 100, 100)}%` }}>
+                            <div className="absolute h-14 w-1 bg-purple-500 -top-1 z-10 transition-all duration-500" style={{ left: `${Math.min((inputs.replacementCost / (Math.max(inputs.replacementCost, inputs.historicalCost) * 1.2)) * 100, 100)}%` }}>
                             <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[10px] text-purple-700 font-bold whitespace-nowrap bg-purple-50 px-1 border border-purple-200 rounded shadow-sm">Giá Nhập Mới</div>
                             </div>
-                            <div className="absolute h-5 w-5 bg-blue-600 rounded-full top-3.5 z-20 transition-all duration-500 shadow-lg border-2 border-white cursor-pointer group" style={{ left: `${Math.min((inputs.sellPrice / (inputs.replacementCost * 1.2)) * 100, 100)}%` }}>
+                            <div className="absolute h-5 w-5 bg-blue-600 rounded-full top-3.5 z-20 transition-all duration-500 shadow-lg border-2 border-white cursor-pointer group" style={{ left: `${Math.min((inputs.sellPrice / (Math.max(inputs.replacementCost, inputs.historicalCost) * 1.2)) * 100, 100)}%` }}>
                             <div className="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded font-bold whitespace-nowrap shadow-md">
                                 Bạn bán
                                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-blue-600"></div>
