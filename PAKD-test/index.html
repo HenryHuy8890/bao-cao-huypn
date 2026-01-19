@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAKD 7.5 - Internal Decision (Logic Fix)</title>
+    <title>PAKD 7.6 - Thép H&D (Smart Input)</title>
     
     <!-- Thư viện React -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -46,6 +46,18 @@
 
     <script type="text/babel">
         const { useState, useEffect } = React;
+
+        // --- HÀM HỖ TRỢ XỬ LÝ TIỀN TỆ (CORE FIX) ---
+        // Chuyển chuỗi nhập liệu (có dấu chấm/phẩy) thành số thuần
+        const parseVNCurrency = (val) => {
+            if (val === '' || val === null || val === undefined) return 0;
+            return Number(
+                val.toString()
+                   .replace(/\./g, '')   // Bỏ dấu chấm phân nghìn
+                   .replace(/,/g, '')    // Bỏ dấu phẩy (nếu copy từ nguồn quốc tế)
+                   .replace(/\s/g, '')   // Bỏ khoảng trắng
+            ) || 0;
+        };
 
         // --- ICONS ---
         const IconBase = ({ d, className, color }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={{color: color}}><path d={d} /></svg>);
@@ -178,7 +190,7 @@
                         </tbody>
                     </table>
                     
-                    {/* GHI CHÚ NỘI BỘ (MỚI) */}
+                    {/* GHI CHÚ NỘI BỘ */}
                     <div style={{fontSize: '9pt', fontStyle: 'italic', marginTop: '5px', color: '#555'}}>
                         * Số lượng quy đổi theo trọng lượng (Kg), đơn vị cuộn chỉ mang tính chất tham khảo.
                     </div>
@@ -254,7 +266,7 @@
             const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
             const formatPercent = (value) => new Intl.NumberFormat('vi-VN', { style: 'percent', minimumFractionDigits: 2 }).format(value / 100);
 
-            // --- LOGIC TÍNH TOÁN 7.5 (LOGIC FIX: TÁCH TẦNG CHI PHÍ) ---
+            // --- LOGIC TÍNH TOÁN 7.5 (INTERNAL VERSION) ---
             useEffect(() => {
                 const { inventoryAge, interestRateYear, riskProvision, paymentDays, customerRank, costTransport, costProcessing, costPackaging } = inputs;
                 
@@ -290,13 +302,16 @@
                 // Tầng 2: Chi phí nghiệp vụ theo đơn
                 const totalAdditionalCosts = (costTransport || 0) + (costProcessing || 0) + (costPackaging || 0);
                 
+                // GIÁ VỐN KẾ TOÁN (Bao gồm chi phí)
+                const totalFullCost = totalCogsHistory + totalAdditionalCosts;
+
                 // Tính giá bình quân (Visual)
                 const avgSellPrice = totalQuantity > 0 ? totalRevenue / totalQuantity : 0;
-                const avgHistoricalCost = totalQuantity > 0 ? totalCogsHistory / totalQuantity : 0; // Chỉ hiển thị giá vốn nhôm thuần
+                const avgHistoricalCost = totalQuantity > 0 ? totalFullCost / totalQuantity : 0; 
                 const avgReplacementCost = totalQuantity > 0 ? totalReplacementCost / totalQuantity : 0;
                 const avgCompetitorPrice = totalQuantity > 0 ? totalCompetitorVal / totalQuantity : 0;
 
-                // --- 1. SỨC KHỎE TÀI CHÍNH (Core Logic 7.5) ---
+                // --- 1. SỨC KHỎE TÀI CHÍNH (Internal Logic) ---
                 // Lợi nhuận kế toán = Doanh thu - Vốn nhôm - Chi phí nghiệp vụ
                 const accountingProfit = totalRevenue - totalCogsHistory - totalAdditionalCosts;
                 
@@ -321,7 +336,7 @@
                 let competitorStatus = 'SAFE';
                 if (avgCompetitorPrice > 0 && avgSellPrice > avgCompetitorPrice) { competitorStatus = 'WARN'; }
 
-                // --- MAIN DECISION LOGIC ---
+                // --- MAIN DECISION LOGIC (Internal Logic 7.4) ---
                 let status = '', recommendation = '', reason = '', warningLevel = '';
                 
                 if (volumeChangeRatio > 5) warningLevel = 'CRITICAL';
@@ -334,7 +349,7 @@
                 if (isStrategicClearance) {
                     status = 'PURPLE'; recommendation = 'ƯU TIÊN XẢ HÀNG (CẮT LỖ)'; reason = `Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay cao. BẮT BUỘC BÁN.`;
                 } else {
-                    // Logic Blue: Doanh thu < Vốn nhôm + Lãi hàng
+                    // Logic Blue Light (Làm mềm lại)
                     if (totalRevenue < totalCogsHistory && volumeChangeRatio < -2) {
                         status = 'BLUE'; 
                         recommendation = 'CƠ CẤU LẠI VỐN (BLUE)'; 
@@ -364,26 +379,25 @@
 
             useEffect(() => { const total = Math.round(metrics.revenue * 1.1); if (total > 0 && inputs.amountInWords === '') { setInputs(prev => ({...prev, amountInWords: `(Gợi ý: ${formatCurrency(total)} - Viết lại bằng chữ tại đây)`})) } }, [metrics.revenue]);
             
-            // --- FIX LỖI STRING CONCATENATION (QUAN TRỌNG) ---
-            // Cập nhật hàm xử lý input để ép kiểu số cho các trường tài chính
+            // --- XỬ LÝ INPUT (ĐÃ SỬA: XỬ LÝ NHẬP TIỀN VIỆT) ---
+            
+            // 1. Cho các trường tiền tệ trong inputs (Chi phí)
+            const handleCurrencyInputChange = (e) => {
+                const { name, value } = e.target;
+                setInputs(prev => ({ ...prev, [name]: parseVNCurrency(value) }));
+            };
+
+            // 2. Cho các trường inputs thường (Text, Date...)
             const handleInputChange = (e) => { 
                 const { name, value } = e.target; 
                 
-                // Danh sách các trường bắt buộc phải là số để tính toán
-                const numericFields = [
-                    'inventoryAge', 
-                    'interestRateYear', 
-                    'riskProvision', 
-                    'paymentDays',
-                    'costTransport', 
-                    'costProcessing', 
-                    'costPackaging'
-                ];
+                // Các trường số (không phải tiền)
+                const numericFields = ['inventoryAge', 'interestRateYear', 'riskProvision', 'paymentDays'];
 
                 setInputs(prev => ({ 
                     ...prev, 
                     [name]: numericFields.includes(name) 
-                        ? (value === '' ? 0 : parseFloat(value)) // Ép kiểu số ngay lập tức
+                        ? (value === '' ? 0 : parseFloat(value))
                         : value 
                 })); 
             };
@@ -397,14 +411,14 @@
                     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12 no-print">
                         <header className="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
                             <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-                                <div><h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2"><Calculator className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" /> PAKD 7.5 - Internal</h1></div>
+                                <div><h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2"><Calculator className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" /> PAKD 7.6 - Thép H&D</h1></div>
                                 <div className="flex gap-2"><button onClick={handlePrint} className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-bold py-2 px-4 rounded flex items-center gap-2 transition-colors shadow-lg"><Printer className="w-5 h-5" /> XUẤT BÁO GIÁ PDF</button></div>
                             </div>
                         </header>
 
                         <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
                             <div className="lg:col-span-6 space-y-6">
-                                {/* DANH SÁCH HÀNG */}
+                                {/* DANH SÁCH HÀNG (UPDATED: SMART INPUT) */}
                                 <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                                     <div className="bg-gray-100 px-5 py-3 border-b border-gray-200 flex justify-between items-center">
                                         <h2 className="font-bold text-gray-700 flex items-center gap-2 text-sm uppercase"><RefreshCcw className="w-4 h-4 text-blue-600" /> 1. Danh sách Hàng hóa</h2>
@@ -421,12 +435,17 @@
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-2 mb-2">
                                                     <div><label className="text-[10px] text-gray-500">Khối lượng (Kg)</label><input type="number" value={prod.quantity} onChange={(e) => updateProduct(prod.id, 'quantity', parseFloat(e.target.value)||0)} className="w-full border rounded px-2 py-1 text-sm font-mono"/></div>
-                                                    <div><label className="text-[10px] text-blue-600 font-bold">Giá Bán</label><input type="number" value={prod.sellPrice} onChange={(e) => updateProduct(prod.id, 'sellPrice', parseFloat(e.target.value)||0)} className="w-full border-2 border-blue-400 rounded px-2 py-1 text-sm font-bold text-blue-700"/></div>
-                                                    <div><label className="text-[10px] text-orange-600 font-bold">Giá Đối Thủ</label><input type="number" value={prod.competitorPrice} onChange={(e) => updateProduct(prod.id, 'competitorPrice', parseFloat(e.target.value)||0)} className="w-full border border-orange-200 bg-orange-50 rounded px-2 py-1 text-sm text-orange-800" placeholder="Thị trường"/></div>
+                                                    {/* SMART INPUT: GIÁ BÁN */}
+                                                    <div><label className="text-[10px] text-blue-600 font-bold">Giá Bán</label><input type="text" value={prod.sellPrice ? new Intl.NumberFormat('vi-VN').format(prod.sellPrice) : ''} onChange={(e) => updateProduct(prod.id, 'sellPrice', parseVNCurrency(e.target.value))} className="w-full border-2 border-blue-400 rounded px-2 py-1 text-sm font-bold text-blue-700" placeholder="0"/></div>
+                                                    {/* SMART INPUT: GIÁ ĐỐI THỦ */}
+                                                    <div><label className="text-[10px] text-orange-600 font-bold">Giá Đối Thủ</label><input type="text" value={prod.competitorPrice ? new Intl.NumberFormat('vi-VN').format(prod.competitorPrice) : ''} onChange={(e) => updateProduct(prod.id, 'competitorPrice', parseVNCurrency(e.target.value))} className="w-full border border-orange-200 bg-orange-50 rounded px-2 py-1 text-sm text-orange-800" placeholder="Thị trường"/></div>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-2 bg-white p-2 rounded border border-dashed">
-                                                    <div><label className="text-[10px] text-gray-400">Giá Vốn (Kế toán)</label><input type="number" value={prod.historicalCost} onChange={(e) => updateProduct(prod.id, 'historicalCost', parseFloat(e.target.value)||0)} className="w-full border bg-gray-50 rounded px-2 py-1 text-xs"/></div>
-                                                    <div><label className="text-[10px] text-purple-400 font-bold">Giá Thay thế</label><input type="number" value={prod.replacementCost} onChange={(e) => updateProduct(prod.id, 'replacementCost', parseFloat(e.target.value)||0)} className="w-full border border-purple-200 bg-purple-50 rounded px-2 py-1 text-xs font-medium text-purple-700"/></div>
+                                                <div className="grid grid-cols-3 gap-2 bg-white p-2 rounded border border-dashed">
+                                                    {/* SMART INPUT: GIÁ VỐN */}
+                                                    <div><label className="text-[10px] text-gray-400">Giá Vốn</label><input type="text" value={prod.historicalCost ? new Intl.NumberFormat('vi-VN').format(prod.historicalCost) : ''} onChange={(e) => updateProduct(prod.id, 'historicalCost', parseVNCurrency(e.target.value))} className="w-full border bg-gray-50 rounded px-2 py-1 text-xs"/></div>
+                                                    {/* SMART INPUT: GIÁ NHẬP LẠI */}
+                                                    <div><label className="text-[10px] text-purple-400 font-bold">Giá Thay thế</label><input type="text" value={prod.replacementCost ? new Intl.NumberFormat('vi-VN').format(prod.replacementCost) : ''} onChange={(e) => updateProduct(prod.id, 'replacementCost', parseVNCurrency(e.target.value))} className="w-full border border-purple-200 bg-purple-50 rounded px-2 py-1 text-xs font-medium text-purple-700"/></div>
+                                                    <div><label className="text-[10px] text-gray-500">ĐVT / SL</label><div className="flex gap-1"><input type="text" value={prod.unit} onChange={(e) => updateProduct(prod.id, 'unit', e.target.value)} className="w-1/2 border rounded px-1 py-1 text-xs"/><input type="number" value={prod.qtyUnit} onChange={(e) => updateProduct(prod.id, 'qtyUnit', e.target.value)} className="w-1/2 border rounded px-1 py-1 text-xs text-center"/></div></div>
                                                 </div>
                                             </div>
                                         ))}
@@ -452,17 +471,17 @@
                                     </div>
                                 </div>
 
-                                {/* 3. CHI PHÍ GIA CÔNG & VẬN CHUYỂN */}
+                                {/* 3. CHI PHÍ GIA CÔNG & VẬN CHUYỂN (UPDATED: SMART INPUT) */}
                                 <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                                     <div className="bg-gray-100 px-5 py-3 border-b border-gray-200"><h2 className="font-bold text-gray-700 flex items-center gap-2 text-sm uppercase"><Wrench className="w-4 h-4 text-blue-600" /> 3. Chi phí Gia công & Vận chuyển</h2></div>
                                     <div className="p-5 space-y-3">
                                         <div>
                                             <label className="text-xs font-bold text-gray-600">Vận chuyển, bốc dỡ (VNĐ)</label>
-                                            <input type="number" name="costTransport" value={inputs.costTransport} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" placeholder="0"/>
+                                            <input type="text" name="costTransport" value={inputs.costTransport ? new Intl.NumberFormat('vi-VN').format(inputs.costTransport) : ''} onChange={handleCurrencyInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" placeholder="0"/>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs font-bold text-gray-600">Gia công (Cắt, xẻ)</label><input type="number" name="costProcessing" value={inputs.costProcessing} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" placeholder="0"/></div>
-                                            <div><label className="text-xs font-bold text-gray-600">Bao gói, Palet</label><input type="number" name="costPackaging" value={inputs.costPackaging} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" placeholder="0"/></div>
+                                            <div><label className="text-xs font-bold text-gray-600">Gia công (Cắt, xẻ)</label><input type="text" name="costProcessing" value={inputs.costProcessing ? new Intl.NumberFormat('vi-VN').format(inputs.costProcessing) : ''} onChange={handleCurrencyInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" placeholder="0"/></div>
+                                            <div><label className="text-xs font-bold text-gray-600">Bao gói, Palet</label><input type="text" name="costPackaging" value={inputs.costPackaging ? new Intl.NumberFormat('vi-VN').format(inputs.costPackaging) : ''} onChange={handleCurrencyInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" placeholder="0"/></div>
                                         </div>
                                     </div>
                                 </div>
