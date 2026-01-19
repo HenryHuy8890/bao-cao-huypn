@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAKD 7.1 - Thép H&D (Logic Tài Chính Chuẩn)</title>
+    <title>PAKD 7.5 - Internal Decision (Logic Fix)</title>
     
     <!-- Thư viện React -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -17,7 +17,7 @@
         }
     </script>
 
-    <!-- CSS IN ẤN (GIỐNG PDF CŨ) -->
+    <!-- CSS IN ẤN -->
     <style>
         @media print {
             .no-print { display: none !important; }
@@ -32,7 +32,6 @@
         .invoice-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .invoice-title { text-align: center; font-weight: bold; font-size: 16pt; margin: 10px 0; text-transform: uppercase; }
         
-        /* Bảng giá chi tiết */
         .invoice-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11pt; }
         .invoice-table th, .invoice-table td { border: 1px solid #000; padding: 4px 6px; text-align: center; vertical-align: middle; }
         .invoice-table th { font-weight: bold; background-color: #f0f0f0; }
@@ -71,6 +70,8 @@
         const Zap = (props) => <IconBase {...props} d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />;
         const Layers = (props) => <IconBase {...props} d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />;
         const FileText = (props) => <IconBase {...props} d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8" />;
+        const Swords = (props) => <IconBase {...props} d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2" />;
+        const Wrench = (props) => <IconBase {...props} d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />;
 
         // --- COMPONENT: TỜ BÁO GIÁ (IN ẤN) ---
         const QuotationPrint = ({ inputs, metrics, productList }) => {
@@ -131,7 +132,7 @@
 
                     <p>Công ty TNHH Thép H&D (Bên B) xin trân trọng gửi tới Quý khách hàng bản báo giá với những điều khoản và điều kiện như sau:</p>
 
-                    {/* Product Table (DYNAMIC) */}
+                    {/* Product Table */}
                     <div style={{fontWeight: 'bold', marginBottom: '5px'}}>1. Chi tiết hàng hoá:</div>
                     <table className="invoice-table">
                         <thead>
@@ -159,12 +160,9 @@
                                     <td className="text-right">{new Intl.NumberFormat('vi-VN').format(prod.quantity * prod.sellPrice)}</td>
                                 </tr>
                             ))}
-                            
-                            {/* Fill empty rows to look nice */}
                             {[...Array(Math.max(0, 5 - productList.length))].map((_, i) => (
                                 <tr key={`empty-${i}`}><td style={{height:'25px'}}></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
                             ))}
-                            
                             <tr style={{fontWeight: 'bold'}}>
                                 <td colSpan="7" className="text-right">Cộng tiền hàng:</td>
                                 <td className="text-right">{new Intl.NumberFormat('vi-VN').format(totalRevenue)}</td>
@@ -179,12 +177,16 @@
                             </tr>
                         </tbody>
                     </table>
+                    
+                    {/* GHI CHÚ NỘI BỘ (MỚI) */}
+                    <div style={{fontSize: '9pt', fontStyle: 'italic', marginTop: '5px', color: '#555'}}>
+                        * Số lượng quy đổi theo trọng lượng (Kg), đơn vị cuộn chỉ mang tính chất tham khảo.
+                    </div>
 
                     <div style={{marginTop: '10px', fontStyle: 'italic'}}>
                         <strong>Bằng chữ:</strong> {inputs.amountInWords || "..................................................."}
                     </div>
 
-                    {/* Terms */}
                     <div style={{marginTop: '20px', fontSize: '11pt', lineHeight: '1.4'}}>
                         <p><strong>2. Thanh toán:</strong> {inputs.termPayment}</p>
                         <p><strong>3. Tài khoản:</strong> Số 4520 176 002 tại NH Đầu Tư và Phát Triển BIDV, CN Vạn Phúc, Hà Nội.</p>
@@ -193,43 +195,34 @@
                         <p><strong>6. Vận chuyển - Bốc xếp:</strong> {inputs.termTransport}</p>
                         <p><strong>7. Địa điểm giao hàng:</strong> {inputs.termLocation}</p>
                         <p><strong>8. Hiệu lực báo giá:</strong> {inputs.termValidity}</p>
-                        <p><strong>9. Các điều khoản khác:</strong> Hàng hóa được giao dựa trên trọng lượng thực tế cân tại bên bán. Khiếu nại trong vòng 10 ngày.</p>
+                        <p><strong>9. Các điều khoản khác:</strong> Hàng hóa được giao dựa trên trọng lượng thực tế cân tại bên bán.</p>
                     </div>
 
-                    {/* Signature */}
                     <div className="footer-sign">
-                        <div style={{width: '40%'}}>
-                            <strong>XÁC NHẬN CỦA KHÁCH HÀNG</strong><br/>
-                            (Ký, ghi rõ họ tên)<br/><br/><br/><br/>
-                        </div>
-                        <div style={{width: '40%'}}>
-                            <strong>CÔNG TY TNHH THÉP H&D</strong><br/>
-                            (Ký tên - Đóng dấu)<br/><br/><br/><br/>
-                            <p>{inputs.senderName}</p>
-                        </div>
+                        <div style={{width: '40%'}}><strong>XÁC NHẬN CỦA KHÁCH HÀNG</strong><br/>(Ký, ghi rõ họ tên)<br/><br/><br/><br/></div>
+                        <div style={{width: '40%'}}><strong>CÔNG TY TNHH THÉP H&D</strong><br/>(Ký tên - Đóng dấu)<br/><br/><br/><br/><p>{inputs.senderName}</p></div>
                     </div>
                 </div>
             );
         };
 
         const PAKD_App = () => {
-            // --- STATE DANH SÁCH SẢN PHẨM (MỚI) ---
             const [products, setProducts] = useState([
-                { id: 1, name: 'Nhôm cuộn A3003-H14', specs: '2.0 x 1250 x C', unit: 'Cuộn', qtyUnit: 1, quantity: 2591, sellPrice: 101000, historicalCost: 91000, replacementCost: 110000 }
+                { id: 1, name: 'Nhôm cuộn A3003-H14', specs: '2.0 x 1250 x C', unit: 'Cuộn', qtyUnit: 1, quantity: 2591, sellPrice: 101000, historicalCost: 91000, replacementCost: 110000, competitorPrice: 100000 }
             ]);
 
-            // --- STATE CẤU HÌNH ---
             const [inputs, setInputs] = useState({
-                // B. KHÁCH HÀNG & RỦI RO
+                // KHÁCH HÀNG & RỦI RO
                 customerName: 'CÔNG TY TNHH BUTRACO VIỆT NAM',
-                customerRank: 'VIP', 
-                buyFrequency: 'REGULAR',
-                inventoryAge: 7, 
-                interestRateYear: 7.6, 
-                riskProvision: 1.5, 
-                paymentDays: 30,
+                customerRank: 'VIP', buyFrequency: 'REGULAR',
+                inventoryAge: 7, interestRateYear: 7.6, riskProvision: 1.5, paymentDays: 30,
 
-                // C. TÙY BIẾN BÁO GIÁ
+                // CHI PHÍ GIA CÔNG & VẬN CHUYỂN
+                costTransport: 0,
+                costProcessing: 0,
+                costPackaging: 0,
+
+                // TÙY BIẾN BÁO GIÁ
                 quoteDate: new Date().toISOString().split('T')[0],
                 receiverName: 'Bà Trần Thị Dung', receiverTitle: 'Giám đốc', receiverMST: '', receiverPhone: '', receiverEmail: '',
                 senderName: 'Phạm Ngọc Huy', senderTitle: 'Cán bộ kinh doanh', senderPhone: '0979566468', senderEmail: 'huy.pn@hdsteel.com.vn',
@@ -245,98 +238,92 @@
             const [metrics, setMetrics] = useState({
                 revenue: 0, accountingProfit: 0, realProfit: 0, realMargin: 0,
                 sunkCost: 0, sunkCostRatio: 0, volumeChangeRatio: 0,
-                avgSellPrice: 0, avgHistoricalCost: 0, avgReplacementCost: 0,
-                status: 'RED', recommendation: '', reason: '', warningLevel: ''
+                avgSellPrice: 0, avgHistoricalCost: 0, avgReplacementCost: 0, avgCompetitorPrice: 0,
+                status: 'RED', recommendation: '', reason: '', warningLevel: '',
+                competitorStatus: '', totalAdditionalCosts: 0
             });
 
-            // --- HÀM QUẢN LÝ SẢN PHẨM ---
             const addProduct = () => {
                 const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-                setProducts([...products, { id: newId, name: '', specs: '', unit: 'Cuộn', qtyUnit: 1, quantity: 0, sellPrice: 0, historicalCost: 0, replacementCost: 0 }]);
+                setProducts([...products, { id: newId, name: '', specs: '', unit: 'Cuộn', qtyUnit: 1, quantity: 0, sellPrice: 0, historicalCost: 0, replacementCost: 0, competitorPrice: 0 }]);
             };
 
-            const removeProduct = (id) => {
-                if (products.length > 1) setProducts(products.filter(p => p.id !== id));
-            };
+            const removeProduct = (id) => { if (products.length > 1) setProducts(products.filter(p => p.id !== id)); };
+            const updateProduct = (id, field, value) => { setProducts(products.map(p => p.id === id ? { ...p, [field]: value } : p)); };
 
-            const updateProduct = (id, field, value) => {
-                setProducts(products.map(p => p.id === id ? { ...p, [field]: value } : p));
-            };
-
-            // --- HÀM FORMAT ---
             const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
             const formatPercent = (value) => new Intl.NumberFormat('vi-VN', { style: 'percent', minimumFractionDigits: 2 }).format(value / 100);
 
-            // --- LOGIC TÍNH TOÁN TỔNG HỢP (FIXED LOGIC 7.1) ---
+            // --- LOGIC TÍNH TOÁN 7.5 (LOGIC FIX: TÁCH TẦNG CHI PHÍ) ---
             useEffect(() => {
-                const { inventoryAge, interestRateYear, riskProvision, paymentDays, customerRank } = inputs;
-                // interestRateMonth không cần thiết nữa nếu dùng interestRateYear đúng chỗ
-
-                // 1. Tổng hợp dữ liệu & Tính Volume Change Weighted
-                let totalRevenue = 0;
-                let totalCogsHistory = 0;
-                let totalReplacementCost = 0;
-                let totalQuantity = 0;
+                const { inventoryAge, interestRateYear, riskProvision, paymentDays, customerRank, costTransport, costProcessing, costPackaging } = inputs;
                 
+                let totalRevenue = 0;
+                let totalCogsHistory = 0; // Giá vốn hàng hóa thuần (Tầng 1: Vốn Nhôm)
+                let totalReplacementCost = 0;
+                let totalCompetitorVal = 0;
+                let totalQuantity = 0;
                 let volumeLossWeighted = 0;
                 let replacementBase = 0;
 
+                // Tổng hợp dữ liệu sản phẩm
                 products.forEach(p => {
                     const qty = p.quantity || 0;
                     const sell = p.sellPrice || 0;
                     const hist = p.historicalCost || 0;
                     const rep = p.replacementCost || 0;
+                    const comp = p.competitorPrice || 0;
 
                     totalQuantity += qty;
                     totalRevenue += qty * sell;
                     totalCogsHistory += qty * hist;
                     totalReplacementCost += qty * rep;
+                    totalCompetitorVal += qty * comp;
 
-                    // Logic 2.1: Volume Change Weighted (Mỗi SP tự chịu trách nhiệm vốn)
                     if (rep > 0) {
-                        // lossRatio dương là mất vốn, âm là lãi quy mô?
-                        // Quy ước cũ: (1 - Sell/Rep) * 100. Sell < Rep -> Dương (Hao hụt). Sell > Rep -> Âm (Lãi).
-                        // lossRatio = (Sell - Rep) / Rep. Sell < Rep -> Âm. 
-                        // Vậy (Sell - Rep)/Rep chính là % Thay đổi. 
-                        // Nếu Sell=90, Rep=100 -> -0.1 (-10%). Nghĩa là mất 10% giá trị? Không, nghĩa là vốn chỉ còn 90%.
-                        // Quy ước PAKD: Dương (+) là Mất hàng (Hao hụt). Âm (-) là Thêm hàng.
-                        // Công thức cũ: (1 - 90/100) * 100 = 10% (Dương -> Mất).
-                        // Công thức mới đề xuất: lossRatio = (p.sellPrice - p.replacementCost) / p.replacementCost;
-                        // 90 - 100 / 100 = -0.1.
-                        // volumeChangeRatio = -(volumeLossWeighted...) -> -(-0.1) = 0.1 (10% Dương -> Mất). ĐÚNG SIGN.
-                        
                         const lossRatio = (sell - rep) / rep; 
-                        volumeLossWeighted += lossRatio * qty * rep; // Trọng số theo giá trị thay thế
+                        volumeLossWeighted += lossRatio * qty * rep;
                         replacementBase += qty * rep;
                     }
                 });
 
+                // Tầng 2: Chi phí nghiệp vụ theo đơn
+                const totalAdditionalCosts = (costTransport || 0) + (costProcessing || 0) + (costPackaging || 0);
+                
                 // Tính giá bình quân (Visual)
                 const avgSellPrice = totalQuantity > 0 ? totalRevenue / totalQuantity : 0;
-                const avgHistoricalCost = totalQuantity > 0 ? totalCogsHistory / totalQuantity : 0;
+                const avgHistoricalCost = totalQuantity > 0 ? totalCogsHistory / totalQuantity : 0; // Chỉ hiển thị giá vốn nhôm thuần
                 const avgReplacementCost = totalQuantity > 0 ? totalReplacementCost / totalQuantity : 0;
+                const avgCompetitorPrice = totalQuantity > 0 ? totalCompetitorVal / totalQuantity : 0;
 
-                // 2. Tính toán chỉ số tài chính (FIXED)
-                const accountingProfit = totalRevenue - totalCogsHistory;
+                // --- 1. SỨC KHỎE TÀI CHÍNH (Core Logic 7.5) ---
+                // Lợi nhuận kế toán = Doanh thu - Vốn nhôm - Chi phí nghiệp vụ
+                const accountingProfit = totalRevenue - totalCogsHistory - totalAdditionalCosts;
                 
-                // Logic 2.2: Chi phí tài chính tương lai dựa trên VỐN (Capital Base)
-                // Vốn bị chiếm dụng = Giá vốn (Cost). 
-                const capitalBase = totalCogsHistory;
+                // VỐN GỐC ĐỂ TÍNH RỦI RO & LÃI VAY (Capital Base) = Chỉ tiền hàng nhôm (Tầng 1)
+                const capitalBase = totalCogsHistory; 
+                
+                // Chi phí vốn tương lai & Rủi ro (Tính trên vốn nhôm)
                 const futureFinCost = capitalBase * (interestRateYear / 100) * (paymentDays / 365);
+                const riskCost = capitalBase * (riskProvision / 100);
                 
-                const riskCost = totalRevenue * (riskProvision / 100);
                 const realProfit = accountingProfit - futureFinCost - riskCost;
                 const realMargin = totalRevenue > 0 ? (realProfit / totalRevenue) * 100 : 0;
 
-                // Logic 2.3: Sunk Cost (Chi phí chìm) đúng đơn vị
+                // Sunk Cost (Tính trên vốn nhôm)
                 const sunkCost = totalCogsHistory * (interestRateYear / 100) * (inventoryAge / 12);
                 const sunkCostRatio = totalCogsHistory > 0 ? (sunkCost / totalCogsHistory) * 100 : 0;
-
-                // Logic 2.1 Final: Volume Change Ratio
+                
+                // Volume Change Ratio (Tính trên vốn nhôm)
                 const volumeChangeRatio = replacementBase > 0 ? -(volumeLossWeighted / replacementBase) * 100 : 0;
 
-                // 3. Logic Đèn Báo
+                // --- COMPETITOR CHECK ---
+                let competitorStatus = 'SAFE';
+                if (avgCompetitorPrice > 0 && avgSellPrice > avgCompetitorPrice) { competitorStatus = 'WARN'; }
+
+                // --- MAIN DECISION LOGIC ---
                 let status = '', recommendation = '', reason = '', warningLevel = '';
+                
                 if (volumeChangeRatio > 5) warningLevel = 'CRITICAL';
                 else if (volumeChangeRatio >= 2) warningLevel = 'WARN';
                 else if (volumeChangeRatio < -2) warningLevel = 'GROWTH';
@@ -345,63 +332,79 @@
                 const isStrategicClearance = inventoryAge > 6 || sunkCostRatio > 5;
 
                 if (isStrategicClearance) {
-                    status = 'PURPLE'; recommendation = 'ƯU TIÊN XẢ HÀNG (CẮT LỖ)'; reason = `Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay cao. BẮT BUỘC BÁN để thu hồi dòng tiền.`;
+                    status = 'PURPLE'; recommendation = 'ƯU TIÊN XẢ HÀNG (CẮT LỖ)'; reason = `Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay cao. BẮT BUỘC BÁN.`;
                 } else {
-                    if (totalRevenue < totalCogsHistory && warningLevel === 'GROWTH') { 
-                        status = 'BLUE'; recommendation = 'CƠ CẤU LẠI VỐN (BLUE)'; reason = `Lỗ kế toán nhưng LÃI QUY MÔ ${formatPercent(Math.abs(volumeChangeRatio))}. Tổng đơn hàng giúp tích sản.`;
+                    // Logic Blue: Doanh thu < Vốn nhôm + Lãi hàng
+                    if (totalRevenue < totalCogsHistory && volumeChangeRatio < -2) {
+                        status = 'BLUE'; 
+                        recommendation = 'CƠ CẤU LẠI VỐN (BLUE)'; 
+                        reason = `Lỗ kế toán nhưng LÃI QUY MÔ ${formatPercent(Math.abs(volumeChangeRatio))}. Bán để quay vòng vốn.`;
                     } else {
                         let isProfitPass = false;
                         if (customerRank === 'VIP' || customerRank === 'MEDIUM') { if (realMargin > 1.0) isProfitPass = true; } 
                         else { if (realMargin > 3.0) isProfitPass = true; }
 
                         if (isProfitPass) {
-                            if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL'; recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)'; reason = `Lãi đạt NHƯNG bị chặn bởi Mất hàng quá lớn (${formatPercent(volumeChangeRatio)}).`; } 
-                            else if (warningLevel === 'WARN') { status = 'YELLOW_CAPITAL'; recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (VÀNG)'; reason = `Lãi đạt nhưng Mất hàng ${formatPercent(volumeChangeRatio)} (2-5%).`; } 
+                            if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL'; recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)'; reason = `Lãi đạt nhưng Hụt vốn lớn (${formatPercent(volumeChangeRatio)}).`; } 
+                            else if (warningLevel === 'WARN') { status = 'YELLOW_CAPITAL'; recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (VÀNG)'; reason = `Lãi đạt nhưng Mất hàng ${formatPercent(volumeChangeRatio)}.`; } 
                             else { status = 'GREEN'; recommendation = 'DUYỆT NGAY (XANH LÁ)'; reason = `Lãi đạt & Bảo toàn vốn an toàn.`; }
                         } else {
                             if (realMargin >= 0 && (customerRank === 'VIP' || customerRank === 'MEDIUM')) {
-                                if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL'; recommendation = 'DỪNG LẠI (RỦI RO KÉP)'; reason = `Lãi mỏng & Mất vốn lớn.`; } 
+                                if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL'; recommendation = 'DỪNG LẠI (RỦI RO KÉP)'; reason = `Lãi quá mỏng & Mất vốn lớn.`; } 
                                 else { status = 'YELLOW_APPROVE'; recommendation = 'CÂN NHẮC (LÃI MỎNG)'; reason = `Lãi thấp (${formatPercent(realMargin)}) nhưng là khách VIP.`; }
                             } else {
-                                status = 'RED_STOP'; recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)'; reason = `Lợi nhuận thực (${formatPercent(realMargin)}) không đạt kỳ vọng.`;
+                                status = 'RED_STOP'; recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)'; reason = `Lãi thực (${formatPercent(realMargin)}) không đạt kỳ vọng.`;
                             }
                         }
                     }
                 }
 
-                setMetrics({ revenue: totalRevenue, accountingProfit, realProfit, realMargin, sunkCost, sunkCostRatio, volumeChangeRatio, avgSellPrice, avgHistoricalCost, avgReplacementCost, status, recommendation, reason, warningLevel });
+                setMetrics({ revenue: totalRevenue, accountingProfit, realProfit, realMargin, sunkCost, sunkCostRatio, volumeChangeRatio, avgSellPrice, avgHistoricalCost, avgReplacementCost, avgCompetitorPrice, status, recommendation, reason, warningLevel, competitorStatus, totalAdditionalCosts });
             }, [inputs, products]);
 
-            // --- TỰ ĐỘNG ĐỌC SỐ TIỀN ---
-            useEffect(() => {
-                const total = Math.round(metrics.revenue * 1.1);
-                if (total > 0 && inputs.amountInWords === '') {
-                    setInputs(prev => ({...prev, amountInWords: `(Gợi ý: ${formatCurrency(total)} - Viết lại bằng chữ tại đây)`}))
-                }
-            }, [metrics.revenue]);
-
-            const handleInputChange = (e) => { const { name, value } = e.target; setInputs(prev => ({ ...prev, [name]: value })); };
+            useEffect(() => { const total = Math.round(metrics.revenue * 1.1); if (total > 0 && inputs.amountInWords === '') { setInputs(prev => ({...prev, amountInWords: `(Gợi ý: ${formatCurrency(total)} - Viết lại bằng chữ tại đây)`})) } }, [metrics.revenue]);
             
+            // --- FIX LỖI STRING CONCATENATION (QUAN TRỌNG) ---
+            // Cập nhật hàm xử lý input để ép kiểu số cho các trường tài chính
+            const handleInputChange = (e) => { 
+                const { name, value } = e.target; 
+                
+                // Danh sách các trường bắt buộc phải là số để tính toán
+                const numericFields = [
+                    'inventoryAge', 
+                    'interestRateYear', 
+                    'riskProvision', 
+                    'paymentDays',
+                    'costTransport', 
+                    'costProcessing', 
+                    'costPackaging'
+                ];
+
+                setInputs(prev => ({ 
+                    ...prev, 
+                    [name]: numericFields.includes(name) 
+                        ? (value === '' ? 0 : parseFloat(value)) // Ép kiểu số ngay lập tức
+                        : value 
+                })); 
+            };
+
             const handlePrint = () => { window.print(); };
             const getStatusStyle = (status) => { switch (status) { case 'GREEN': return 'bg-green-50 border-green-500 text-green-800'; case 'BLUE': return 'bg-blue-50 border-blue-500 text-blue-800'; case 'YELLOW_CAPITAL': case 'YELLOW_APPROVE': return 'bg-yellow-50 border-yellow-500 text-yellow-800'; case 'PURPLE': return 'bg-purple-100 border-purple-600 text-purple-900 animate-pulse-slow'; default: return 'bg-red-50 border-red-500 text-red-800'; } };
             const getIcon = (status) => { if (status === 'GREEN') return <CheckCircle className="w-12 h-12 text-green-600" />; if (status === 'BLUE') return <Layers className="w-12 h-12 text-blue-600" />; if (status.includes('YELLOW')) return <Award className="w-12 h-12 text-yellow-600" />; if (status === 'PURPLE') return <Siren className="w-12 h-12 text-purple-600 animate-bounce" />; return <XCircle className="w-12 h-12 text-red-600" />; };
 
             return (
                 <div>
-                    {/* --- GIAO DIỆN CHÍNH (NO-PRINT) --- */}
                     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-12 no-print">
                         <header className="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
                             <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-                                <div><h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2"><Calculator className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" /> PAKD 7.1 - Thép H&D</h1></div>
-                                <div className="flex gap-2">
-                                    <button onClick={handlePrint} className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-bold py-2 px-4 rounded flex items-center gap-2 transition-colors shadow-lg"><Printer className="w-5 h-5" /> XUẤT BÁO GIÁ PDF</button>
-                                </div>
+                                <div><h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2"><Calculator className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" /> PAKD 7.5 - Internal</h1></div>
+                                <div className="flex gap-2"><button onClick={handlePrint} className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-bold py-2 px-4 rounded flex items-center gap-2 transition-colors shadow-lg"><Printer className="w-5 h-5" /> XUẤT BÁO GIÁ PDF</button></div>
                             </div>
                         </header>
 
                         <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
                             <div className="lg:col-span-6 space-y-6">
-                                {/* 1. DANH SÁCH HÀNG HÓA (MỚI - MULTI PRODUCT) */}
+                                {/* DANH SÁCH HÀNG */}
                                 <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                                     <div className="bg-gray-100 px-5 py-3 border-b border-gray-200 flex justify-between items-center">
                                         <h2 className="font-bold text-gray-700 flex items-center gap-2 text-sm uppercase"><RefreshCcw className="w-4 h-4 text-blue-600" /> 1. Danh sách Hàng hóa</h2>
@@ -410,33 +413,20 @@
                                     <div className="p-3 space-y-4 max-h-[500px] overflow-y-auto">
                                         {products.map((prod, idx) => (
                                             <div key={prod.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50 relative group">
-                                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => removeProduct(prod.id)} className="text-red-500 hover:text-red-700"><Trash className="w-4 h-4"/></button>
-                                                </div>
+                                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => removeProduct(prod.id)} className="text-red-500 hover:text-red-700"><Trash className="w-4 h-4"/></button></div>
                                                 <div className="grid grid-cols-12 gap-2 mb-2">
                                                     <div className="col-span-1 flex items-center justify-center font-bold text-gray-400">#{idx + 1}</div>
-                                                    <div className="col-span-7">
-                                                        <label className="text-[10px] uppercase font-bold text-gray-500">Tên hàng</label>
-                                                        <input type="text" value={prod.name} onChange={(e) => updateProduct(prod.id, 'name', e.target.value)} className="w-full border rounded px-2 py-1 text-sm font-medium" placeholder="Nhập tên hàng..."/>
-                                                    </div>
-                                                    <div className="col-span-4">
-                                                        <label className="text-[10px] uppercase font-bold text-gray-500">Kích thước (mm)</label>
-                                                        <input type="text" value={prod.specs} onChange={(e) => updateProduct(prod.id, 'specs', e.target.value)} className="w-full border rounded px-2 py-1 text-sm" placeholder="VD: 2.0x1250"/>
-                                                    </div>
+                                                    <div className="col-span-7"><label className="text-[10px] uppercase font-bold text-gray-500">Tên hàng</label><input type="text" value={prod.name} onChange={(e) => updateProduct(prod.id, 'name', e.target.value)} className="w-full border rounded px-2 py-1 text-sm font-medium" placeholder="Nhập tên hàng..."/></div>
+                                                    <div className="col-span-4"><label className="text-[10px] uppercase font-bold text-gray-500">Kích thước</label><input type="text" value={prod.specs} onChange={(e) => updateProduct(prod.id, 'specs', e.target.value)} className="w-full border rounded px-2 py-1 text-sm" placeholder="2.0x1250"/></div>
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-2 mb-2">
                                                     <div><label className="text-[10px] text-gray-500">Khối lượng (Kg)</label><input type="number" value={prod.quantity} onChange={(e) => updateProduct(prod.id, 'quantity', parseFloat(e.target.value)||0)} className="w-full border rounded px-2 py-1 text-sm font-mono"/></div>
                                                     <div><label className="text-[10px] text-blue-600 font-bold">Giá Bán</label><input type="number" value={prod.sellPrice} onChange={(e) => updateProduct(prod.id, 'sellPrice', parseFloat(e.target.value)||0)} className="w-full border-2 border-blue-400 rounded px-2 py-1 text-sm font-bold text-blue-700"/></div>
-                                                    <div><label className="text-[10px] text-gray-500">ĐVT / Số lượng</label>
-                                                        <div className="flex gap-1">
-                                                            <input type="text" value={prod.unit} onChange={(e) => updateProduct(prod.id, 'unit', e.target.value)} className="w-1/2 border rounded px-1 py-1 text-xs" placeholder="Cuộn"/>
-                                                            <input type="number" value={prod.qtyUnit} onChange={(e) => updateProduct(prod.id, 'qtyUnit', e.target.value)} className="w-1/2 border rounded px-1 py-1 text-xs text-center"/>
-                                                        </div>
-                                                    </div>
+                                                    <div><label className="text-[10px] text-orange-600 font-bold">Giá Đối Thủ</label><input type="number" value={prod.competitorPrice} onChange={(e) => updateProduct(prod.id, 'competitorPrice', parseFloat(e.target.value)||0)} className="w-full border border-orange-200 bg-orange-50 rounded px-2 py-1 text-sm text-orange-800" placeholder="Thị trường"/></div>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2 bg-white p-2 rounded border border-dashed">
                                                     <div><label className="text-[10px] text-gray-400">Giá Vốn (Kế toán)</label><input type="number" value={prod.historicalCost} onChange={(e) => updateProduct(prod.id, 'historicalCost', parseFloat(e.target.value)||0)} className="w-full border bg-gray-50 rounded px-2 py-1 text-xs"/></div>
-                                                    <div><label className="text-[10px] text-purple-400 font-bold">Giá Nhập Mới (Thay thế)</label><input type="number" value={prod.replacementCost} onChange={(e) => updateProduct(prod.id, 'replacementCost', parseFloat(e.target.value)||0)} className="w-full border border-purple-200 bg-purple-50 rounded px-2 py-1 text-xs font-medium text-purple-700"/></div>
+                                                    <div><label className="text-[10px] text-purple-400 font-bold">Giá Thay thế</label><input type="number" value={prod.replacementCost} onChange={(e) => updateProduct(prod.id, 'replacementCost', parseFloat(e.target.value)||0)} className="w-full border border-purple-200 bg-purple-50 rounded px-2 py-1 text-xs font-medium text-purple-700"/></div>
                                                 </div>
                                             </div>
                                         ))}
@@ -448,36 +438,57 @@
                                     <div className="bg-orange-50 px-5 py-3 border-b border-orange-200"><h2 className="font-bold text-orange-800 flex items-center gap-2 text-sm uppercase"><ShieldAlert className="w-4 h-4" /> 2. Tham số Tính toán & Rủi ro</h2></div>
                                     <div className="p-5 space-y-4">
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs font-bold text-gray-600">Phân Hạng Khách</label><select name="customerRank" value={inputs.customerRank} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm"><option value="VIP">VIP / Sản xuất</option><option value="MEDIUM">Thân thiết</option><option value="SMALL">Vãng lai</option></select></div>
-                                            <div><label className="text-xs font-bold text-gray-600">Tần Suất Mua</label><select name="buyFrequency" value={inputs.buyFrequency} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm"><option value="REGULAR">Đều đặn</option><option value="WALKIN">Vãng lai</option></select></div>
+                                            <div><label className="text-xs font-bold text-gray-600">Phân Hạng</label><select name="customerRank" value={inputs.customerRank} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm"><option value="VIP">VIP / Sản xuất</option><option value="MEDIUM">Thân thiết</option><option value="SMALL">Vãng lai</option></select></div>
+                                            <div><label className="text-xs font-bold text-gray-600">Tần Suất</label><select name="buyFrequency" value={inputs.buyFrequency} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm"><option value="REGULAR">Đều đặn</option><option value="WALKIN">Vãng lai</option></select></div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs font-bold text-gray-600 block">Lãi vay (%/Năm)</label><input type="number" name="interestRateYear" step="0.1" value={inputs.interestRateYear} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1 font-medium text-blue-700" placeholder="VD: 7.5" /></div>
-                                            <div><label className="text-xs font-bold text-gray-600 block flex items-center gap-1"><Clock className="w-3 h-3" /> Tuổi kho (Tháng)</label><input type="number" name="inventoryAge" value={inputs.inventoryAge} onChange={handleInputChange} className={`w-full border rounded px-2 py-1.5 text-sm mt-1 ${inputs.inventoryAge > 6 ? 'bg-purple-100 text-purple-800 font-bold border-purple-400' : ''}`} /></div>
+                                            <div><label className="text-xs font-bold text-gray-600">Lãi vay (%/Năm)</label><input type="number" name="interestRateYear" step="0.1" value={inputs.interestRateYear} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm font-medium text-blue-700"/></div>
+                                            <div><label className="text-xs font-bold text-gray-600">Tuổi kho (Tháng)</label><input type="number" name="inventoryAge" value={inputs.inventoryAge} onChange={handleInputChange} className={`w-full border rounded px-2 py-1.5 text-sm ${inputs.inventoryAge > 6 ? 'bg-purple-100 text-purple-800 font-bold' : ''}`} /></div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div><label className="text-xs font-bold text-gray-600 block flex items-center gap-1"><CreditCard className="w-3 h-3" /> Công nợ (Ngày)</label><input type="number" name="paymentDays" value={inputs.paymentDays} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1 focus:border-orange-500" /></div>
-                                            <div><label className="text-xs font-bold text-gray-600 block flex items-center gap-1"><Percent className="w-3 h-3" /> Dự phòng (%)</label><input type="number" name="riskProvision" step="0.1" value={inputs.riskProvision} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1 focus:border-orange-500 bg-yellow-50" /></div>
+                                            <div><label className="text-xs font-bold text-gray-600">Công nợ (Ngày)</label><input type="number" name="paymentDays" value={inputs.paymentDays} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm"/></div>
+                                            <div><label className="text-xs font-bold text-gray-600">Dự phòng (%)</label><input type="number" name="riskProvision" step="0.1" value={inputs.riskProvision} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm bg-yellow-50"/></div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* 3. TÙY BIẾN BÁO GIÁ */}
+                                {/* 3. CHI PHÍ GIA CÔNG & VẬN CHUYỂN */}
+                                <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                                    <div className="bg-gray-100 px-5 py-3 border-b border-gray-200"><h2 className="font-bold text-gray-700 flex items-center gap-2 text-sm uppercase"><Wrench className="w-4 h-4 text-blue-600" /> 3. Chi phí Gia công & Vận chuyển</h2></div>
+                                    <div className="p-5 space-y-3">
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-600">Vận chuyển, bốc dỡ (VNĐ)</label>
+                                            <input type="number" name="costTransport" value={inputs.costTransport} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" placeholder="0"/>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div><label className="text-xs font-bold text-gray-600">Gia công (Cắt, xẻ)</label><input type="number" name="costProcessing" value={inputs.costProcessing} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" placeholder="0"/></div>
+                                            <div><label className="text-xs font-bold text-gray-600">Bao gói, Palet</label><input type="number" name="costPackaging" value={inputs.costPackaging} onChange={handleInputChange} className="w-full border rounded px-2 py-1.5 text-sm mt-1" placeholder="0"/></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 4. CẤU HÌNH IN BÁO GIÁ */}
                                 <div className="bg-white rounded-xl shadow-md border border-indigo-200 overflow-hidden">
-                                    <div className="bg-indigo-50 px-5 py-3 border-b border-indigo-200"><h2 className="font-bold text-indigo-800 flex items-center gap-2 text-sm uppercase"><FileText className="w-4 h-4" /> 3. Cấu hình In Báo Giá</h2></div>
+                                    <div className="bg-indigo-50 px-5 py-3 border-b border-indigo-200"><h2 className="font-bold text-indigo-800 flex items-center gap-2 text-sm uppercase"><FileText className="w-4 h-4" /> 4. Cấu hình In Báo Giá</h2></div>
                                     <div className="p-5 space-y-3">
                                         <div><label className="text-xs font-bold text-gray-500">Ngày báo giá</label><input type="date" name="quoteDate" value={inputs.quoteDate} onChange={handleInputChange} className="w-full border rounded px-2 py-1 text-sm"/></div>
-                                        
-                                        <div className="pt-2 border-t border-dashed"><span className="text-xs font-bold text-gray-400 uppercase">Người nhận (Khách)</span></div>
                                         <input type="text" name="customerName" placeholder="Tên công ty khách" value={inputs.customerName} onChange={handleInputChange} className="w-full border rounded px-2 py-1 text-sm font-bold"/>
                                         <div className="grid grid-cols-2 gap-2">
-                                            <input type="text" name="receiverName" placeholder="Tên người nhận" value={inputs.receiverName} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm"/>
+                                            <input type="text" name="receiverName" placeholder="Người nhận" value={inputs.receiverName} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm"/>
                                             <input type="text" name="receiverTitle" placeholder="Chức danh" value={inputs.receiverTitle} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm"/>
                                         </div>
                                         <div className="grid grid-cols-3 gap-2">
                                             <input type="text" name="receiverMST" placeholder="MST" value={inputs.receiverMST} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm col-span-1"/>
                                             <input type="text" name="receiverPhone" placeholder="SĐT" value={inputs.receiverPhone} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm col-span-1"/>
                                             <input type="text" name="receiverEmail" placeholder="Email" value={inputs.receiverEmail} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm col-span-1"/>
+                                        </div>
+
+                                        <div className="pt-2 border-t border-dashed"><span className="text-xs font-bold text-gray-400 uppercase">Người gửi (Sale)</span></div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <input type="text" name="senderName" value={inputs.senderName} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm font-medium"/>
+                                            <input type="text" name="senderTitle" value={inputs.senderTitle} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm"/>
+                                            <input type="text" name="senderPhone" value={inputs.senderPhone} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm"/>
+                                            <input type="text" name="senderEmail" value={inputs.senderEmail} onChange={handleInputChange} className="border rounded px-2 py-1 text-sm"/>
                                         </div>
 
                                         <div className="pt-2 border-t border-dashed"><span className="text-xs font-bold text-gray-400 uppercase">Điều khoản & Chữ</span></div>
@@ -494,21 +505,13 @@
                             </div>
 
                             <div className="lg:col-span-6 space-y-6">
-                                {/* PAKD DASHBOARD */}
+                                {/* DASHBOARD */}
                                 <div className={`rounded-xl shadow-lg border-2 overflow-hidden transition-all duration-300 ${getStatusStyle(metrics.status)}`}>
                                     <div className="p-6 flex flex-col md:flex-row items-center gap-6">
                                         <div className="flex-shrink-0">{getIcon(metrics.status)}</div>
-                                        <div className="flex-1 text-center md:text-left">
-                                            <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Hệ thống khuyến nghị (TỔNG ĐƠN):</div>
-                                            <h3 className="text-2xl font-bold mb-2 uppercase tracking-tight">{metrics.recommendation}</h3>
-                                            <div className="text-sm md:text-base font-medium opacity-90 space-y-1"><p>➤ {metrics.reason}</p></div>
-                                        </div>
+                                        <div className="flex-1 text-center md:text-left"><div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-1">Hệ thống khuyến nghị (TỔNG ĐƠN):</div><h3 className="text-2xl font-bold mb-2 uppercase tracking-tight">{metrics.recommendation}</h3><div className="text-sm md:text-base font-medium opacity-90 space-y-1"><p>➤ {metrics.reason}</p></div></div>
                                         <div className="hidden md:block border-l border-current opacity-30 h-16 mx-2"></div>
-                                        <div className="hidden md:block text-right min-w-[120px]">
-                                            <div className="text-xs uppercase opacity-70 mb-1">Tổng Lãi/Lỗ Thực</div>
-                                            <div className={`text-2xl font-bold ${metrics.realMargin > 0 ? '' : 'text-red-700'}`}>{formatPercent(metrics.realMargin)}</div>
-                                            <div className="text-xs font-medium">Margin Tổng</div>
-                                        </div>
+                                        <div className="hidden md:block text-right min-w-[120px]"><div className="text-xs uppercase opacity-70 mb-1">Tổng Lãi/Lỗ Thực</div><div className={`text-2xl font-bold ${metrics.realMargin > 0 ? '' : 'text-red-700'}`}>{formatPercent(metrics.realMargin)}</div><div className="text-xs font-medium">Margin Tổng</div></div>
                                     </div>
                                 </div>
 
@@ -519,17 +522,15 @@
                                             <div className="flex justify-between items-baseline border-b border-dashed pb-2"><span className="text-sm text-gray-500">Lợi nhuận Kế toán</span><span className="font-medium text-gray-800">{formatCurrency(metrics.accountingProfit)}</span></div>
                                             <div className="bg-blue-50 rounded p-3 mt-2 border border-blue-100">
                                                 <div className="flex justify-between items-baseline pb-1"><span className="text-sm text-blue-800 font-bold">Lợi nhuận Thực (Net)</span><span className={`text-lg font-bold ${metrics.realProfit > 0 ? 'text-blue-600' : 'text-red-600'}`}>{formatCurrency(metrics.realProfit)}</span></div>
-                                                <div className="text-xs text-blue-600 flex justify-between"><span>Đã trừ:</span><span>Lãi vay & Dự phòng</span></div>
+                                                <div className="text-xs text-blue-600 flex justify-between"><span>Đã trừ:</span><span>Lãi vay, Dự phòng & Chi phí khác</span></div>
+                                                {metrics.totalAdditionalCosts > 0 && <div className="text-[10px] text-gray-500 text-right italic mt-1">(Đã trừ {formatCurrency(metrics.totalAdditionalCosts)} CP gia công/vận chuyển)</div>}
                                             </div>
                                         </div>
                                     </div>
                                     <div className={`rounded-xl shadow border p-5 ${metrics.warningLevel === 'CRITICAL' ? 'bg-red-50 border-red-200' : metrics.warningLevel === 'GROWTH' ? 'bg-blue-50 border-blue-200' : metrics.warningLevel === 'WARN' ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-200'}`}>
                                         <div className="flex justify-between items-start mb-4"><h4 className={`font-bold text-sm uppercase ${metrics.warningLevel === 'GROWTH' ? 'text-blue-700' : metrics.warningLevel === 'SAFE' ? 'text-gray-700' : 'text-red-700'}`}>Vốn & Hiện Vật</h4>{metrics.warningLevel === 'GROWTH' ? <Zap className="text-blue-600" /> : metrics.warningLevel === 'SAFE' ? <ShieldAlert className="text-gray-400" /> : <AlertTriangle className="text-red-600 animate-pulse" />}</div>
                                         <div className="space-y-4 divide-y divide-gray-200">
-                                            <div className="pb-2">
-                                                <div className="flex justify-between items-center mb-1"><span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1"><History className="w-3 h-3" /> Lãi vay đã mất</span><span className="font-bold text-red-600 text-sm">-{formatCurrency(metrics.sunkCost)}</span></div>
-                                                <div className="text-[10px] text-right text-gray-400">Tích lũy: {formatPercent(metrics.sunkCostRatio)} vốn gốc</div>
-                                            </div>
+                                            <div className="pb-2"><div className="flex justify-between items-center mb-1"><span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1"><History className="w-3 h-3" /> Lãi vay đã mất</span><span className="font-bold text-red-600 text-sm">-{formatCurrency(metrics.sunkCost)}</span></div><div className="text-[10px] text-right text-gray-400">Tích lũy: {formatPercent(metrics.sunkCostRatio)} vốn gốc</div></div>
                                             <div className="pt-2">
                                                 <div className="flex justify-between items-center mb-1"><span className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1"><Layers className="w-3 h-3" /> Thay đổi Vốn Hiện vật</span><span className={`text-sm font-bold ${metrics.volumeChangeRatio > 0 ? 'text-red-600' : 'text-blue-600'}`}>{metrics.volumeChangeRatio > 0 ? '-' : '+'}{formatPercent(Math.abs(metrics.volumeChangeRatio))}</span></div>
                                                 <div className="w-full bg-gray-200 rounded-full h-2 relative overflow-hidden"><div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gray-400 z-10"></div>{metrics.volumeChangeRatio > 0 ? (<div className={`absolute top-0 bottom-0 left-1/2 ${metrics.volumeChangeRatio > 5 ? 'bg-red-500' : 'bg-yellow-500'}`} style={{ width: `${Math.min(metrics.volumeChangeRatio * 5, 50)}%` }}></div>) : (<div className="absolute top-0 bottom-0 right-1/2 bg-blue-500" style={{ width: `${Math.min(Math.abs(metrics.volumeChangeRatio) * 5, 50)}%` }}></div>)}</div>
@@ -540,13 +541,30 @@
 
                                 <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                                     <h4 className="text-xs font-bold text-gray-500 uppercase mb-6 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-blue-600" /> Trực quan hóa vị thế giá (Bình quân)</h4>
-                                    <div className="relative h-12 bg-gray-100 rounded-full w-full flex items-center mt-4">
+                                    
+                                    {/* Competitor Alert */}
+                                    {metrics.competitorStatus === 'WARN' && (
+                                        <div className="mb-4 bg-orange-50 border border-orange-200 text-orange-800 px-3 py-2 rounded text-xs flex items-center gap-2 animate-pulse">
+                                            <Swords className="w-4 h-4" /> 
+                                            <strong>CẢNH BÁO CẠNH TRANH:</strong> Giá bán của bạn đang CAO HƠN giá đối thủ trung bình. Cần có lý do thuyết phục (Dịch vụ, chất lượng, tiến độ).
+                                        </div>
+                                    )}
+
+                                    <div className="relative h-12 bg-gray-100 rounded-full w-full flex items-center mt-8">
                                         <div className="absolute h-8 w-1 bg-gray-400 top-2 z-10 transition-all duration-500" style={{ left: `${Math.min((metrics.avgHistoricalCost / (Math.max(metrics.avgReplacementCost, metrics.avgHistoricalCost) * 1.2)) * 100, 100)}%` }}>
-                                            <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 text-[10px] text-gray-500 font-bold whitespace-nowrap bg-white px-1 border rounded shadow-sm">Giá Vốn</div>
+                                            <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 text-[10px] text-gray-500 font-bold whitespace-nowrap bg-white px-1 border rounded shadow-sm">Giá Vốn (Nhôm)</div>
                                         </div>
                                         <div className="absolute h-14 w-1 bg-purple-500 -top-1 z-10 transition-all duration-500" style={{ left: `${Math.min((metrics.avgReplacementCost / (Math.max(metrics.avgReplacementCost, metrics.avgHistoricalCost) * 1.2)) * 100, 100)}%` }}>
                                             <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[10px] text-purple-700 font-bold whitespace-nowrap bg-purple-50 px-1 border border-purple-200 rounded shadow-sm">Giá Nhập Mới</div>
                                         </div>
+                                        
+                                        {/* Competitor Marker (Orange) */}
+                                        {metrics.avgCompetitorPrice > 0 && (
+                                            <div className="absolute h-10 w-1 bg-orange-500 top-1 z-10 transition-all duration-500" style={{ left: `${Math.min((metrics.avgCompetitorPrice / (Math.max(metrics.avgReplacementCost, metrics.avgHistoricalCost) * 1.2)) * 100, 100)}%` }}>
+                                                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-[10px] text-orange-700 font-bold whitespace-nowrap bg-orange-50 px-1 border border-orange-200 rounded shadow-sm">Giá Đối Thủ</div>
+                                            </div>
+                                        )}
+
                                         <div className="absolute h-5 w-5 bg-blue-600 rounded-full top-3.5 z-20 transition-all duration-500 shadow-lg border-2 border-white cursor-pointer group" style={{ left: `${Math.min((metrics.avgSellPrice / (Math.max(metrics.avgReplacementCost, metrics.avgHistoricalCost) * 1.2)) * 100, 100)}%` }}>
                                             <div className="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded font-bold whitespace-nowrap shadow-md">Bạn bán (Avg)<div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-blue-600"></div></div>
                                         </div>
@@ -556,8 +574,6 @@
                             </div>
                         </main>
                     </div>
-
-                    {/* --- GIAO DIỆN IN ẤN (PRINT-ONLY) --- */}
                     <QuotationPrint inputs={inputs} metrics={metrics} productList={products} />
                 </div>
             );
