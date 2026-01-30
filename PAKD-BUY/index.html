@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAKD BUY 1.0 - Hệ thống Tính toán Nhập khẩu</title>
+    
+    <!-- Libraries -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: { 
+                extend: { 
+                    colors: {
+                        hd: { 900: '#0f172a', 800: '#1e293b', 600: '#334155' }
+                    }
+                } 
+            }
+        }
+    </script>
+
+    <!-- Print & Custom Styles -->
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; -webkit-print-color-adjust: exact; font-size: 11pt; }
+            @page { size: A4; margin: 1.5cm; }
+            .print-container { display: block !important; }
+            .screen-container { display: none !important; }
+        }
+        
+        .print-container { display: none; font-family: 'Times New Roman', serif; color: #000; }
+        .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10pt; }
+        .print-table th, .print-table td { border: 1px solid #333; padding: 6px; text-align: center; }
+        .print-table th { background-color: #f3f4f6; font-weight: bold; }
+        
+        /* Custom Scrollbar for Input Section */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        
+        .input-label { display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 2px; }
+        .input-field { width: 100%; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; transition: all 0.2s; }
+        .input-field:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen overflow-hidden flex flex-col">
+    <div id="root" class="h-full flex flex-col"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- UTILS ---
+        const formatVND = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
+        const formatUSD = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(v);
+        const formatNum = (v) => new Intl.NumberFormat('vi-VN').format(v);
+        const parseNum = (v) => parseFloat(v) || 0;
+
+        // --- ICONS ---
+        const Icons = {
+            Ship: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+            Money: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            Print: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>,
+            Factory: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+        };
+
+        // --- PRINT COMPONENT (TỜ TRÌNH) ---
+        const PrintTemplate = ({ inputs, product, result }) => {
+            const today = new Date();
+            return (
+                <div className="print-container p-8">
+                    <div className="text-center mb-6 border-b-2 border-black pb-4">
+                        <h1 className="text-2xl font-bold uppercase mb-1">TỜ TRÌNH PHƯƠNG ÁN NHẬP KHẨU (PAKD BUY)</h1>
+                        <p className="italic">Ngày lập: {today.getDate()}/{today.getMonth()+1}/{today.getFullYear()} | Mã: PAKD-{today.getTime().toString().substr(-6)}</p>
+                    </div>
+
+                    <div className="mb-6">
+                        <h3 className="font-bold border-b border-gray-400 mb-2 uppercase text-sm">I. Thông tin Lô hàng & Nhà cung cấp</h3>
+                        <table className="w-full text-sm mb-4">
+                            <tbody>
+                                <tr>
+                                    <td className="w-1/4 font-semibold">Nhà cung cấp:</td>
+                                    <td>{inputs.supplierName} ({inputs.origin})</td>
+                                    <td className="w-1/4 font-semibold">Tên hàng:</td>
+                                    <td>{product.name}</td>
+                                </tr>
+                                <tr>
+                                    <td className="font-semibold">Điều kiện giao hàng:</td>
+                                    <td>{inputs.incoterms}</td>
+                                    <td className="font-semibold">Khối lượng:</td>
+                                    <td>{formatNum(product.weight)} kg</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="mb-6">
+                        <h3 className="font-bold border-b border-gray-400 mb-2 uppercase text-sm">II. Phương án Tài chính & Giá vốn</h3>
+                        <div className="mb-2">
+                            <strong>Hình thức thanh toán:</strong> {inputs.paymentMethod === 'TT' ? 'T/T (Chuyển tiền)' : 'L/C (Thư tín dụng)'}
+                        </div>
+                        <table className="print-table">
+                            <thead>
+                                <tr>
+                                    <th>Khoản mục</th>
+                                    <th>Chi tiết tính toán</th>
+                                    <th>Giá trị (VND/kg)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td className="text-left font-semibold">1. Giá Mua (Base)</td>
+                                    <td className="text-left">Giá {formatUSD(product.priceFC)} * Tỷ giá {formatNum(inputs.exchangeRate)}</td>
+                                    <td className="text-right">{formatNum(result.priceBaseKg)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="text-left font-semibold">2. Chi phí Nhập khẩu</td>
+                                    <td className="text-left">Thuế {inputs.importTax}% + Cước + Local Charge</td>
+                                    <td className="text-right">{formatNum(result.importCostKg)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="text-left font-semibold">3. Chi phí Gia công</td>
+                                    <td className="text-left">Xả băng / Cắt tấm / Đóng gói</td>
+                                    <td className="text-right">{formatNum(inputs.processingCost)}</td>
+                                </tr>
+                                <tr className="bg-gray-100">
+                                    <td className="text-left font-bold">4. GIÁ VỐN CỨNG (1+2+3)</td>
+                                    <td className="text-left italic">Giá thành phẩm nhập kho</td>
+                                    <td className="text-right font-bold">{formatNum(result.hardCostKg)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="text-left font-semibold text-red-800">5. Chi phí Tài chính</td>
+                                    <td className="text-left text-red-800">{result.finExplanation}</td>
+                                    <td className="text-right text-red-800">{formatNum(result.finCostKg)}</td>
+                                </tr>
+                                <tr className="bg-yellow-100">
+                                    <td className="text-left font-bold text-lg">6. GIÁ HÒA VỐN (4+5)</td>
+                                    <td className="text-left italic">Tại thời điểm bán sau {inputs.leadTime + inputs.holdingTime} ngày</td>
+                                    <td className="text-right font-bold text-lg">{formatNum(result.breakEvenPrice)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="mb-8">
+                        <h3 className="font-bold border-b border-gray-400 mb-2 uppercase text-sm">III. Đánh giá Hiệu quả & Rủi ro</h3>
+                        <div className="flex justify-between border p-4">
+                            <div className="text-center w-1/3">
+                                <div className="text-xs uppercase text-gray-500">Giá thị trường hiện tại</div>
+                                <div className="font-bold text-xl">{formatNum(inputs.marketPrice)}</div>
+                            </div>
+                            <div className="text-center w-1/3 border-l border-r border-gray-300">
+                                <div className="text-xs uppercase text-gray-500">Biên Lợi nhuận (Dự kiến)</div>
+                                <div className={`font-bold text-xl ${result.profitKg > 0 ? 'text-green-700' : 'text-red-700'}`}>
+                                    {result.profitKg > 0 ? '+' : ''}{formatNum(result.profitKg)} đ/kg
+                                </div>
+                            </div>
+                            <div className="text-center w-1/3">
+                                <div className="text-xs uppercase text-gray-500">Khuyến nghị Hệ thống</div>
+                                <div className="font-bold text-xl uppercase">{result.recommendation}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between text-center mt-12 pt-8">
+                        <div className="w-1/3">
+                            <strong>Người Lập</strong><br/><br/><br/>{inputs.creator}
+                        </div>
+                        <div className="w-1/3">
+                            <strong>Trưởng Phòng Mua Hàng</strong><br/><br/><br/>(Ký duyệt)
+                        </div>
+                        <div className="w-1/3">
+                            <strong>Ban Giám Đốc</strong><br/><br/><br/>(Phê duyệt)
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- MAIN APP COMPONENT ---
+        const PAKD_BUY_App = () => {
+            // STATE
+            const [inputs, setInputs] = useState({
+                // Info
+                supplierName: 'Rizhao Steel', origin: 'China', incoterms: 'CIF Haiphong', creator: 'NV Mua Hàng',
+                // Payment
+                paymentMethod: 'LC', // 'TT' or 'LC'
+                // T/T Params
+                ttRatio: 100, capitalCostPercent: 6.5,
+                // L/C Params
+                lcMargin: 10, lcDays: 90, lcOpenFee: 0.2, lcInterest: 5.8,
+                // Logistics
+                exchangeRate: 25450,
+                leadTime: 30, holdingTime: 45,
+                freightTotal: 45000000, importTax: 0,
+                processingCost: 200, // Gia công
+                marketPrice: 16200
+            });
+
+            const [product, setProduct] = useState({
+                name: 'Thép cuộn cán nóng (HRC)',
+                weight: 50000,
+                priceFC: 585 // USD
+            });
+
+            const [result, setResult] = useState({});
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+
+            // ENGINE: CALCULATE LOGIC
+            useEffect(() => {
+                // 1. Base Costs
+                const totalBaseFC = product.weight * product.priceFC;
+                const totalBaseVND = totalBaseFC * inputs.exchangeRate;
+                const priceBaseKg = totalBaseVND / product.weight;
+
+                // 2. Import & Processing Costs
+                const taxVND = totalBaseVND * (inputs.importTax / 100);
+                const freightKg = inputs.freightTotal / product.weight;
+                const importCostKg = (taxVND / product.weight) + freightKg;
+                const hardCostKg = priceBaseKg + importCostKg + inputs.processingCost;
+
+                // 3. Financial Costs (The Core Logic)
+                let finCostVND = 0;
+                let finExplanation = '';
+                const totalDays = inputs.leadTime + inputs.holdingTime;
+
+                if (inputs.paymentMethod === 'TT') {
+                    // T/T: Opportunity cost on full amount from Day 0
+                    // Formula: Total * Rate% * Days / 365
+                    finCostVND = totalBaseVND * (inputs.capitalCostPercent / 100) * (totalDays / 365);
+                    finExplanation = `Chi phí vốn (${inputs.capitalCostPercent}%) cho ${totalDays} ngày`;
+                } else {
+                    // L/C: Leverage
+                    // a. Open Fee (Phí mở)
+                    const openFee = totalBaseVND * (inputs.lcOpenFee / 100);
+                    // b. L/C Interest (Lãi vay USD trả cho Bank) - Tính trong kỳ hạn L/C
+                    const lcInterest = totalBaseVND * (inputs.lcInterest / 100) * (inputs.lcDays / 365);
+                    // c. Margin Cost (Chi phí vốn cho phần ký quỹ)
+                    const marginCost = (totalBaseVND * inputs.lcMargin / 100) * (inputs.capitalCostPercent / 100) * (totalDays / 365);
+                    
+                    // d. Excess Holding Cost (Nếu hàng tồn lâu hơn hạn L/C -> Phải vay VND trả Bank)
+                    let excessCost = 0;
+                    if (totalDays > inputs.lcDays) {
+                         const excessDays = totalDays - inputs.lcDays;
+                         // Giả định vay VND 7% để trả nợ L/C
+                         excessCost = totalBaseVND * (7.0 / 100) * (excessDays / 365); 
+                    }
+
+                    finCostVND = openFee + lcInterest + marginCost + excessCost;
+                    finExplanation = `Phí L/C + Lãi vay USD (${inputs.lcDays} ngày) + Vốn ký quỹ`;
+                    if (totalDays > inputs.lcDays) finExplanation += ` + Phạt quá hạn`;
+                }
+
+                const finCostKg = finCostVND / product.weight;
+                const breakEvenPrice = hardCostKg + finCostKg;
+                const profitKg = inputs.marketPrice - breakEvenPrice;
+                const profitTotal = profitKg * product.weight;
+                const roi = (profitTotal / (breakEvenPrice * product.weight)) * 100;
+
+                // Recommendation Logic
+                let recommendation = "TỪ CHỐI";
+                if (roi > 2) recommendation = "NHẬP NGAY";
+                else if (roi >= 0) recommendation = "CÂN NHẮC";
+                else if (roi > -2 && inputs.paymentMethod === 'LC') recommendation = "TÍCH TRỮ (L/C)";
+
+                setResult({
+                    priceBaseKg, importCostKg, hardCostKg, finCostKg, finExplanation,
+                    breakEvenPrice, profitKg, profitTotal, roi, recommendation,
+                    totalBaseVND
+                });
+
+                // Chart Update
+                updateChart(hardCostKg, breakEvenPrice, inputs.marketPrice);
+
+            }, [inputs, product]);
+
+            const updateChart = (base, breakEven, market) => {
+                if (!chartRef.current) return;
+                
+                const labels = [30, 60, 90, 120, 150];
+                // Simulate cost rising over time
+                const dataPoints = labels.map(day => {
+                    // Simple linear projection for visualization
+                    const dailyFinCost = (result.totalBaseVND * (inputs.paymentMethod==='TT'?inputs.capitalCostPercent:7) / 100 / 365) / product.weight;
+                    return base + (inputs.processingCost) + (dailyFinCost * (inputs.leadTime + day));
+                });
+
+                if (chartInstance.current) chartInstance.current.destroy();
+
+                chartInstance.current = new Chart(chartRef.current, {
+                    type: 'line',
+                    data: {
+                        labels: labels.map(d => `+${d} ngày`),
+                        datasets: [
+                            {
+                                label: 'Giá Hòa Vốn (Tăng theo thời gian)',
+                                data: dataPoints,
+                                borderColor: '#ef4444',
+                                borderDash: [5, 5],
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Giá Thị Trường (Tham chiếu)',
+                                data: Array(5).fill(market),
+                                borderColor: '#10b981',
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: { y: { beginAtZero: false } }
+                    }
+                });
+            };
+
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                setInputs(prev => ({ ...prev, [name]: parseFloat(value) || value }));
+            };
+
+            const handlePrint = () => window.print();
+
+            return (
+                <div className="flex h-full screen-container">
+                    {/* LEFT PANEL: INPUTS (Scrollable) */}
+                    <div className="w-1/3 bg-white border-r border-slate-200 h-full overflow-y-auto custom-scroll p-6 flex flex-col">
+                        <div className="flex items-center gap-2 mb-6 text-blue-900">
+                            <Icons.Ship />
+                            <h1 className="text-xl font-bold tracking-tight">PAKD BUY 1.0</h1>
+                        </div>
+
+                        {/* 1. PRODUCT & SUPPLIER */}
+                        <div className="mb-6">
+                            <h2 className="text-xs font-bold text-slate-400 uppercase mb-3 pb-1 border-b">1. Thông tin Hàng hóa</h2>
+                            <div className="space-y-3">
+                                <div><label className="input-label">Tên hàng</label><input type="text" value={product.name} onChange={e=>setProduct({...product, name: e.target.value})} className="input-field font-medium" /></div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div><label className="input-label">Khối lượng (Kg)</label><input type="number" value={product.weight} onChange={e=>setProduct({...product, weight: parseFloat(e.target.value)})} className="input-field" /></div>
+                                    <div><label className="input-label">Giá Invoice (USD)</label><input type="number" value={product.priceFC} onChange={e=>setProduct({...product, priceFC: parseFloat(e.target.value)})} className="input-field text-blue-600 font-bold" /></div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div><label className="input-label">Nhà cung cấp</label><input type="text" name="supplierName" value={inputs.supplierName} onChange={handleChange} className="input-field" /></div>
+                                    <div><label className="input-label">Tỷ giá (VND)</label><input type="number" name="exchangeRate" value={inputs.exchangeRate} onChange={handleChange} className="input-field" /></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 2. PAYMENT METHOD (THE SWITCH) */}
+                        <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                            <h2 className="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><Icons.Money /> 2. Dòng tiền thanh toán</h2>
+                            <div className="flex bg-white rounded p-1 border border-slate-200 mb-4">
+                                <button onClick={() => setInputs(p => ({...p, paymentMethod: 'TT'}))} className={`flex-1 py-1 text-xs font-bold rounded ${inputs.paymentMethod === 'TT' ? 'bg-blue-600 text-white' : 'text-slate-500'}`}>T/T (Tiền mặt)</button>
+                                <button onClick={() => setInputs(p => ({...p, paymentMethod: 'LC'}))} className={`flex-1 py-1 text-xs font-bold rounded ${inputs.paymentMethod === 'LC' ? 'bg-indigo-600 text-white' : 'text-slate-500'}`}>L/C (Tín dụng)</button>
+                            </div>
+
+                            {inputs.paymentMethod === 'TT' ? (
+                                <div className="animate-pulse-once space-y-3">
+                                    <div><label className="input-label">Chi phí cơ hội vốn (%/năm)</label><input type="number" name="capitalCostPercent" value={inputs.capitalCostPercent} onChange={handleChange} className="input-field" /></div>
+                                    <p className="text-[10px] text-slate-500 italic">Dùng 100% tiền doanh nghiệp, mất cơ hội gửi tiết kiệm hoặc phải trả lãi vay thông thường.</p>
+                                </div>
+                            ) : (
+                                <div className="animate-pulse-once space-y-3">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div><label className="input-label">Ký quỹ (Margin %)</label><input type="number" name="lcMargin" value={inputs.lcMargin} onChange={handleChange} className="input-field" /></div>
+                                        <div><label className="input-label">Kỳ hạn L/C (Ngày)</label><input type="number" name="lcDays" value={inputs.lcDays} onChange={handleChange} className="input-field" /></div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div><label className="input-label">Phí mở L/C (%)</label><input type="number" name="lcOpenFee" value={inputs.lcOpenFee} onChange={handleChange} className="input-field" /></div>
+                                        <div><label className="input-label">Lãi vay USD (%/năm)</label><input type="number" name="lcInterest" value={inputs.lcInterest} onChange={handleChange} className="input-field" /></div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 3. LOGISTICS & PROCESSING */}
+                        <div className="mb-6">
+                            <h2 className="text-xs font-bold text-slate-400 uppercase mb-3 pb-1 border-b">3. Chi phí Logistics & Gia công</h2>
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div><label className="input-label">Tổng cước + Logs (VND)</label><input type="number" name="freightTotal" value={inputs.freightTotal} onChange={handleChange} className="input-field" /></div>
+                                    <div><label className="input-label">Thuế NK (%)</label><input type="number" name="importTax" value={inputs.importTax} onChange={handleChange} className="input-field" /></div>
+                                </div>
+                                <div><label className="input-label text-indigo-600">Chi phí Gia công (VND/kg)</label><input type="number" name="processingCost" value={inputs.processingCost} onChange={handleChange} className="input-field border-indigo-200 bg-indigo-50 font-semibold" placeholder="Xả băng, cắt tấm..." /></div>
+                            </div>
+                        </div>
+
+                         {/* 4. TIME & MARKET */}
+                         <div className="mb-6">
+                            <h2 className="text-xs font-bold text-slate-400 uppercase mb-3 pb-1 border-b">4. Thời gian & Thị trường</h2>
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div><label className="input-label">Lead Time (Hàng về)</label><input type="number" name="leadTime" value={inputs.leadTime} onChange={handleChange} className="input-field" /></div>
+                                    <div><label className="input-label text-red-500">Dự kiến quay vòng (Ngày)</label><input type="number" name="holdingTime" value={inputs.holdingTime} onChange={handleChange} className="input-field border-red-200 bg-red-50 font-bold" /></div>
+                                </div>
+                                <div><label className="input-label text-green-600">Giá thị trường (VND/kg)</label><input type="number" name="marketPrice" value={inputs.marketPrice} onChange={handleChange} className="input-field border-green-200 bg-green-50 font-bold text-lg" /></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* RIGHT PANEL: DASHBOARD */}
+                    <div className="w-2/3 bg-slate-50 h-full overflow-y-auto custom-scroll p-8">
+                        
+                        {/* HEADER ACTIONS */}
+                        <div className="flex justify-between items-center mb-8">
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-800">Phân tích Hiệu quả</h2>
+                                <p className="text-sm text-slate-500">Mô phỏng tài chính thương vụ nhập khẩu</p>
+                            </div>
+                            <button onClick={handlePrint} className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded shadow flex items-center gap-2 text-sm font-bold">
+                                <Icons.Print /> In Tờ Trình
+                            </button>
+                        </div>
+
+                        {/* KEY METRICS CARDS */}
+                        <div className="grid grid-cols-3 gap-6 mb-8">
+                            {/* Card 1: Hard Cost */}
+                            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                                <div className="text-xs font-bold text-slate-400 uppercase">Giá Vốn Cứng (Hard Cost)</div>
+                                <div className="text-2xl font-bold text-slate-700 mt-2">{formatNum(result.hardCostKg)}</div>
+                                <div className="text-xs text-slate-400 mt-1">Đã gồm Thuế + Cước + Gia công</div>
+                            </div>
+                            
+                            {/* Card 2: Break-Even */}
+                            <div className="bg-white p-5 rounded-xl shadow-md border-l-4 border-red-500">
+                                <div className="text-xs font-bold text-red-500 uppercase flex justify-between">
+                                    <span>Giá Hòa Vốn (Break-even)</span>
+                                    <span className="text-[10px] bg-red-100 px-1 rounded">{inputs.paymentMethod}</span>
+                                </div>
+                                <div className="text-3xl font-bold text-red-700 mt-1">{formatNum(result.breakEvenPrice)}</div>
+                                <div className="text-[10px] text-red-400 mt-1 truncate" title={result.finExplanation}>
+                                    + {formatNum(result.finCostKg)} lãi ({result.finExplanation})
+                                </div>
+                            </div>
+
+                            {/* Card 3: Recommendation */}
+                            <div className={`p-5 rounded-xl shadow-sm border text-center flex flex-col justify-center ${result.roi > 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                                <div className={`text-xs font-bold uppercase ${result.roi > 0 ? 'text-green-600' : 'text-red-600'}`}>Khuyến nghị</div>
+                                <div className={`text-2xl font-bold mt-1 uppercase ${result.roi > 0 ? 'text-green-700' : 'text-red-700'}`}>{result.recommendation}</div>
+                                <div className={`text-sm font-bold mt-1 ${result.roi > 0 ? 'text-green-600' : 'text-red-600'}`}>ROI: {formatNum(result.roi)}%</div>
+                            </div>
+                        </div>
+
+                        {/* ANALYSIS SECTION */}
+                        <div className="grid grid-cols-2 gap-6 mb-6">
+                            {/* Breakdown Table */}
+                            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                                <h3 className="font-bold text-slate-700 text-sm uppercase mb-4">Cơ cấu Giá vốn (VND/kg)</h3>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between border-b border-dashed pb-1">
+                                        <span className="text-slate-500">1. Giá Base (Hàng)</span>
+                                        <span className="font-medium">{formatNum(result.priceBaseKg)}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b border-dashed pb-1">
+                                        <span className="text-slate-500">2. Thuế & Logistics</span>
+                                        <span className="font-medium">{formatNum(result.importCostKg)}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b border-dashed pb-1">
+                                        <span className="text-slate-500">3. Gia công (Cắt/Xẻ)</span>
+                                        <span className="font-medium">{formatNum(inputs.processingCost)}</span>
+                                    </div>
+                                    <div className="flex justify-between pb-1 text-red-600">
+                                        <span className="">4. Chi phí Tài chính</span>
+                                        <span className="font-bold">{formatNum(result.finCostKg)}</span>
+                                    </div>
+                                    <div className="flex justify-between pt-2 border-t border-slate-200">
+                                        <span className="font-bold text-slate-800">TỔNG GIÁ VỐN</span>
+                                        <span className="font-bold text-slate-800 text-lg">{formatNum(result.breakEvenPrice)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                             {/* Market Comparison */}
+                             <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                                <div>
+                                    <h3 className="font-bold text-slate-700 text-sm uppercase mb-4">So sánh Thị trường</h3>
+                                    <div className="mb-6">
+                                        <div className="flex justify-between text-xs mb-1">
+                                            <span>Giá Hòa Vốn</span>
+                                            <span className="font-bold">{formatNum(result.breakEvenPrice)}</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 rounded-full h-2">
+                                            <div className="bg-red-500 h-2 rounded-full" style={{width: '80%'}}></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between text-xs mb-1">
+                                            <span>Giá Thị Trường</span>
+                                            <span className="font-bold text-green-600">{formatNum(inputs.marketPrice)}</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 rounded-full h-2 relative">
+                                            <div className="bg-green-500 h-2 rounded-full absolute top-0 left-0" style={{width: '100%'}}></div>
+                                            {/* Overlay comparison */}
+                                            <div className="bg-white border-l-2 border-black h-4 w-0.5 absolute -top-1" style={{left: `${Math.min((result.breakEvenPrice/inputs.marketPrice)*100, 100)}%`}}></div>
+                                        </div>
+                                        <div className="text-right text-[10px] text-slate-400 mt-1">Vạch đen: Vị trí giá hòa vốn của bạn</div>
+                                    </div>
+                                </div>
+                                <div className="mt-4 text-center">
+                                    <span className="text-xs text-slate-500">Lợi nhuận dự kiến:</span>
+                                    <div className={`text-xl font-bold ${result.profitKg > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {formatVND(result.profitTotal)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* CHART */}
+                        <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 h-64">
+                            <h3 className="font-bold text-slate-700 text-sm uppercase mb-2">Biểu đồ Áp lực Tồn kho</h3>
+                            <div className="h-48">
+                                <canvas ref={chartRef}></canvas>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* HIDDEN PRINT AREA */}
+                    <PrintTemplate inputs={inputs} product={product} result={result} />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<PAKD_BUY_App />);
+    </script>
+</body>
+</html>
