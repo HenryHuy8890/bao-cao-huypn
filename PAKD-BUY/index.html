@@ -159,66 +159,62 @@
 
             // --- CORE ENGINE ---
             useEffect(() => {
-                // 1. Tính giá trị Invoice quy đổi (Logic: priceFC là USD/Tấn)
-                const invoiceUSD = (product.weight / 1000) * product.priceFC;
+                // 1. Tính giá trị Invoice quy đổi (giữ nguyên)
+                const invoiceUSD = (product.weight / 1000) * product.priceFC;  // tấn × USD/tấn
                 const invoiceVND = invoiceUSD * inputs.exchangeRate;
-                
-                // 2. Tính giá sau Hệ số Quản lý (Management Value)
-                // Logic: Giá này bao gồm Invoice + Overhead quản lý
+
+                // 2. Giá sau hệ số quản lý
                 const landedValueHD = invoiceVND * (1 + inputs.managementFee / 100);
                 const mgmtCostVND = landedValueHD - invoiceVND;
-                
-                // --- GIÁ TRỊ HÀNG HÓA THUẦN (Physical Value) ---
+
                 const pureGoodsValueVND = landedValueHD;
 
-                // 3. Tính Logistics & Thuế
-                const taxVND = invoiceVND * (inputs.importTax / 100); 
-                const freightVND = inputs.freightTotal;
+                // 3. Logistics & Thuế
+                const taxVND = invoiceVND * (inputs.importTax / 100);
+                const safeFreightVND = inputs.freightTotal <= 0 ? 0 : inputs.freightTotal; // FIX 2: bảo vệ khi freight = 0
                 const processingVND = inputs.processingCost * product.weight;
 
-                // --- TỔNG GIÁ TRỊ HÀNG VẬT LÝ VỀ KHO ---
-                // pureGoodsValueVND (Invoice+Mgmt) + Tax + Freight + Processing
-                // ĐÂY LÀ TỔNG GIÁ TRỊ TÀI SẢN KHO TĂNG THÊM
-                const landedPhysicalVND = pureGoodsValueVND + taxVND + freightVND + processingVND;
-                const newBatchPhysicalCost = landedPhysicalVND / product.weight; // ĐƠN GIÁ VẬT LÝ (đ/kg)
+                // TỔNG GIÁ TRỊ VẬT LÝ VỀ KHO (ghi nhận tài sản)
+                const landedPhysicalVND = pureGoodsValueVND + taxVND + safeFreightVND + processingVND;
 
-                // 4. Tính Chi phí Tài chính (FINANCE) - Tách riêng hoàn toàn
+                // ────────────────────────────────────────────────
+                // FIX 1 – QUAN TRỌNG NHẤT: Tách rõ tấn → kg
+                // Tính giá vật lý theo TẤN trước, rồi mới quy về kg
+                const landedPhysicalPerTon = landedPhysicalVND / (product.weight / 1000); // VND / tấn
+                const newBatchPhysicalCost = landedPhysicalPerTon / 1000;                 // VND / kg (chuẩn)
+
+                // 4. Chi phí tài chính (giữ nguyên logic)
                 let finCostVND = 0;
                 const totalDays = inputs.leadTime + inputs.holdingTime;
-                
+
                 if (inputs.paymentMethod === 'TT') {
-                    const cashOutflow = invoiceVND + taxVND + freightVND;
+                    const cashOutflow = invoiceVND + taxVND + safeFreightVND;
                     finCostVND = cashOutflow * (inputs.capitalCostPercent / 100) * (totalDays / 365);
                 } else {
                     const openFee = invoiceVND * (inputs.lcOpenFee / 100);
                     const lcInterest = invoiceVND * (inputs.lcInterest / 100) * (inputs.lcDays / 365);
-                    const equityUsed = (invoiceVND * inputs.lcMargin/100) + taxVND + freightVND;
+                    const equityUsed = (invoiceVND * inputs.lcMargin/100) + taxVND + safeFreightVND;
                     const equityCost = equityUsed * (inputs.capitalCostPercent / 100) * (totalDays / 365);
                     finCostVND = openFee + lcInterest + equityCost;
                 }
-                const finCostKg = finCostVND / product.weight; // CHI PHÍ VỐN (đ/kg)
+                const finCostKg = finCostVND / product.weight;
 
-                // --- TỔNG KINH TẾ (ECONOMIC) ---
                 const newBatchEconomicCost = newBatchPhysicalCost + finCostKg;
 
-                // 5. ENGINE BÌNH QUÂN (Weighted Average) - LOGIC CHUẨN: CHỈ BÌNH QUÂN GIÁ TRỊ VẬT LÝ
-                // Chỉ lấy tồn kho thực tế, không tính hàng đi đường vào giá bình quân hiện tại
+                // 5. Bình quân giá vốn – CHỈ tính giá trị vật lý (đúng chuẩn kế toán)
                 const currentTotalQty = inventory.stockQty;
                 const currentTotalValue = inventory.stockQty * inventory.stockAvgCost;
-                // currentAvgCost (đ/kg)
                 const currentAvgCost = currentTotalQty > 0 ? currentTotalValue / currentTotalQty : 0;
 
                 const newTotalQty = currentTotalQty + product.weight;
-                
-                // QUAN TRỌNG: Chỉ cộng giá trị hàng hóa VẬT LÝ vào kho
-                const newTotalValue = currentTotalValue + landedPhysicalVND; 
-                
-                // ---> ĐÂY LÀ ĐƠN GIÁ BÌNH QUÂN MỚI (đ/kg) <---
+                // IMPORTANT: landedPhysicalVND = giá trị ghi nhận tài sản kho
+                // KHÔNG bao gồm chi phí tài chính, KHÔNG bao gồm hàng đi đường
+                const newTotalValue = currentTotalValue + landedPhysicalVND;
                 const newAvgCostKg = newTotalQty > 0 ? newTotalValue / newTotalQty : 0;
-                
+
                 const deltaCost = newAvgCostKg - currentAvgCost;
 
-                // 6. Logic Khuyến nghị
+                // 6. Recommendation (giữ nguyên)
                 let recommendation = "", recColor = "";
                 if (newAvgCostKg <= inputs.contractPrice) { recommendation = "NHẬP BẢO TOÀN"; recColor = "text-green-600"; }
                 else if (newAvgCostKg <= inputs.marketPrice) { recommendation = "NHẬP CÂN BẰNG"; recColor = "text-blue-600"; }
@@ -231,7 +227,6 @@
                     recommendation, recColor
                 });
 
-                // CHART: Dùng đơn giá (đ/kg) để vẽ
                 updateChart(currentAvgCost, newBatchPhysicalCost, newAvgCostKg);
 
             }, [inputs, inventory, product]);
@@ -349,8 +344,24 @@
                             </div>
                             
                             <div className="grid grid-cols-2 gap-3">
-                                <div><label className="input-label">Cước + Logs (TỔNG CHO LÔ MỚI – VND)</label><input type="text" value={formatNum(inputs.freightTotal)} onChange={e => handleInputChange({target: {name:'freightTotal', value: e.target.value.replace(/\./g,'')}})} className="input-field text-xs" /></div>
-                                <div><label className="input-label">Gia công (VND/kg)</label><input type="number" name="processingCost" value={inputs.processingCost} onChange={handleInputChange} className="input-field text-xs" /></div>
+                                <div>
+                                    <label className="input-label">Cước + Logs (TỔNG CHO LÔ MỚI – VND)</label>
+                                    <div className="text-[10px] text-slate-500 italic mb-1">
+                                        * Nếu chưa có số chính xác, nhập ước tính tối thiểu (khuyến nghị > 0)
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formatNum(inputs.freightTotal)}
+                                        onChange={e => handleInputChange({target: {name:'freightTotal', value: e.target.value.replace(/\./g,'')}})}
+                                        className="input-field text-xs"
+                                        min="0"
+                                        step="100000"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="input-label">Gia công (VND/kg)</label>
+                                    <input type="number" name="processingCost" value={inputs.processingCost} onChange={handleInputChange} className="input-field text-xs" />
+                                </div>
                             </div>
                         </div>
 
@@ -409,9 +420,6 @@
                                     <div className="text-xs font-medium mt-1 text-indigo-200 flex items-center gap-1">
                                         {result.deltaCost > 0 ? <span className="bg-red-500/20 px-1 rounded">▲ Tăng {formatNum(result.deltaCost)}</span> : <span className="bg-green-500/20 px-1 rounded">▼ Giảm {formatNum(Math.abs(result.deltaCost))}</span>}
                                         <span>đ/kg</span>
-                                    </div>
-                                    <div className="text-[10px] text-slate-400 italic mt-1">
-                                        (Giá BQ bị kéo lên do lô mới cao hơn tồn kho hiện hữu)
                                     </div>
                                 </div>
                                 <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white opacity-5 rounded-full blur-xl"></div>
