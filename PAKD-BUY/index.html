@@ -146,7 +146,7 @@
             const [product, setProduct] = useState({
                 name: 'Thép cuộn HRC Q235',
                 weight: 200000,
-                priceFC: 575 // USD
+                priceFC: 575 // USD/TẤN
             });
 
             const [result, setResult] = useState({});
@@ -155,8 +155,10 @@
 
             // --- CORE ENGINE ---
             useEffect(() => {
-                // 1. Tính giá trị Invoice quy đổi
-                const invoiceVND = product.weight * product.priceFC * inputs.exchangeRate;
+                // 1. Tính giá trị Invoice quy đổi (Logic: priceFC là USD/Tấn)
+                // CÔNG THỨC MỚI: (Số kg / 1000) * Đơn giá USD/Tấn * Tỷ giá
+                const invoiceUSD = (product.weight / 1000) * product.priceFC;
+                const invoiceVND = invoiceUSD * inputs.exchangeRate;
                 
                 // 2. Tính giá sau Hệ số Quản lý (Management Value)
                 // Logic: Giá này bao gồm Invoice + Overhead quản lý, chưa gồm Logistics cụ thể
@@ -287,7 +289,7 @@
                             <DualWeightInput label="Khối lượng mua" valueKg={product.weight} onChange={v => setProduct({...product, weight: v})} />
                             
                             <div className="grid grid-cols-2 gap-3 mb-3">
-                                <div><label className="input-label">Giá Invoice (USD)</label><input type="number" value={product.priceFC} onChange={e=>setProduct({...product, priceFC: parseFloat(e.target.value)})} className="input-field font-bold text-green-700" /></div>
+                                <div><label className="input-label">Giá Invoice (USD / TẤN)</label><input type="number" value={product.priceFC} onChange={e=>setProduct({...product, priceFC: parseFloat(e.target.value)})} className="input-field font-bold text-green-700" /></div>
                                 <div title="Chi phí quản lý, rủi ro, overhead"><label className="input-label text-purple-700 cursor-help">Hệ số quản lý (%) ⓘ</label><input type="number" name="managementFee" value={inputs.managementFee} onChange={handleInputChange} className="input-field bg-purple-50 border-purple-200 text-purple-700 font-bold" /></div>
                             </div>
 
