@@ -164,25 +164,23 @@
                 const invoiceVND = invoiceUSD * inputs.exchangeRate;
                 
                 // 2. Tính giá sau Hệ số Quản lý (Management Value)
-                // Logic: Giá này bao gồm Invoice + Overhead quản lý
                 const landedValueHD = invoiceVND * (1 + inputs.managementFee / 100);
                 const mgmtCostVND = landedValueHD - invoiceVND;
                 
-                // --- TÁCH BIỆT: GIÁ TRỊ HÀNG HÓA THUẦN (Dùng cho Bình Quân) ---
+                // --- GIÁ TRỊ HÀNG HÓA THUẦN (Physical Value) ---
                 const pureGoodsValueVND = landedValueHD;
 
-                // 3. Tính các chi phí Logistics & Thuế (Cụ thể cho lô mới)
+                // 3. Tính Logistics & Thuế
                 const taxVND = invoiceVND * (inputs.importTax / 100); 
                 const freightVND = inputs.freightTotal;
                 const processingVND = inputs.processingCost * product.weight;
 
-                // --- TÁCH BIỆT: CHI PHÍ VẬT LÝ (PHYSICAL) ---
+                // --- TỔNG GIÁ TRỊ HÀNG VẬT LÝ VỀ KHO ---
                 // pureGoodsValueVND (Invoice+Mgmt) + Tax + Freight + Processing
-                // ĐÂY LÀ GIÁ VỀ KHO THỰC TẾ ĐỂ GHI NHẬN TÀI SẢN
                 const landedPhysicalVND = pureGoodsValueVND + taxVND + freightVND + processingVND;
-                const newBatchPhysicalCost = landedPhysicalVND / product.weight;
+                const newBatchPhysicalCost = landedPhysicalVND / product.weight; // ĐƠN GIÁ VẬT LÝ (đ/kg)
 
-                // 4. Tính Chi phí Tài chính (FINANCE) - Tách riêng
+                // 4. Tính Chi phí Tài chính (FINANCE) - Tách riêng hoàn toàn
                 let finCostVND = 0;
                 const totalDays = inputs.leadTime + inputs.holdingTime;
                 
@@ -196,40 +194,42 @@
                     const equityCost = equityUsed * (inputs.capitalCostPercent / 100) * (totalDays / 365);
                     finCostVND = openFee + lcInterest + equityCost;
                 }
-                const finCostKg = finCostVND / product.weight;
+                const finCostKg = finCostVND / product.weight; // CHI PHÍ VỐN (đ/kg)
 
                 // --- TỔNG KINH TẾ (ECONOMIC) ---
-                // Giá vật lý + Chi phí vốn
                 const newBatchEconomicCost = newBatchPhysicalCost + finCostKg;
 
-                // 5. ENGINE BÌNH QUÂN (Weighted Average) - LOGIC: CHỈ BÌNH QUÂN GIÁ TRỊ HÀNG VẬT LÝ
-                // Để tránh làm méo mó giá tồn kho bởi chi phí tài chính ngắn hạn
+                // 5. ENGINE BÌNH QUÂN (Weighted Average) - LOGIC CHUẨN: CHỈ BÌNH QUÂN GIÁ TRỊ VẬT LÝ
                 const currentTotalQty = inventory.stockQty + inventory.transitQty;
                 const currentTotalValue = (inventory.stockQty * inventory.stockAvgCost) + (inventory.transitQty * inventory.transitAvgCost);
+                // currentAvgCost (đ/kg)
                 const currentAvgCost = currentTotalQty > 0 ? currentTotalValue / currentTotalQty : 0;
 
                 const newTotalQty = currentTotalQty + product.weight;
                 
-                // QUAN TRỌNG: Chỉ cộng giá trị hàng hóa VẬT LÝ vào kho
+                // CỘNG DỒN GIÁ TRỊ VẬT LÝ
                 const newTotalValue = currentTotalValue + landedPhysicalVND; 
-                const newAvgCost = newTotalValue / newTotalQty;
                 
-                const deltaCost = newAvgCost - currentAvgCost;
+                // ---> ĐÂY LÀ ĐƠN GIÁ BÌNH QUÂN MỚI (đ/kg) <---
+                const newAvgCostKg = newTotalQty > 0 ? newTotalValue / newTotalQty : 0;
+                
+                const deltaCost = newAvgCostKg - currentAvgCost;
 
                 // 6. Logic Khuyến nghị
                 let recommendation = "", recColor = "";
-                if (newAvgCost <= inputs.contractPrice) { recommendation = "NHẬP BẢO TOÀN"; recColor = "text-green-600"; }
-                else if (newAvgCost <= inputs.marketPrice) { recommendation = "NHẬP CÂN BẰNG"; recColor = "text-blue-600"; }
+                if (newAvgCostKg <= inputs.contractPrice) { recommendation = "NHẬP BẢO TOÀN"; recColor = "text-green-600"; }
+                else if (newAvgCostKg <= inputs.marketPrice) { recommendation = "NHẬP CÂN BẰNG"; recColor = "text-blue-600"; }
                 else { recommendation = "RỦI RO CAO"; recColor = "text-red-600"; }
 
                 setResult({
                     invoiceVND, mgmtCostVND, finCostVND,
                     landedPhysicalVND, newBatchPhysicalCost, finCostKg, newBatchEconomicCost,
-                    currentTotalQty, currentAvgCost, newTotalQty, newAvgCost, deltaCost,
+                    currentTotalQty, currentAvgCost, newTotalQty, newAvgCostKg, deltaCost,
                     recommendation, recColor
                 });
 
-                updateChart(currentAvgCost, newBatchPhysicalCost, newAvgCost);
+                // CHART: Dùng đơn giá (đ/kg) để vẽ
+                updateChart(currentAvgCost, newBatchPhysicalCost, newAvgCostKg);
 
             }, [inputs, inventory, product]);
 
@@ -251,8 +251,28 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: false, min: Math.min(oldAvg, newBatch) * 0.95 } }
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return formatNum(context.parsed.y) + ' đ/kg';
+                                    }
+                                }
+                            }
+                        },
+                        scales: { 
+                            y: { 
+                                beginAtZero: false, 
+                                // Scale trục Y thông minh quanh vùng giá (ví dụ 90k - 110k)
+                                min: Math.min(oldAvg, newBatch, newAvg) * 0.9,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatNum(value);
+                                    }
+                                }
+                            } 
+                        }
                     }
                 });
             };
@@ -350,14 +370,18 @@
                             {/* Current State */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
                                 <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Giá Vốn BQ Hiện Tại</div>
-                                <div className="text-2xl font-bold text-slate-600 mt-1">{formatNum(result.currentAvgCost)}</div>
+                                <div className="text-2xl font-bold text-slate-600 mt-1">
+                                    {formatNum(result.currentAvgCost)} <span className="text-sm font-normal text-slate-400">đ/kg</span>
+                                </div>
                                 <div className="w-full bg-slate-100 h-1 mt-2 rounded overflow-hidden"><div className="bg-slate-400 h-full" style={{width: '100%'}}></div></div>
                             </div>
 
                             {/* The Deal */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center relative overflow-hidden">
                                 <div className="text-xs font-bold text-green-600 uppercase tracking-wide">Giá Về Kho Vật Lý</div>
-                                <div className="text-2xl font-bold text-green-700 mt-1">{formatNum(result.newBatchPhysicalCost)}</div>
+                                <div className="text-2xl font-bold text-green-700 mt-1">
+                                    {formatNum(result.newBatchPhysicalCost)} <span className="text-sm font-normal text-green-500">đ/kg</span>
+                                </div>
                                 <div className="text-xs text-red-500 mt-1 font-semibold flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 bg-red-500 rounded-full inline-block"></span>
                                     Chi phí vốn: {formatNum(result.finCostKg)} đ/kg
@@ -369,7 +393,9 @@
                             <div className="bg-corporate-800 text-white p-4 rounded-xl shadow-lg flex flex-col justify-center relative overflow-hidden">
                                 <div className="relative z-10">
                                     <div className="text-xs font-bold text-indigo-300 uppercase tracking-wide">Giá Bình Quân Mới</div>
-                                    <div className="text-3xl font-bold mt-1">{formatNum(result.newAvgCost)}</div>
+                                    <div className="text-3xl font-bold mt-1">
+                                        {formatNum(result.newAvgCostKg)} <span className="text-lg font-normal opacity-70">đ/kg</span>
+                                    </div>
                                     <div className="text-xs font-medium mt-1 text-indigo-200 flex items-center gap-1">
                                         {result.deltaCost > 0 ? <span className="bg-red-500/20 px-1 rounded">▲ Tăng {formatNum(result.deltaCost)}</span> : <span className="bg-green-500/20 px-1 rounded">▼ Giảm {formatNum(Math.abs(result.deltaCost))}</span>}
                                         <span>đ/kg</span>
@@ -398,8 +424,8 @@
                                                 <div className="text-xs text-slate-500">So với Hợp đồng</div>
                                                 <div className="font-bold text-slate-700">{formatNum(inputs.contractPrice)}</div>
                                             </div>
-                                            <div className={`px-3 py-1 rounded text-xs font-bold ${result.newAvgCost <= inputs.contractPrice ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                {result.newAvgCost <= inputs.contractPrice ? 'CÓ LÃI' : 'LỖ VỊ THẾ'}
+                                            <div className={`px-3 py-1 rounded text-xs font-bold ${result.newAvgCostKg <= inputs.contractPrice ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {result.newAvgCostKg <= inputs.contractPrice ? 'CÓ LÃI' : 'LỖ VỊ THẾ'}
                                             </div>
                                         </div>
 
@@ -408,8 +434,8 @@
                                                 <div className="text-xs text-slate-500">So với Thị trường</div>
                                                 <div className="font-bold text-slate-700">{formatNum(inputs.marketPrice)}</div>
                                             </div>
-                                            <div className={`px-3 py-1 rounded text-xs font-bold ${result.newAvgCost <= inputs.marketPrice ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
-                                                {result.newAvgCost <= inputs.marketPrice ? 'CẠNH TRANH' : 'CAO HƠN TT'}
+                                            <div className={`px-3 py-1 rounded text-xs font-bold ${result.newAvgCostKg <= inputs.marketPrice ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                {result.newAvgCostKg <= inputs.marketPrice ? 'CẠNH TRANH' : 'CAO HƠN TT'}
                                             </div>
                                         </div>
                                     </div>
@@ -509,7 +535,7 @@
                                 <div className="text-2xl text-gray-400">➔</div>
                                 <div className="text-center border-2 border-blue-600 p-2 bg-white rounded">
                                     <div className="text-xs uppercase text-blue-800 font-bold">GIÁ BÌNH QUÂN SAU NHẬP</div>
-                                    <div className="font-black text-2xl text-blue-800">{formatNum(result.newAvgCost)}</div>
+                                    <div className="font-black text-2xl text-blue-800">{formatNum(result.newAvgCostKg)}</div>
                                 </div>
                             </div>
                             <div className="mt-2 text-right italic text-sm">
