@@ -156,57 +156,55 @@
             // --- CORE ENGINE ---
             useEffect(() => {
                 // 1. Tính giá trị Invoice quy đổi (Logic: priceFC là USD/Tấn)
-                // CÔNG THỨC MỚI: (Số kg / 1000) * Đơn giá USD/Tấn * Tỷ giá
                 const invoiceUSD = (product.weight / 1000) * product.priceFC;
                 const invoiceVND = invoiceUSD * inputs.exchangeRate;
                 
                 // 2. Tính giá sau Hệ số Quản lý (Management Value)
-                // Logic: Giá này bao gồm Invoice + Overhead quản lý, chưa gồm Logistics cụ thể
+                // Logic: Giá này bao gồm Invoice + Overhead quản lý
                 const landedValueHD = invoiceVND * (1 + inputs.managementFee / 100);
+                const mgmtCostVND = landedValueHD - invoiceVND;
                 
-                // 3. Tính các chi phí Logistics & Thuế (Cụ thể)
-                const taxVND = invoiceVND * (inputs.importTax / 100); // Thuế tính trên giá gốc
+                // --- TÁCH BIỆT: GIÁ TRỊ HÀNG HÓA THUẦN (Dùng cho Bình Quân) ---
+                const pureGoodsValueVND = landedValueHD;
+
+                // 3. Tính các chi phí Logistics & Thuế & Tài chính (Cụ thể cho lô mới)
+                const taxVND = invoiceVND * (inputs.importTax / 100); 
                 const freightVND = inputs.freightTotal;
                 const processingVND = inputs.processingCost * product.weight;
 
-                // 4. Tính Chi phí Tài chính
                 let finCostVND = 0;
                 const totalDays = inputs.leadTime + inputs.holdingTime;
                 
                 if (inputs.paymentMethod === 'TT') {
-                    // TT: Tính trên tổng tiền phải trả (Invoice + Tax + Freight)
                     const cashOutflow = invoiceVND + taxVND + freightVND;
                     finCostVND = cashOutflow * (inputs.capitalCostPercent / 100) * (totalDays / 365);
                 } else {
-                    // LC: Phí mở + Lãi vay Invoice + Vốn tự có cho Margin/Tax/Freight
                     const openFee = invoiceVND * (inputs.lcOpenFee / 100);
                     const lcInterest = invoiceVND * (inputs.lcInterest / 100) * (inputs.lcDays / 365);
-                    // Vốn tự có bỏ ra: Margin (10% Invoice) + Thuế + Cước
                     const equityUsed = (invoiceVND * inputs.lcMargin/100) + taxVND + freightVND;
                     const equityCost = equityUsed * (inputs.capitalCostPercent / 100) * (totalDays / 365);
-                    
                     finCostVND = openFee + lcInterest + equityCost;
                 }
 
-                // 5. Tổng hợp Giá Vốn Lô Mới (Full Landed Cost per Kg)
-                // Lưu ý: landedValueHD đã bao gồm Invoice + Mgmt Fee. Cộng thêm Tax, Freight, Processing, Finance
-                // Tuy nhiên, Mgmt Fee thường là để cover Overhead. Để tránh tính trùng, ta lấy (LandedValueHD - Invoice) làm chi phí quản lý.
-                const mgmtCostVND = landedValueHD - invoiceVND;
-                const totalCostVND = invoiceVND + mgmtCostVND + taxVND + freightVND + processingVND + finCostVND;
-                
-                const newBatchFullCost = totalCostVND / product.weight;
+                // --- TÁCH BIỆT: CHI PHÍ RIÊNG CỦA LÔ MỚI (Không đẩy vào Bình Quân tồn kho cũ) ---
+                const newBatchOnlyCostVND = taxVND + freightVND + processingVND + finCostVND;
 
-                // 6. ENGINE BÌNH QUÂN (Weighted Average)
+                // 4. Tổng hợp Giá Vốn Lô Mới (Full Landed Cost per Kg) - Để xem xét hiệu quả lô này
+                const newBatchFullCost = (pureGoodsValueVND + newBatchOnlyCostVND) / product.weight;
+
+                // 5. ENGINE BÌNH QUÂN (Weighted Average) - LOGIC MỚI: CHỈ BÌNH QUÂN GIÁ TRỊ HÀNG
                 const currentTotalQty = inventory.stockQty + inventory.transitQty;
                 const currentTotalValue = (inventory.stockQty * inventory.stockAvgCost) + (inventory.transitQty * inventory.transitAvgCost);
                 const currentAvgCost = currentTotalQty > 0 ? currentTotalValue / currentTotalQty : 0;
 
                 const newTotalQty = currentTotalQty + product.weight;
-                const newTotalValue = currentTotalValue + totalCostVND;
+                // QUAN TRỌNG: Chỉ cộng giá trị hàng hóa thuần vào kho, tránh "lây nhiễm" chi phí logs/tài chính lô mới sang tồn kho cũ
+                const newTotalValue = currentTotalValue + pureGoodsValueVND; 
                 const newAvgCost = newTotalValue / newTotalQty;
+                
                 const deltaCost = newAvgCost - currentAvgCost;
 
-                // 7. Logic Khuyến nghị
+                // 6. Logic Khuyến nghị
                 let recommendation = "", recColor = "";
                 if (newAvgCost <= inputs.contractPrice) { recommendation = "NHẬP BẢO TOÀN"; recColor = "text-green-600"; }
                 else if (newAvgCost <= inputs.marketPrice) { recommendation = "NHẬP CÂN BẰNG"; recColor = "text-blue-600"; }
@@ -229,7 +227,7 @@
                 chartInstance.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Hiện tại', 'Lô Mới', 'SAU NHẬP'],
+                        labels: ['Hiện tại', 'Lô Mới (Full)', 'SAU NHẬP (BQ)'],
                         datasets: [{
                             label: 'Giá Vốn (VND/kg)',
                             data: [oldAvg, newBatch, newAvg],
@@ -308,7 +306,7 @@
                             </div>
                             
                             <div className="grid grid-cols-2 gap-3">
-                                <div><label className="input-label">Cước + Logs (VND)</label><input type="text" value={formatNum(inputs.freightTotal)} onChange={e => handleInputChange({target: {name:'freightTotal', value: e.target.value.replace(/\./g,'')}})} className="input-field text-xs" /></div>
+                                <div><label className="input-label">Cước + Logs (TỔNG CHO LÔ MỚI – VND)</label><input type="text" value={formatNum(inputs.freightTotal)} onChange={e => handleInputChange({target: {name:'freightTotal', value: e.target.value.replace(/\./g,'')}})} className="input-field text-xs" /></div>
                                 <div><label className="input-label">Gia công (VND/kg)</label><input type="number" name="processingCost" value={inputs.processingCost} onChange={handleInputChange} className="input-field text-xs" /></div>
                             </div>
                         </div>
