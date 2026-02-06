@@ -72,14 +72,44 @@
             Briefcase: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
         };
 
-        // --- DUAL UNIT INPUT COMPONENT (Kg <-> Ton) ---
+        // --- NEW SINGLE INPUT COMPONENTS ---
+        const SingleWeightInput = ({ label, valueKg, onChange }) => (
+          <div className="mb-2">
+            <label className="input-label">{label}</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={valueKg ? formatNum(valueKg) : ''}
+                onChange={e => onChange(parseNum(e.target.value.replace(/\./g,'')))}
+                className="input-field pr-6 text-right font-bold"
+                placeholder="0"
+              />
+              <span className="absolute right-2 top-1.5 text-[10px] text-slate-400">kg</span>
+            </div>
+          </div>
+        );
+
+        const SinglePriceInput = ({ label, valuePerKg, onChange }) => (
+          <div className="mb-2">
+            <label className="input-label">{label}</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={valuePerKg ? formatNum(valuePerKg) : ''}
+                onChange={e => onChange(parseNum(e.target.value.replace(/\./g,'')))}
+                className="input-field pr-8 text-right font-medium"
+                placeholder="0"
+              />
+              <span className="absolute right-2 top-1.5 text-[10px] text-slate-400">đ/kg</span>
+            </div>
+          </div>
+        );
+
+        // --- DUAL UNIT INPUT COMPONENT (Kg <-> Ton) - Kept for other sections ---
         const DualPriceInput = ({ label, valuePerKg, onChange }) => {
-            // valuePerKg is the source of truth
             const valKg = valuePerKg;
             const valTon = valuePerKg * 1000;
-
             const handleKgChange = (e) => onChange(parseNum(e.target.value));
-
             return (
                 <div className="mb-2">
                     <label className="input-label">{label}</label>
@@ -90,7 +120,6 @@
                         </div>
                         <Icons.Exchange />
                         <div className="flex-1 relative">
-                            {/* Readonly Ton Input */}
                             <input type="text" value={valTon ? formatNum(valTon) : ''} readOnly className="input-field readonly pr-8 text-right" placeholder="0" />
                             <span className="absolute right-2 top-1.5 text-[10px] text-slate-400">đ/tấn</span>
                         </div>
@@ -102,9 +131,7 @@
         const DualWeightInput = ({ label, valueKg, onChange }) => {
             const valKg = valueKg;
             const valTon = valueKg / 1000;
-
             const handleKgChange = (e) => onChange(parseNum(e.target.value));
-
             return (
                 <div className="mb-2">
                     <label className="input-label">{label}</label>
@@ -115,7 +142,6 @@
                         </div>
                         <Icons.Exchange />
                         <div className="flex-1 relative">
-                            {/* Readonly Ton Input */}
                             <input type="text" value={valTon ? formatNum(valTon) : ''} readOnly className="input-field readonly pr-8 text-right" />
                             <span className="absolute right-2 top-1.5 text-[10px] text-slate-400">tấn</span>
                         </div>
@@ -144,7 +170,10 @@
                 leadTime: 30, holdingTime: 60,
                 freightTotal: 45000000, importTax: 0, processingCost: 200,
                 contractPrice: 102000, // Giá hợp đồng giả định
-                marketPrice: 99500     // Giá thị trường giả định
+                marketPrice: 99500,     // Giá thị trường giả định
+                businessRiskPercent: 2.0,      // biên an toàn / rủi ro kinh doanh %
+                customerCreditDays: 30,        // ngày công nợ khách hàng
+                lendingRate: 12.0              // lãi suất vay tham chiếu %/năm
             });
 
             const [product, setProduct] = useState({
@@ -214,6 +243,16 @@
 
                 const deltaCost = newAvgCostKg - currentAvgCost;
 
+                // ── Lớp kinh doanh ──────────────────────────────────────
+                const customerFinanceCostKg = 
+                  newBatchEconomicCost * (inputs.lendingRate / 100) * (inputs.customerCreditDays / 365);
+
+                const sellingPriceAfterRisk = 
+                  inputs.contractPrice * (1 - inputs.businessRiskPercent / 100);
+
+                const realProfitKg = 
+                  sellingPriceAfterRisk - newBatchEconomicCost - customerFinanceCostKg;
+
                 // 6. Recommendation (giữ nguyên)
                 let recommendation = "", recColor = "";
                 if (newAvgCostKg <= inputs.contractPrice) { recommendation = "NHẬP BẢO TOÀN"; recColor = "text-green-600"; }
@@ -224,7 +263,8 @@
                     invoiceVND, mgmtCostVND, finCostVND,
                     landedPhysicalVND, newBatchPhysicalCost, finCostKg, newBatchEconomicCost,
                     currentTotalQty, currentAvgCost, newTotalQty, newAvgCostKg, deltaCost,
-                    recommendation, recColor
+                    recommendation, recColor,
+                    realProfitKg, customerFinanceCostKg, sellingPriceAfterRisk
                 });
 
                 updateChart(currentAvgCost, newBatchPhysicalCost, newAvgCostKg);
@@ -238,7 +278,7 @@
                 chartInstance.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Hiện tại', 'Lô Mới (Vật lý)', 'SAU NHẬP (BQ)'],
+                        labels: ['Hiện tại', 'Lô Mới về kho', 'SAU NHẬP (BQ)'],
                         datasets: [{
                             label: 'Giá Vốn (VND/kg)',
                             data: [oldAvg, newBatch, newAvg],
@@ -294,11 +334,72 @@
                         <div className="bg-stock-light border border-stock-border rounded-lg p-4 shadow-sm relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-16 h-16 bg-blue-400 opacity-10 rounded-bl-full -mr-8 -mt-8"></div>
                             <div className="input-group-header text-stock-text"><Icons.Warehouse /> A. HIỆN TRẠNG KHO</div>
-                            <DualWeightInput label="1. Tồn kho hiện hữu" valueKg={inventory.stockQty} onChange={v => handleInvChange('stockQty', v)} />
-                            <DualPriceInput label="Giá vốn Tồn kho" valuePerKg={inventory.stockAvgCost} onChange={v => handleInvChange('stockAvgCost', v)} />
+                            
+                            <SingleWeightInput
+                              label="1. Tồn kho hiện hữu"
+                              valueKg={inventory.stockQty}
+                              onChange={v => handleInvChange('stockQty', v)}
+                            />
+
+                            <SinglePriceInput
+                              label="Giá vốn Tồn kho"
+                              valuePerKg={inventory.stockAvgCost}
+                              onChange={v => handleInvChange('stockAvgCost', v)}
+                            />
+
                             <div className="my-3 border-t border-stock-border"></div>
-                            <DualWeightInput label="2. Hàng đang đi đường" valueKg={inventory.transitQty} onChange={v => handleInvChange('transitQty', v)} />
-                            <DualPriceInput label="Giá vốn Hàng về" valuePerKg={inventory.transitAvgCost} onChange={v => handleInvChange('transitAvgCost', v)} />
+
+                            <SingleWeightInput
+                              label="2. Hàng đang đi đường"
+                              valueKg={inventory.transitQty}
+                              onChange={v => handleInvChange('transitQty', v)}
+                            />
+
+                            <SinglePriceInput
+                              label="Giá vốn Hàng về"
+                              valuePerKg={inventory.transitAvgCost}
+                              onChange={v => handleInvChange('transitAvgCost', v)}
+                            />
+                        </div>
+
+                        {/* C. THAM CHIẾU */}
+                        <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+                            <div className="input-group-header"><Icons.Briefcase /> C. THAM CHIẾU GIÁ BÁN</div>
+                            <DualPriceInput label="Giá Hợp đồng / Kế hoạch" valuePerKg={inputs.contractPrice} onChange={v => setInputs({...inputs, contractPrice: v})} />
+                            <DualPriceInput label="Giá Thị trường Spot" valuePerKg={inputs.marketPrice} onChange={v => setInputs({...inputs, marketPrice: v})} />
+                            
+                            <div className="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-slate-100">
+                              <div>
+                                <label className="input-label text-orange-700">Hệ số kinh doanh (%)</label>
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  value={inputs.businessRiskPercent}
+                                  onChange={e => setInputs({...inputs, businessRiskPercent: parseFloat(e.target.value) || 0})}
+                                  className="input-field font-bold text-orange-700 border-orange-200 bg-orange-50"
+                                />
+                                <div className="text-[9px] text-slate-500 mt-0.5">biên an toàn / rủi ro PAKD</div>
+                              </div>
+                              <div>
+                                <label className="input-label text-indigo-700">Công nợ KH (ngày)</label>
+                                <input
+                                  type="number"
+                                  value={inputs.customerCreditDays}
+                                  onChange={e => setInputs({...inputs, customerCreditDays: parseInt(e.target.value) || 0})}
+                                  className="input-field border-indigo-200 bg-indigo-50"
+                                />
+                              </div>
+                              <div>
+                                <label className="input-label text-rose-700">Lãi vay tham chiếu (%/năm)</label>
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  value={inputs.lendingRate}
+                                  onChange={e => setInputs({...inputs, lendingRate: parseFloat(e.target.value) || 0})}
+                                  className="input-field border-rose-200 bg-rose-50"
+                                />
+                              </div>
+                            </div>
                         </div>
 
                         {/* B. LÔ MUA MỚI */}
@@ -364,13 +465,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        {/* C. THAM CHIẾU */}
-                        <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-                            <div className="input-group-header"><Icons.Briefcase /> C. THAM CHIẾU GIÁ BÁN</div>
-                            <DualPriceInput label="Giá Hợp đồng / Kế hoạch" valuePerKg={inputs.contractPrice} onChange={v => setInputs({...inputs, contractPrice: v})} />
-                            <DualPriceInput label="Giá Thị trường Spot" valuePerKg={inputs.marketPrice} onChange={v => setInputs({...inputs, marketPrice: v})} />
-                        </div>
                     </div>
 
                     {/* RIGHT: DASHBOARD */}
@@ -390,7 +484,7 @@
                         <div className="grid grid-cols-3 gap-4 mb-6">
                             {/* Current State */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
-                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Giá Vốn BQ Hiện Tại</div>
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Giá Vốn Tồn Kho hiện tại</div>
                                 <div className="text-2xl font-bold text-slate-600 mt-1">
                                     {formatNum(result.currentAvgCost)} <span className="text-sm font-normal text-slate-400">đ/kg</span>
                                 </div>
@@ -399,7 +493,7 @@
 
                             {/* The Deal */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center relative overflow-hidden">
-                                <div className="text-xs font-bold text-green-600 uppercase tracking-wide">Giá Về Kho Vật Lý</div>
+                                <div className="text-xs font-bold text-green-600 uppercase tracking-wide">Giá lô mới về kho</div>
                                 <div className="text-2xl font-bold text-green-700 mt-1">
                                     {formatNum(result.newBatchPhysicalCost)} <span className="text-sm font-normal text-green-500">đ/kg</span>
                                 </div>
@@ -420,6 +514,9 @@
                                     <div className="text-xs font-medium mt-1 text-indigo-200 flex items-center gap-1">
                                         {result.deltaCost > 0 ? <span className="bg-red-500/20 px-1 rounded">▲ Tăng {formatNum(result.deltaCost)}</span> : <span className="bg-green-500/20 px-1 rounded">▼ Giảm {formatNum(Math.abs(result.deltaCost))}</span>}
                                         <span>đ/kg</span>
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 italic mt-1">
+                                        (Giá BQ bị kéo lên do lô mới cao hơn tồn kho hiện hữu)
                                     </div>
                                 </div>
                                 <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white opacity-5 rounded-full blur-xl"></div>
@@ -462,7 +559,15 @@
                                     </div>
                                 </div>
 
-                                <div className={`mt-6 text-center p-4 rounded-xl border-2 transition-colors ${result.recColor === 'text-green-600' ? 'bg-green-50 border-green-200' : result.recColor === 'text-blue-600' ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'}`}>
+                                <div className={`p-4 mt-2 rounded-xl border ${result.realProfitKg > 0 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+                                  <div className="text-sm font-bold text-slate-600">Lãi/Lỗ thực tế sau bán (đ/kg)</div>
+                                  <div className={`text-2xl font-black mt-1 ${result.realProfitKg > 0 ? 'text-green-700' : 'text-red-700'}`}>
+                                    {result.realProfitKg > 0 ? '+' : ''}{formatNum(result.realProfitKg)}
+                                  </div>
+                                  <div className="text-[10px] text-slate-500 italic mt-1">Đã trừ chi phí tài chính công nợ & rủi ro</div>
+                                </div>
+
+                                <div className={`mt-4 text-center p-4 rounded-xl border-2 transition-colors ${result.recColor === 'text-green-600' ? 'bg-green-50 border-green-200' : result.recColor === 'text-blue-600' ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'}`}>
                                     <div className="text-[10px] font-bold uppercase tracking-widest opacity-60">Khuyến nghị Hệ thống</div>
                                     <div className={`text-2xl font-black mt-1 ${result.recColor}`}>{result.recommendation}</div>
                                 </div>
