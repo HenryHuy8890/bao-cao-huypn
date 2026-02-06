@@ -48,6 +48,7 @@
         .input-label { display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 2px; }
         .input-field { width: 100%; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px 8px; font-size: 0.9rem; transition: all 0.2s; }
         .input-field:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+        .input-field.readonly { background-color: #f1f5f9; color: #64748b; cursor: not-allowed; border-color: #e2e8f0; }
         .input-group-header { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
     </style>
 </head>
@@ -78,7 +79,6 @@
             const valTon = valuePerKg * 1000;
 
             const handleKgChange = (e) => onChange(parseNum(e.target.value));
-            const handleTonChange = (e) => onChange(parseNum(e.target.value) / 1000);
 
             return (
                 <div className="mb-2">
@@ -90,7 +90,8 @@
                         </div>
                         <Icons.Exchange />
                         <div className="flex-1 relative">
-                            <input type="text" value={valTon ? formatNum(valTon) : ''} onChange={(e) => handleTonChange({target: {value: e.target.value.replace(/\./g,'')}})} className="input-field pr-8 text-right bg-slate-50 text-slate-600" placeholder="0" />
+                            {/* Readonly Ton Input */}
+                            <input type="text" value={valTon ? formatNum(valTon) : ''} readOnly className="input-field readonly pr-8 text-right" placeholder="0" />
                             <span className="absolute right-2 top-1.5 text-[10px] text-slate-400">đ/tấn</span>
                         </div>
                     </div>
@@ -103,7 +104,6 @@
             const valTon = valueKg / 1000;
 
             const handleKgChange = (e) => onChange(parseNum(e.target.value));
-            const handleTonChange = (e) => onChange(parseNum(e.target.value) * 1000);
 
             return (
                 <div className="mb-2">
@@ -115,7 +115,8 @@
                         </div>
                         <Icons.Exchange />
                         <div className="flex-1 relative">
-                            <input type="text" value={valTon ? formatNum(valTon) : ''} onChange={(e) => handleTonChange({target: {value: e.target.value.replace(/\./g,'')}})} className="input-field pr-8 text-right bg-slate-50 text-slate-600" />
+                            {/* Readonly Ton Input */}
+                            <input type="text" value={valTon ? formatNum(valTon) : ''} readOnly className="input-field readonly pr-8 text-right" />
                             <span className="absolute right-2 top-1.5 text-[10px] text-slate-400">tấn</span>
                         </div>
                     </div>
@@ -125,10 +126,12 @@
 
         // --- MAIN APP ---
         const PAKD_BUY_V2_1 = () => {
-            // 1. STATE
+            // 1. STATE (Updated with Real Aluminum Import Data)
             const [inventory, setInventory] = useState({
-                stockQty: 500000, stockAvgCost: 15800,
-                transitQty: 100000, transitAvgCost: 15600
+                stockQty: 1000,       // 1 Tấn
+                stockAvgCost: 97000,  // 97k/kg
+                transitQty: 5000,     // 5 Tấn
+                transitAvgCost: 100000 // 100k/kg
             });
 
             const [inputs, setInputs] = useState({
@@ -136,17 +139,18 @@
                 paymentMethod: 'LC',
                 ttRatio: 100, capitalCostPercent: 6.5,
                 lcMargin: 10, lcDays: 90, lcOpenFee: 0.2, lcInterest: 5.8,
-                exchangeRate: 25450, // Tỷ giá
-                managementFee: 3.0, // Hệ số quản lý %
+                exchangeRate: 26150, // Tỷ giá thực tế
+                managementFee: 1.0,  // Hệ số quản lý 1%
                 leadTime: 30, holdingTime: 60,
                 freightTotal: 45000000, importTax: 0, processingCost: 200,
-                contractPrice: 16500, marketPrice: 16200
+                contractPrice: 102000, // Giá hợp đồng giả định
+                marketPrice: 99500     // Giá thị trường giả định
             });
 
             const [product, setProduct] = useState({
-                name: 'Thép cuộn HRC Q235',
-                weight: 200000,
-                priceFC: 575 // USD/TẤN
+                name: 'Nhôm cuộn A1050 H14',
+                weight: 5000, // 5 Tấn
+                priceFC: 4120 // USD/TẤN
             });
 
             const [result, setResult] = useState({});
@@ -167,11 +171,18 @@
                 // --- TÁCH BIỆT: GIÁ TRỊ HÀNG HÓA THUẦN (Dùng cho Bình Quân) ---
                 const pureGoodsValueVND = landedValueHD;
 
-                // 3. Tính các chi phí Logistics & Thuế & Tài chính (Cụ thể cho lô mới)
+                // 3. Tính các chi phí Logistics & Thuế (Cụ thể cho lô mới)
                 const taxVND = invoiceVND * (inputs.importTax / 100); 
                 const freightVND = inputs.freightTotal;
                 const processingVND = inputs.processingCost * product.weight;
 
+                // --- TÁCH BIỆT: CHI PHÍ VẬT LÝ (PHYSICAL) ---
+                // pureGoodsValueVND (Invoice+Mgmt) + Tax + Freight + Processing
+                // ĐÂY LÀ GIÁ VỀ KHO THỰC TẾ ĐỂ GHI NHẬN TÀI SẢN
+                const landedPhysicalVND = pureGoodsValueVND + taxVND + freightVND + processingVND;
+                const newBatchPhysicalCost = landedPhysicalVND / product.weight;
+
+                // 4. Tính Chi phí Tài chính (FINANCE) - Tách riêng
                 let finCostVND = 0;
                 const totalDays = inputs.leadTime + inputs.holdingTime;
                 
@@ -185,21 +196,22 @@
                     const equityCost = equityUsed * (inputs.capitalCostPercent / 100) * (totalDays / 365);
                     finCostVND = openFee + lcInterest + equityCost;
                 }
+                const finCostKg = finCostVND / product.weight;
 
-                // --- TÁCH BIỆT: CHI PHÍ RIÊNG CỦA LÔ MỚI (Không đẩy vào Bình Quân tồn kho cũ) ---
-                const newBatchOnlyCostVND = taxVND + freightVND + processingVND + finCostVND;
+                // --- TỔNG KINH TẾ (ECONOMIC) ---
+                // Giá vật lý + Chi phí vốn
+                const newBatchEconomicCost = newBatchPhysicalCost + finCostKg;
 
-                // 4. Tổng hợp Giá Vốn Lô Mới (Full Landed Cost per Kg) - Để xem xét hiệu quả lô này
-                const newBatchFullCost = (pureGoodsValueVND + newBatchOnlyCostVND) / product.weight;
-
-                // 5. ENGINE BÌNH QUÂN (Weighted Average) - LOGIC MỚI: CHỈ BÌNH QUÂN GIÁ TRỊ HÀNG
+                // 5. ENGINE BÌNH QUÂN (Weighted Average) - LOGIC: CHỈ BÌNH QUÂN GIÁ TRỊ HÀNG VẬT LÝ
+                // Để tránh làm méo mó giá tồn kho bởi chi phí tài chính ngắn hạn
                 const currentTotalQty = inventory.stockQty + inventory.transitQty;
                 const currentTotalValue = (inventory.stockQty * inventory.stockAvgCost) + (inventory.transitQty * inventory.transitAvgCost);
                 const currentAvgCost = currentTotalQty > 0 ? currentTotalValue / currentTotalQty : 0;
 
                 const newTotalQty = currentTotalQty + product.weight;
-                // QUAN TRỌNG: Chỉ cộng giá trị hàng hóa thuần vào kho, tránh "lây nhiễm" chi phí logs/tài chính lô mới sang tồn kho cũ
-                const newTotalValue = currentTotalValue + pureGoodsValueVND; 
+                
+                // QUAN TRỌNG: Chỉ cộng giá trị hàng hóa VẬT LÝ vào kho
+                const newTotalValue = currentTotalValue + landedPhysicalVND; 
                 const newAvgCost = newTotalValue / newTotalQty;
                 
                 const deltaCost = newAvgCost - currentAvgCost;
@@ -211,12 +223,13 @@
                 else { recommendation = "RỦI RO CAO"; recColor = "text-red-600"; }
 
                 setResult({
-                    invoiceVND, mgmtCostVND, newBatchFullCost, finCostVND,
+                    invoiceVND, mgmtCostVND, finCostVND,
+                    landedPhysicalVND, newBatchPhysicalCost, finCostKg, newBatchEconomicCost,
                     currentTotalQty, currentAvgCost, newTotalQty, newAvgCost, deltaCost,
                     recommendation, recColor
                 });
 
-                updateChart(currentAvgCost, newBatchFullCost, newAvgCost);
+                updateChart(currentAvgCost, newBatchPhysicalCost, newAvgCost);
 
             }, [inputs, inventory, product]);
 
@@ -227,7 +240,7 @@
                 chartInstance.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Hiện tại', 'Lô Mới (Full)', 'SAU NHẬP (BQ)'],
+                        labels: ['Hiện tại', 'Lô Mới (Vật lý)', 'SAU NHẬP (BQ)'],
                         datasets: [{
                             label: 'Giá Vốn (VND/kg)',
                             data: [oldAvg, newBatch, newAvg],
@@ -343,9 +356,12 @@
 
                             {/* The Deal */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center relative overflow-hidden">
-                                <div className="text-xs font-bold text-green-600 uppercase tracking-wide">Giá Về Kho H&D (Lô Mới)</div>
-                                <div className="text-2xl font-bold text-green-700 mt-1">{formatNum(result.newBatchFullCost)}</div>
-                                <div className="text-[10px] text-slate-400 mt-1 italic">Đã gồm {inputs.managementFee}% phí quản lý</div>
+                                <div className="text-xs font-bold text-green-600 uppercase tracking-wide">Giá Về Kho Vật Lý</div>
+                                <div className="text-2xl font-bold text-green-700 mt-1">{formatNum(result.newBatchPhysicalCost)}</div>
+                                <div className="text-xs text-red-500 mt-1 font-semibold flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full inline-block"></span>
+                                    Chi phí vốn: {formatNum(result.finCostKg)} đ/kg
+                                </div>
                                 <div className="absolute right-2 top-2 text-green-100"><Icons.Ship /></div>
                             </div>
 
@@ -453,20 +469,26 @@
                                     <tr>
                                         <td className="text-left font-bold">3. Logistics & Thuế</td>
                                         <td className="text-left italic text-xs">Thuế NK, Cước, Gia công</td>
-                                        <td className="text-right">{formatNum((result.newBatchFullCost * product.weight) - result.invoiceVND - result.mgmtCostVND - result.finCostVND)}</td>
-                                        <td className="text-right">{formatNum(((result.newBatchFullCost * product.weight) - result.invoiceVND - result.mgmtCostVND - result.finCostVND)/product.weight)}</td>
+                                        <td className="text-right">{formatNum(result.landedPhysicalVND - result.invoiceVND - result.mgmtCostVND)}</td>
+                                        <td className="text-right">{formatNum((result.landedPhysicalVND - result.invoiceVND - result.mgmtCostVND)/product.weight)}</td>
+                                    </tr>
+                                    <tr className="bg-green-100">
+                                        <td className="text-left font-bold uppercase">TỔNG GIÁ VỀ KHO (VẬT LÝ)</td>
+                                        <td className="text-left italic text-xs">Giá ghi nhận tài sản kho</td>
+                                        <td className="text-right font-bold text-lg">{formatNum(result.landedPhysicalVND)}</td>
+                                        <td className="text-right font-bold text-lg">{formatNum(result.newBatchPhysicalCost)}</td>
                                     </tr>
                                     <tr>
                                         <td className="text-left font-bold text-red-800">4. Chi phí Tài chính</td>
                                         <td className="text-left italic text-xs">Lãi vay / Chi phí vốn ({inputs.paymentMethod})</td>
-                                        <td className="text-right">{formatNum(result.finCostVND)}</td>
-                                        <td className="text-right">{formatNum(result.finCostVND/product.weight)}</td>
+                                        <td className="text-right text-red-800">{formatNum(result.finCostVND)}</td>
+                                        <td className="text-right text-red-800">{formatNum(result.finCostKg)}</td>
                                     </tr>
-                                    <tr className="bg-green-100">
-                                        <td className="text-left font-bold uppercase">TỔNG GIÁ VỐN VỀ KHO H&D</td>
-                                        <td></td>
-                                        <td className="text-right font-bold text-lg">{formatNum(result.newBatchFullCost * product.weight)}</td>
-                                        <td className="text-right font-bold text-lg">{formatNum(result.newBatchFullCost)}</td>
+                                    <tr className="bg-yellow-50">
+                                        <td className="text-left font-bold uppercase">TỔNG GIÁ VỐN KINH TẾ</td>
+                                        <td className="text-left italic text-xs">Bao gồm chi phí tài chính</td>
+                                        <td className="text-right font-bold">{formatNum(result.landedPhysicalVND + result.finCostVND)}</td>
+                                        <td className="text-right font-bold">{formatNum(result.newBatchEconomicCost)}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -481,8 +503,8 @@
                                 </div>
                                 <div className="text-2xl text-gray-400">➔</div>
                                 <div className="text-center">
-                                    <div className="text-xs uppercase text-gray-500">Giá Lô Mới Quy Đổi</div>
-                                    <div className="font-bold text-xl text-blue-600">{formatNum(result.newBatchFullCost)}</div>
+                                    <div className="text-xs uppercase text-gray-500">Giá Lô Mới (Vật lý)</div>
+                                    <div className="font-bold text-xl text-blue-600">{formatNum(result.newBatchPhysicalCost)}</div>
                                 </div>
                                 <div className="text-2xl text-gray-400">➔</div>
                                 <div className="text-center border-2 border-blue-600 p-2 bg-white rounded">
