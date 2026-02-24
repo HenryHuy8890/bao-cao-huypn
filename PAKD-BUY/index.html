@@ -3,23 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAKD BUY 3.0 - Multi-Product Sourcing</title>
+    <title>PAKD BUY 2.2 - Multi Alloy Sourcing</title>
     
-    <!-- Libraries -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             theme: { 
                 extend: { 
                     colors: {
-                        corporate: { 900: '#0f172a', 800: '#1e293b', 600: '#334155', accent: '#3b82f6' },
-                        stock: { light: '#f0f9ff', border: '#bae6fd', text: '#0369a1' }
+                        corp: { 950: '#060b14', 900: '#0f172a', 800: '#1e293b', 700: '#334155', accent: '#3b82f6' }
                     }
                 } 
             }
@@ -27,486 +24,743 @@
     </script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap');
+        
+        * { font-family: 'IBM Plex Sans', sans-serif; }
+        .mono { font-family: 'IBM Plex Mono', monospace; }
+
         @media print {
             .no-print { display: none !important; }
-            body { background: white; -webkit-print-color-adjust: exact; font-size: 10pt; }
+            body { background: white; -webkit-print-color-adjust: exact; font-size: 11pt; }
             @page { size: A4; margin: 1.0cm; }
             .print-container { display: block !important; }
-            .screen-container { display: none !important; }
+            .screen-only { display: none !important; }
         }
-        
         .print-container { display: none; font-family: 'Times New Roman', serif; color: #000; }
         .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9pt; }
-        .print-table th, .print-table td { border: 1px solid #333; padding: 5px; text-align: center; }
-        .print-table th { background-color: #f3f4f6; font-weight: bold; }
+        .print-table th, .print-table td { border: 1px solid #333; padding: 4px 6px; text-align: center; }
+        .print-table th { background-color: #e5e7eb; font-weight: bold; }
 
-        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+        .inp {
+            background: #0f172a;
+            border: 1px solid #1e3a5f;
+            color: #e2e8f0;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.82rem;
+            width: 100%;
+            transition: border-color 0.15s;
+        }
+        .inp:focus { outline: none; border-color: #3b82f6; background: #0a1628; }
+        .inp::placeholder { color: #475569; }
+        .inp-sm { padding: 3px 6px; font-size: 0.75rem; }
+
+        .lbl { display: block; font-size: 0.6rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
         
-        .input-label { display: block; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 2px; }
-        .input-field { width: 100%; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px 8px; font-size: 0.85rem; transition: all 0.2s; }
-        .input-field:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
-        .input-group-header { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .section-header { 
+            font-size: 0.65rem; font-weight: 800; text-transform: uppercase; 
+            letter-spacing: 0.1em; color: #94a3b8; padding: 6px 0 5px; 
+            border-bottom: 1px solid #1e293b; margin-bottom: 10px; 
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; }
+        .card-green { background: #071a10; border: 1px solid #14532d; }
+        .card-blue { background: #071426; border: 1px solid #1e3a5f; }
+
+        /* Product table */
+        .prod-table { width: 100%; border-collapse: collapse; }
+        .prod-table th { 
+            background: #0a1628; color: #64748b; font-size: 0.6rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.07em; padding: 6px 5px; text-align: center;
+            border-bottom: 1px solid #1e293b;
+        }
+        .prod-table td { padding: 3px 3px; border-bottom: 1px solid #0f172a; }
+        .prod-table tbody tr:hover td { background: #0a1628; }
+        .prod-table .inp { background: #060b14; border-color: #1e293b; }
+        .prod-table .inp:focus { background: #070f1f; border-color: #3b82f6; }
+
+        select.inp { cursor: pointer; }
+        select.inp option { background: #0f172a; }
+
+        .tag { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 3px; font-size: 0.65rem; font-weight: 700; }
+        .tag-green { background: #14532d33; color: #4ade80; border: 1px solid #14532d; }
+        .tag-red { background: #7f1d1d33; color: #f87171; border: 1px solid #7f1d1d; }
+        .tag-blue { background: #1e3a5f55; color: #60a5fa; border: 1px solid #1e3a5f; }
+
+        .stat-card { background: #0a1628; border: 1px solid #1e3a5f; border-radius: 6px; padding: 10px 14px; }
         
-        /* Table Input overrides */
-        .table-input { width: 100%; border: none; background: transparent; padding: 4px; outline: none; font-size: 0.85rem; text-align: inherit; }
-        .table-input:focus { background: #eff6ff; }
+        .btn-add {
+            background: #14532d22;
+            border: 1px dashed #14532d;
+            color: #4ade80;
+            border-radius: 4px;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-add:hover { background: #14532d44; }
+
+        .btn-remove {
+            background: transparent; border: none;
+            color: #475569; cursor: pointer; padding: 2px 5px;
+            border-radius: 3px; font-size: 0.8rem; transition: all 0.1s;
+        }
+        .btn-remove:hover { color: #f87171; background: #7f1d1d22; }
+
+        .pay-btn {
+            flex: 1; font-size: 0.65rem; font-weight: 700; padding: 4px;
+            border-radius: 3px; border: 1px solid #1e293b; cursor: pointer;
+            transition: all 0.15s; background: #060b14; color: #64748b;
+        }
+        .pay-btn.active-tt { background: #1e293b; color: #e2e8f0; border-color: #334155; }
+        .pay-btn.active-lc { background: #1e3a5f; color: #93c5fd; border-color: #3b82f6; }
+
+        /* KPI bar */
+        .kpi-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+        .kpi { background: #0a1628; border: 1px solid #1e293b; border-radius: 6px; padding: 10px 12px; }
+        .kpi-label { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #475569; margin-bottom: 3px; }
+        .kpi-value { font-size: 1.1rem; font-weight: 800; color: #e2e8f0; font-family: 'IBM Plex Mono', monospace; line-height: 1.2; }
+        .kpi-sub { font-size: 0.65rem; color: #64748b; margin-top: 2px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen overflow-hidden flex flex-col">
+<body class="bg-corp-950 text-slate-200 h-screen overflow-hidden flex flex-col">
     <div id="root" class="h-full flex flex-col"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- UTILS ---
-        const formatVND = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
-        const formatUSD = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(v);
-        const formatNum = (v) => new Intl.NumberFormat('vi-VN').format(v);
-        const parseNum = (v) => {
-            if (typeof v === 'string') return parseFloat(v.replace(/,/g, '')) || 0;
-            return parseFloat(v) || 0;
-        };
+        const fv = (v) => new Intl.NumberFormat('vi-VN').format(Math.round(v));
+        const fu = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(v);
+        const pn = (v) => parseFloat(String(v).replace(/\./g,'').replace(/,/g,'')) || 0;
 
-        // --- ICONS ---
-        const Icons = {
-            Warehouse: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>,
-            Briefcase: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
-            Settings: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-            Plus: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>,
-            Trash: () => <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-        };
+        const ALLOYS = ["A1050 H14","A1050 O","A1060 H14","A3003 H14","A3003 CT H16","A3105 H14","A5052 H32","A5052 H34","A5083 H111","A6061 T6","A6063 T5","Khác"];
+        const THICKNESSES = ["0.5mm","0.6mm","0.7mm","0.8mm","0.9mm","1.0mm","1.2mm","1.5mm","2.0mm","2.5mm","3.0mm","4.0mm","5.0mm","6.0mm"];
+        const WIDTHS = ["600mm","800mm","1000mm","1200mm","1220mm","1250mm","1500mm","1524mm","Cuộn","Tấm","Khác"];
 
-        // --- NEW SINGLE INPUT COMPONENTS ---
-        const SingleWeightInput = ({ label, valueKg, onChange }) => (
-          <div className="mb-2">
-            <label className="input-label">{label}</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={valueKg ? formatNum(valueKg) : ''}
-                onChange={e => onChange(parseNum(e.target.value.replace(/\./g,'')))}
-                className="input-field pr-6 text-right font-bold"
-                placeholder="0"
-              />
-              <span className="absolute right-2 top-1.5 text-[10px] text-slate-400">kg</span>
-            </div>
-          </div>
-        );
+        const newRow = () => ({
+            id: Date.now() + Math.random(),
+            alloy: "A5052 H32",
+            thickness: "1.0mm",
+            width: "1200mm",
+            weight: 2000,
+            priceFC: 4120
+        });
 
-        const SinglePriceInput = ({ label, valuePerKg, onChange }) => (
-          <div className="mb-2">
-            <label className="input-label">{label}</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={valuePerKg ? formatNum(valuePerKg) : ''}
-                onChange={e => onChange(parseNum(e.target.value.replace(/\./g,'')))}
-                className="input-field pr-8 text-right font-medium"
-                placeholder="0"
-              />
-              <span className="absolute right-2 top-1.5 text-[10px] text-slate-400">đ/kg</span>
-            </div>
-          </div>
-        );
-
-        // --- MAIN APP ---
-        const PAKD_BUY_V3 = () => {
-            // 1. STATE
+        const App = () => {
             const [inventory, setInventory] = useState({
-                stockQty: 1000,
-                stockAvgCost: 97000,
-                transitQty: 5000,
-                transitAvgCost: 100000
+                stockQty: 1000, stockAvgCost: 97000,
+                transitQty: 5000, transitAvgCost: 100000
             });
 
             const [inputs, setInputs] = useState({
+                supplierName: 'Yuwon Steel', origin: 'China', creator: 'Nguyễn Văn A',
                 paymentMethod: 'LC',
-                ttRatio: 100, capitalCostPercent: 6.5,
+                capitalCostPercent: 6.5,
                 lcMargin: 10, lcDays: 90, lcOpenFee: 0.2, lcInterest: 5.8,
                 exchangeRate: 26150,
                 managementFee: 1.0,
                 leadTime: 30, holdingTime: 60,
-                freightTotal: 45000000, importTax: 0, processingCost: 0,
+                freightTotal: 45000000, importTax: 0, processingCost: 200,
                 contractPrice: 102000, marketPrice: 99500,
-                businessRiskPercent: 2.0, customerCreditDays: 30, lendingRate: 12.0
+                businessRiskPercent: 2.0,
+                customerCreditDays: 30,
+                lendingRate: 12.0
             });
 
-            // MULTI-ROW PRODUCTS
             const [products, setProducts] = useState([
-                { id: 1, alloy: "A1050 H14", thickness: "1.0mm", width: "1200mm", weight: 5000, priceFC: 4120 },
-                { id: 2, alloy: "A3003 H14", thickness: "1.2mm", width: "1200mm", weight: 3000, priceFC: 4200 }
+                { id: 1, alloy: "A5052 H32", thickness: "1.0mm", width: "1200mm", weight: 3000, priceFC: 4120 },
+                { id: 2, alloy: "A3003 H14", thickness: "0.8mm", width: "1000mm", weight: 2000, priceFC: 3980 },
             ]);
 
             const [result, setResult] = useState({});
             const chartRef = useRef(null);
             const chartInstance = useRef(null);
 
-            // --- MULTI-ROW HANDLERS ---
-            const addRow = () => {
-                setProducts([...products, { id: Date.now(), alloy: "", thickness: "", width: "", weight: 0, priceFC: 0 }]);
+            // --- Cập nhật 1 row ---
+            const updateRow = (id, field, val) => {
+                setProducts(products.map(p => p.id === id ? {...p, [field]: val} : p));
             };
+            const addRow = () => setProducts([...products, newRow()]);
+            const removeRow = (id) => { if (products.length > 1) setProducts(products.filter(p => p.id !== id)); };
 
-            const removeRow = (id) => {
-                if (products.length > 1) {
-                    setProducts(products.filter(p => p.id !== id));
-                }
-            };
+            const setInv = (f, v) => setInventory({...inventory, [f]: v});
+            const setInp = (f, v) => setInputs({...inputs, [f]: v});
 
-            const updateProduct = (id, field, value) => {
-                setProducts(products.map(p => p.id === id ? { ...p, [field]: value } : p));
-            };
-
-            // --- CORE ENGINE ---
+            // --- ENGINE ---
             useEffect(() => {
-                // 1. Tính tổng Volume và Invoice từ bảng sản phẩm
-                const totalWeight = products.reduce((sum, p) => sum + (parseNum(p.weight) || 0), 0);
-                const invoiceUSD = products.reduce((sum, p) => sum + ((parseNum(p.weight) || 0) / 1000) * (parseNum(p.priceFC) || 0), 0);
+                const totalWeight = products.reduce((s, p) => s + p.weight, 0);
+                if (totalWeight <= 0) return;
+
+                // Invoice mỗi dòng
+                const invoiceUSD = products.reduce((s, p) => s + (p.weight / 1000) * p.priceFC, 0);
                 const invoiceVND = invoiceUSD * inputs.exchangeRate;
 
-                // 2. Giá sau hệ số quản lý
-                const landedValueHD = invoiceVND * (1 + inputs.managementFee / 100);
-                const mgmtCostVND = landedValueHD - invoiceVND;
-                const pureGoodsValueVND = landedValueHD;
+                // Mgmt fee
+                const mgmtCostVND = invoiceVND * (inputs.managementFee / 100);
+                const pureGoodsVND = invoiceVND + mgmtCostVND;
 
-                // 3. Logistics & Thuế
+                // Logistics
                 const taxVND = invoiceVND * (inputs.importTax / 100);
-                const safeFreightVND = inputs.freightTotal <= 0 ? 0 : inputs.freightTotal;
+                const freightVND = Math.max(0, inputs.freightTotal);
                 const processingVND = inputs.processingCost * totalWeight;
 
-                // TỔNG GIÁ TRỊ VẬT LÝ VỀ KHO (ghi nhận tài sản)
-                const landedPhysicalVND = pureGoodsValueVND + taxVND + safeFreightVND + processingVND;
+                const landedPhysicalVND = pureGoodsVND + taxVND + freightVND + processingVND;
+                const newBatchPhysicalCost = landedPhysicalVND / totalWeight; // VND/kg
 
-                const landedPhysicalPerTon = totalWeight > 0 ? landedPhysicalVND / (totalWeight / 1000) : 0;
-                const newBatchPhysicalCost = landedPhysicalPerTon / 1000; // VND/kg
-
-                // 4. Chi phí tài chính
+                // Chi phí tài chính
                 let finCostVND = 0;
                 const totalDays = inputs.leadTime + inputs.holdingTime;
-
                 if (inputs.paymentMethod === 'TT') {
-                    const cashOutflow = invoiceVND + taxVND + safeFreightVND;
-                    finCostVND = cashOutflow * (inputs.capitalCostPercent / 100) * (totalDays / 365);
+                    const cashOut = invoiceVND + taxVND + freightVND;
+                    finCostVND = cashOut * (inputs.capitalCostPercent / 100) * (totalDays / 365);
                 } else {
                     const openFee = invoiceVND * (inputs.lcOpenFee / 100);
-                    const lcInterest = invoiceVND * (inputs.lcInterest / 100) * (inputs.lcDays / 365);
-                    const equityUsed = (invoiceVND * inputs.lcMargin/100) + taxVND + safeFreightVND;
-                    const equityCost = equityUsed * (inputs.capitalCostPercent / 100) * (totalDays / 365);
-                    finCostVND = openFee + lcInterest + equityCost;
+                    const lcInt = invoiceVND * (inputs.lcInterest / 100) * (inputs.lcDays / 365);
+                    const equity = (invoiceVND * inputs.lcMargin / 100) + taxVND + freightVND;
+                    const eqCost = equity * (inputs.capitalCostPercent / 100) * (totalDays / 365);
+                    finCostVND = openFee + lcInt + eqCost;
                 }
-                const finCostKg = totalWeight > 0 ? finCostVND / totalWeight : 0;
-
+                const finCostKg = finCostVND / totalWeight;
                 const newBatchEconomicCost = newBatchPhysicalCost + finCostKg;
 
-                // 5. Bình quân giá vốn
-                const currentTotalQty = inventory.stockQty;
-                const currentTotalValue = inventory.stockQty * inventory.stockAvgCost;
-                const currentAvgCost = currentTotalQty > 0 ? currentTotalValue / currentTotalQty : 0;
+                // Bình quân mới
+                const curTotalQty = inventory.stockQty;
+                const curTotalValue = inventory.stockQty * inventory.stockAvgCost;
+                const curAvg = curTotalQty > 0 ? curTotalValue / curTotalQty : 0;
+                const newTotalQty = curTotalQty + totalWeight;
+                const newTotalValue = curTotalValue + landedPhysicalVND;
+                const newAvgCost = newTotalQty > 0 ? newTotalValue / newTotalQty : 0;
+                const deltaCost = newAvgCost - curAvg;
 
-                const newTotalQty = currentTotalQty + totalWeight;
-                const newTotalValue = currentTotalValue + landedPhysicalVND;
-                const newAvgCostKg = newTotalQty > 0 ? newTotalValue / newTotalQty : 0;
+                // Lãi/lỗ
+                const custFinCost = newBatchEconomicCost * (inputs.lendingRate / 100) * (inputs.customerCreditDays / 365);
+                const sellAfterRisk = inputs.contractPrice * (1 - inputs.businessRiskPercent / 100);
+                const realProfitKg = sellAfterRisk - newBatchEconomicCost - custFinCost;
 
-                const deltaCost = newAvgCostKg - currentAvgCost;
+                // Khuyến nghị
+                let rec = "", recColor = "";
+                if (newAvgCost <= inputs.contractPrice) { rec = "NHẬP BẢO TOÀN"; recColor = "text-green-400"; }
+                else if (newAvgCost <= inputs.marketPrice) { rec = "NHẬP CÂN BẰNG"; recColor = "text-blue-400"; }
+                else { rec = "RỦI RO CAO"; recColor = "text-red-400"; }
 
-                // 6. Lớp kinh doanh & Khuyến nghị
-                const customerFinanceCostKg = newBatchEconomicCost * (inputs.lendingRate / 100) * (inputs.customerCreditDays / 365);
-                const sellingPriceAfterRisk = inputs.contractPrice * (1 - inputs.businessRiskPercent / 100);
-                const realProfitKg = sellingPriceAfterRisk - newBatchEconomicCost - customerFinanceCostKg;
-
-                let recommendation = "", recColor = "";
-                if (newAvgCostKg <= inputs.contractPrice) { recommendation = "NHẬP BẢO TOÀN"; recColor = "text-green-600"; }
-                else if (newAvgCostKg <= inputs.marketPrice) { recommendation = "NHẬP CÂN BẰNG"; recColor = "text-blue-600"; }
-                else { recommendation = "RỦI RO CAO"; recColor = "text-red-600"; }
-
-                setResult({
-                    totalWeight, invoiceUSD, invoiceVND,
-                    mgmtCostVND, finCostVND,
-                    landedPhysicalVND, newBatchPhysicalCost, finCostKg, newBatchEconomicCost,
-                    currentTotalQty, currentAvgCost, newTotalQty, newAvgCostKg, deltaCost,
-                    recommendation, recColor,
-                    realProfitKg, customerFinanceCostKg, sellingPriceAfterRisk
+                // Per-row breakdown
+                const rowBreakdown = products.map(p => {
+                    const rowInvVND = (p.weight / 1000) * p.priceFC * inputs.exchangeRate;
+                    const rowMgmt = rowInvVND * (inputs.managementFee / 100);
+                    const rowFreight = (p.weight / totalWeight) * freightVND;
+                    const rowTax = rowInvVND * (inputs.importTax / 100);
+                    const rowProc = inputs.processingCost * p.weight;
+                    const rowLanded = rowInvVND + rowMgmt + rowFreight + rowTax + rowProc;
+                    const rowPhysCost = rowLanded / p.weight;
+                    return { ...p, rowInvVND, rowLanded, rowPhysCost };
                 });
 
-                updateChart(currentAvgCost, newBatchPhysicalCost, newAvgCostKg);
+                setResult({
+                    totalWeight, invoiceUSD, invoiceVND, mgmtCostVND,
+                    taxVND, freightVND, processingVND,
+                    landedPhysicalVND, newBatchPhysicalCost, finCostVND, finCostKg, newBatchEconomicCost,
+                    curAvg, curTotalQty, newTotalQty, newAvgCost, deltaCost,
+                    rec, recColor, realProfitKg, custFinCost, sellAfterRisk,
+                    rowBreakdown
+                });
 
+                updateChart(curAvg, newBatchPhysicalCost, newAvgCost);
             }, [inputs, inventory, products]);
 
-            const updateChart = (oldAvg, newBatch, newAvg) => {
+            const updateChart = (old, nb, nw) => {
                 if (!chartRef.current) return;
                 if (chartInstance.current) chartInstance.current.destroy();
                 const ctx = chartRef.current.getContext('2d');
                 chartInstance.current = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Hiện tại', 'Lô Mới về kho', 'SAU NHẬP (BQ)'],
+                        labels: ['Tồn kho hiện tại', 'Lô mới (vật lý)', 'BQ sau nhập'],
                         datasets: [{
-                            label: 'Giá Vốn (VND/kg)',
-                            data: [oldAvg, newBatch, newAvg],
-                            backgroundColor: ['#94a3b8', newBatch < oldAvg ? '#22c55e' : '#ef4444', '#4f46e5'],
-                            borderRadius: 4
+                            data: [old, nb, nw],
+                            backgroundColor: ['#475569', nb < old ? '#22c55e' : '#ef4444', '#3b82f6'],
+                            borderRadius: 5, borderSkipped: false
                         }]
                     },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { 
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
                             legend: { display: false },
-                            tooltip: { callbacks: { label: function(context) { return formatNum(context.parsed.y) + ' đ/kg'; } } }
+                            tooltip: { callbacks: { label: c => fv(c.parsed.y) + ' đ/kg' } }
                         },
-                        scales: { 
-                            y: { 
-                                beginAtZero: false, 
-                                min: Math.min(oldAvg, newBatch, newAvg) * 0.9,
-                                ticks: { callback: function(value) { return formatNum(value); } }
-                            } 
+                        scales: {
+                            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 10 } } },
+                            y: {
+                                beginAtZero: false,
+                                min: Math.min(old, nb, nw) * 0.97,
+                                grid: { color: '#1e293b' },
+                                ticks: { color: '#64748b', callback: v => fv(v), font: { size: 10 } }
+                            }
                         }
                     }
                 });
             };
 
-            const handleInvChange = (field, val) => setInventory({...inventory, [field]: val});
-            const handleInputChange = (e) => setInputs({...inputs, [e.target.name]: parseFloat(e.target.value)||e.target.value});
-
             return (
-                <div className="flex h-full font-sans screen-container">
-                    
-                    {/* DATALIST FOR ALLOYS */}
-                    <datalist id="alloy-list">
-                        <option value="A1050 H14" />
-                        <option value="A3003 H14" />
-                        <option value="A3003 CT H16" />
-                        <option value="A5052 H32" />
-                        <option value="A5052 H34" />
-                    </datalist>
-
-                    {/* --- LEFT: INPUTS CHUNG (35%) --- */}
-                    <div className="w-[35%] bg-white border-r border-slate-200 h-full overflow-y-auto custom-scroll p-5 flex flex-col gap-5">
-                        <div className="flex items-center gap-2 text-corporate-900 mb-1">
-                            <Icons.Warehouse />
+                <div className="flex flex-col h-full screen-only">
+                    {/* HEADER */}
+                    <div className="bg-corp-900 border-b border-slate-800 px-5 py-2.5 flex items-center justify-between no-print">
+                        <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-white text-xs font-black">P</div>
                             <div>
-                                <h1 className="text-xl font-extrabold tracking-tight leading-none">PAKD BUY 3.0</h1>
-                                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Multi-Product Inventory Engine</span>
+                                <span className="font-black text-base tracking-tight">PAKD BUY</span>
+                                <span className="ml-2 text-xs text-slate-500 font-mono">v2.2</span>
                             </div>
+                            <span className="text-slate-700 mx-2">|</span>
+                            <span className="text-xs text-slate-500 font-medium">Multi-Alloy Import Strategy</span>
                         </div>
-
-                        {/* A. HIỆN TRẠNG KHO */}
-                        <div className="bg-stock-light border border-stock-border rounded-lg p-4 shadow-sm relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-400 opacity-10 rounded-bl-full -mr-8 -mt-8"></div>
-                            <div className="input-group-header text-stock-text"><Icons.Warehouse /> A. Hiện Trạng Kho</div>
-                            
-                            <SingleWeightInput label="1. Tồn kho hiện hữu" valueKg={inventory.stockQty} onChange={v => handleInvChange('stockQty', v)} />
-                            <SinglePriceInput label="Giá vốn Tồn kho" valuePerKg={inventory.stockAvgCost} onChange={v => handleInvChange('stockAvgCost', v)} />
-                            <div className="my-2 border-t border-stock-border"></div>
-                            <SingleWeightInput label="2. Hàng đang đi đường" valueKg={inventory.transitQty} onChange={v => handleInvChange('transitQty', v)} />
-                            <SinglePriceInput label="Giá vốn Hàng về" valuePerKg={inventory.transitAvgCost} onChange={v => handleInvChange('transitAvgCost', v)} />
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs text-slate-500">{new Date().toLocaleDateString('vi-VN', {weekday:'short', year:'numeric',month:'short',day:'numeric'})}</span>
+                            <button onClick={()=>window.print()} className="bg-slate-800 border border-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded text-xs font-bold transition-all flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                                In A4
+                            </button>
                         </div>
-
-                        {/* C. THAM CHIẾU GIÁ BÁN */}
-                        <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-                            <div className="input-group-header"><Icons.Briefcase /> B. Tham Chiếu Thị Trường</div>
-                            <div className="grid grid-cols-2 gap-3 mb-3">
-                                <SinglePriceInput label="Giá Hợp đồng (Dự kiến)" valuePerKg={inputs.contractPrice} onChange={v => setInputs({...inputs, contractPrice: v})} />
-                                <SinglePriceInput label="Giá TT Spot (Tham chiếu)" valuePerKg={inputs.marketPrice} onChange={v => setInputs({...inputs, marketPrice: v})} />
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-3 pt-3 border-t border-slate-100">
-                                <div>
-                                    <label className="input-label text-orange-700">Hệ số KD (%)</label>
-                                    <input type="number" step="0.1" value={inputs.businessRiskPercent} onChange={e => setInputs({...inputs, businessRiskPercent: parseFloat(e.target.value) || 0})} className="input-field font-bold text-orange-700 border-orange-200 bg-orange-50" />
-                                    <div className="text-[9px] text-slate-500 mt-0.5">Biên rủi ro</div>
-                                </div>
-                                <div>
-                                    <label className="input-label text-indigo-700">Nợ KH (ngày)</label>
-                                    <input type="number" value={inputs.customerCreditDays} onChange={e => setInputs({...inputs, customerCreditDays: parseInt(e.target.value) || 0})} className="input-field border-indigo-200 bg-indigo-50" />
-                                </div>
-                                <div>
-                                    <label className="input-label text-rose-700">Lãi tham chiếu</label>
-                                    <input type="number" step="0.1" value={inputs.lendingRate} onChange={e => setInputs({...inputs, lendingRate: parseFloat(e.target.value) || 0})} className="input-field border-rose-200 bg-rose-50" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* D. THAM SỐ LÔ MỚI (LOGISTICS & FINANCE) */}
-                        <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-slate-400 opacity-10 rounded-bl-full -mr-8 -mt-8"></div>
-                            <div className="input-group-header"><Icons.Settings /> C. Cấu Hình Lô Nhập</div>
-                            
-                            <div className="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label className="input-label text-blue-700">Tỷ giá (USD/VND)</label>
-                                    <input type="text" value={formatNum(inputs.exchangeRate)} onChange={e => handleInputChange({target: {name: 'exchangeRate', value: e.target.value.replace(/\./g,'')}})} className="input-field font-bold text-blue-800 border-blue-200 bg-blue-50" />
-                                </div>
-                                <div title="Chi phí quản lý, rủi ro, overhead">
-                                    <label className="input-label text-purple-700 cursor-help">Hệ số quản lý (%) ⓘ</label>
-                                    <input type="number" step="0.1" name="managementFee" value={inputs.managementFee} onChange={handleInputChange} className="input-field bg-purple-50 border-purple-200 text-purple-700 font-bold" />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label className="input-label">Cước + Logs (Tổng VND)</label>
-                                    <input type="text" value={formatNum(inputs.freightTotal)} onChange={e => handleInputChange({target: {name:'freightTotal', value: e.target.value.replace(/\./g,'')}})} className="input-field text-xs" />
-                                </div>
-                                <div>
-                                    <label className="input-label">Thuế NK (%) & Gia công</label>
-                                    <div className="flex gap-1">
-                                        <input type="number" name="importTax" value={inputs.importTax} onChange={handleInputChange} className="input-field w-1/2 text-xs" placeholder="Thuế %"/>
-                                        <input type="number" name="processingCost" value={inputs.processingCost} onChange={handleInputChange} className="input-field w-1/2 text-xs" placeholder="đ/kg GC"/>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-slate-50 p-2 rounded border border-slate-200">
-                                <div className="flex gap-2 mb-2">
-                                    <button onClick={()=>setInputs({...inputs, paymentMethod:'TT'})} className={`flex-1 text-[10px] font-bold py-1 rounded border ${inputs.paymentMethod==='TT'?'bg-slate-700 text-white':'bg-white text-slate-500'}`}>T/T (Tiền mặt)</button>
-                                    <button onClick={()=>setInputs({...inputs, paymentMethod:'LC'})} className={`flex-1 text-[10px] font-bold py-1 rounded border ${inputs.paymentMethod==='LC'?'bg-indigo-600 text-white':'bg-white text-slate-500'}`}>L/C (Tín dụng)</button>
-                                </div>
-                                {inputs.paymentMethod === 'LC' ? (
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <div><label className="text-[9px] font-bold text-slate-500">Margin %</label><input name="lcMargin" value={inputs.lcMargin} onChange={handleInputChange} className="input-field text-xs h-6 px-1 text-center" /></div>
-                                        <div><label className="text-[9px] font-bold text-slate-500">Days LC</label><input name="lcDays" value={inputs.lcDays} onChange={handleInputChange} className="input-field text-xs h-6 px-1 text-center" /></div>
-                                        <div><label className="text-[9px] font-bold text-slate-500">Int %</label><input name="lcInterest" step="0.1" value={inputs.lcInterest} onChange={handleInputChange} className="input-field text-xs h-6 px-1 text-center" /></div>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <div><label className="text-[9px] font-bold text-slate-500">Capital Cost %</label><input name="capitalCostPercent" step="0.1" value={inputs.capitalCostPercent} onChange={handleInputChange} className="input-field text-xs h-6 px-1 text-center" /></div>
-                                        <div><label className="text-[9px] font-bold text-slate-500">Lead+Hold Days</label><div className="text-xs font-bold pt-1 text-center">{inputs.leadTime + inputs.holdingTime}</div></div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
                     </div>
 
-                    {/* --- RIGHT: BẢNG MÃ NHÔM & DASHBOARD (65%) --- */}
-                    <div className="w-[65%] bg-slate-100 h-full overflow-y-auto custom-scroll p-6 flex flex-col gap-6">
-                        
-                        {/* PRODUCT TABLE SECTION */}
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div className="bg-slate-800 px-4 py-3 flex justify-between items-center text-white">
-                                <h3 className="font-bold text-sm uppercase flex items-center gap-2"><Icons.Ship /> D. Chi tiết Lô Hàng (Mã Nhôm)</h3>
-                                <button onClick={addRow} className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded flex items-center gap-1 font-bold transition">
-                                    <Icons.Plus /> Thêm mã
-                                </button>
+                    {/* MAIN BODY */}
+                    <div className="flex flex-1 min-h-0">
+                        {/* ── LEFT PANEL: Inputs chung (col-span-4) ── */}
+                        <div className="w-72 bg-corp-900 border-r border-slate-800 h-full overflow-y-auto p-4 flex flex-col gap-4 shrink-0">
+                            
+                            {/* A. TỒN KHO */}
+                            <div className="card">
+                                <div className="section-header">
+                                    <svg className="w-3.5 h-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                                    A. Hiện trạng kho
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mb-1">
+                                    <div>
+                                        <label className="lbl">Tồn hữu (kg)</label>
+                                        <input className="inp mono text-right" value={fv(inventory.stockQty)} onChange={e => setInv('stockQty', pn(e.target.value))} />
+                                    </div>
+                                    <div>
+                                        <label className="lbl">Giá vốn (đ/kg)</label>
+                                        <input className="inp mono text-right text-slate-300" value={fv(inventory.stockAvgCost)} onChange={e => setInv('stockAvgCost', pn(e.target.value))} />
+                                    </div>
+                                </div>
+                                <div className="border-t border-slate-800 my-2"></div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className="lbl">Đi đường (kg)</label>
+                                        <input className="inp mono text-right" value={fv(inventory.transitQty)} onChange={e => setInv('transitQty', pn(e.target.value))} />
+                                    </div>
+                                    <div>
+                                        <label className="lbl">Giá đi đường</label>
+                                        <input className="inp mono text-right text-slate-300" value={fv(inventory.transitAvgCost)} onChange={e => setInv('transitAvgCost', pn(e.target.value))} />
+                                    </div>
+                                </div>
                             </div>
-                            <div className="p-0 overflow-x-auto">
-                                <table className="w-full text-sm text-left border-collapse">
-                                    <thead className="bg-slate-100 text-slate-600 text-xs uppercase">
+
+                            {/* C. THAM CHIẾU GIÁ BÁN */}
+                            <div className="card card-blue">
+                                <div className="section-header">
+                                    <svg className="w-3.5 h-3.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                    C. Tham chiếu giá bán
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                    <div>
+                                        <label className="lbl text-indigo-400">Giá HĐ / KH (đ/kg)</label>
+                                        <input className="inp mono text-right text-indigo-300" value={fv(inputs.contractPrice)} onChange={e => setInp('contractPrice', pn(e.target.value))} />
+                                    </div>
+                                    <div>
+                                        <label className="lbl">Giá TT Spot (đ/kg)</label>
+                                        <input className="inp mono text-right" value={fv(inputs.marketPrice)} onChange={e => setInp('marketPrice', pn(e.target.value))} />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <label className="lbl text-orange-400">Rủi ro KD (%)</label>
+                                        <input type="number" step="0.1" className="inp text-center text-orange-300" value={inputs.businessRiskPercent} onChange={e => setInp('businessRiskPercent', parseFloat(e.target.value)||0)} />
+                                    </div>
+                                    <div>
+                                        <label className="lbl text-purple-400">Công nợ KH (ngày)</label>
+                                        <input type="number" className="inp text-center text-purple-300" value={inputs.customerCreditDays} onChange={e => setInp('customerCreditDays', parseInt(e.target.value)||0)} />
+                                    </div>
+                                    <div>
+                                        <label className="lbl text-rose-400">Lãi vay (%/năm)</label>
+                                        <input type="number" step="0.1" className="inp text-center text-rose-300" value={inputs.lendingRate} onChange={e => setInp('lendingRate', parseFloat(e.target.value)||0)} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* B. THÔNG SỐ LÔ HÀNG */}
+                            <div className="card card-green">
+                                <div className="section-header">
+                                    <svg className="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    B. Thông số lô hàng
+                                </div>
+                                
+                                <div className="mb-3">
+                                    <label className="lbl text-blue-400">Tỷ giá (USD → VND)</label>
+                                    <input className="inp mono text-right text-lg font-bold text-blue-300" value={fv(inputs.exchangeRate)} onChange={e => setInp('exchangeRate', pn(e.target.value))} />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                    <div>
+                                        <label className="lbl text-purple-400">Hệ số quản lý (%)</label>
+                                        <input type="number" step="0.1" className="inp text-center text-purple-300" value={inputs.managementFee} onChange={e => setInp('managementFee', parseFloat(e.target.value)||0)} />
+                                    </div>
+                                    <div>
+                                        <label className="lbl">Thuế NK (%)</label>
+                                        <input type="number" className="inp text-center" value={inputs.importTax} onChange={e => setInp('importTax', parseFloat(e.target.value)||0)} />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                    <div>
+                                        <label className="lbl">Cước + Logs (VND tổng)</label>
+                                        <input className="inp mono text-right text-xs" value={fv(inputs.freightTotal)} onChange={e => setInp('freightTotal', pn(e.target.value))} />
+                                    </div>
+                                    <div>
+                                        <label className="lbl">Gia công (đ/kg)</label>
+                                        <input type="number" className="inp text-right text-xs" value={inputs.processingCost} onChange={e => setInp('processingCost', pn(e.target.value))} />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                    <div>
+                                        <label className="lbl">Lead time (ngày)</label>
+                                        <input type="number" className="inp text-center" value={inputs.leadTime} onChange={e => setInp('leadTime', parseInt(e.target.value)||0)} />
+                                    </div>
+                                    <div>
+                                        <label className="lbl">Hold time (ngày)</label>
+                                        <input type="number" className="inp text-center" value={inputs.holdingTime} onChange={e => setInp('holdingTime', parseInt(e.target.value)||0)} />
+                                    </div>
+                                </div>
+
+                                {/* Phương thức thanh toán */}
+                                <div className="border-t border-green-900 pt-3">
+                                    <label className="lbl mb-2">Phương thức thanh toán</label>
+                                    <div className="flex gap-1 mb-2">
+                                        <button onClick={()=>setInp('paymentMethod','TT')} className={`pay-btn ${inputs.paymentMethod==='TT'?'active-tt':''}`}>T/T – Tiền mặt</button>
+                                        <button onClick={()=>setInp('paymentMethod','LC')} className={`pay-btn ${inputs.paymentMethod==='LC'?'active-lc':''}`}>L/C – Tín dụng</button>
+                                    </div>
+                                    {inputs.paymentMethod === 'LC' && (
+                                        <div className="grid grid-cols-3 gap-1.5 bg-corp-950 p-2 rounded border border-blue-900">
+                                            <div><label className="lbl">Margin %</label><input type="number" className="inp inp-sm text-center" value={inputs.lcMargin} onChange={e=>setInp('lcMargin',parseFloat(e.target.value)||0)} /></div>
+                                            <div><label className="lbl">Số ngày</label><input type="number" className="inp inp-sm text-center" value={inputs.lcDays} onChange={e=>setInp('lcDays',parseInt(e.target.value)||0)} /></div>
+                                            <div><label className="lbl">Lãi suất %</label><input type="number" step="0.1" className="inp inp-sm text-center" value={inputs.lcInterest} onChange={e=>setInp('lcInterest',parseFloat(e.target.value)||0)} /></div>
+                                        </div>
+                                    )}
+                                    {inputs.paymentMethod === 'TT' && (
+                                        <div className="bg-corp-950 p-2 rounded border border-slate-800">
+                                            <label className="lbl">Lãi suất vốn (%/năm)</label>
+                                            <input type="number" step="0.1" className="inp inp-sm text-center" value={inputs.capitalCostPercent} onChange={e=>setInp('capitalCostPercent',parseFloat(e.target.value)||0)} />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ── CENTER PANEL: Bảng mã nhôm ── */}
+                        <div className="flex-1 min-w-0 flex flex-col border-r border-slate-800 bg-corp-950">
+                            <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                                    <span className="font-bold text-sm">Danh sách mã nhôm – Lô mua</span>
+                                    <span className="tag tag-green">{products.length} mã</span>
+                                    {result.totalWeight > 0 && <span className="tag tag-blue mono">{fv(result.totalWeight)} kg tổng</span>}
+                                </div>
+                                <button onClick={addRow} className="btn-add">+ Thêm mã nhôm</button>
+                            </div>
+
+                            <div className="flex-1 overflow-auto p-4">
+                                <table className="prod-table">
+                                    <thead>
                                         <tr>
-                                            <th className="p-2 border-b w-8 text-center">#</th>
-                                            <th className="p-2 border-b">Mác nhôm</th>
-                                            <th className="p-2 border-b w-24">Dày</th>
-                                            <th className="p-2 border-b w-24">Khổ</th>
-                                            <th className="p-2 border-b w-32 text-right">Khối lượng (kg)</th>
-                                            <th className="p-2 border-b w-32 text-right">USD/Tấn</th>
-                                            <th className="p-2 border-b w-10 text-center"></th>
+                                            <th style={{width:'32px'}}>#</th>
+                                            <th style={{width:'160px'}}>Mác nhôm</th>
+                                            <th style={{width:'105px'}}>Dày</th>
+                                            <th style={{width:'110px'}}>Khổ / Dạng</th>
+                                            <th style={{width:'130px'}}>Khối lượng (kg)</th>
+                                            <th style={{width:'130px'}}>Giá Invoice (USD/T)</th>
+                                            <th style={{width:'100px'}}>Invoice (USD)</th>
+                                            <th style={{width:'110px'}}>Giá về kho (đ/kg)</th>
+                                            <th style={{width:'32px'}}></th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {products.map((p, i) => (
-                                            <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                                                <td className="p-1 border-r border-slate-100 text-center text-xs text-slate-400 font-bold">{i+1}</td>
-                                                <td className="p-1 border-r border-slate-100"><input list="alloy-list" value={p.alloy} onChange={e=>updateProduct(p.id, 'alloy', e.target.value)} className="table-input font-medium" placeholder="A1050 H14"/></td>
-                                                <td className="p-1 border-r border-slate-100"><input value={p.thickness} onChange={e=>updateProduct(p.id, 'thickness', e.target.value)} className="table-input" placeholder="1.0mm"/></td>
-                                                <td className="p-1 border-r border-slate-100"><input value={p.width} onChange={e=>updateProduct(p.id, 'width', e.target.value)} className="table-input" placeholder="1200mm"/></td>
-                                                <td className="p-1 border-r border-slate-100"><input type="number" value={p.weight || ''} onChange={e=>updateProduct(p.id, 'weight', parseNum(e.target.value))} className="table-input text-right font-bold text-blue-700" placeholder="0"/></td>
-                                                <td className="p-1 border-r border-slate-100"><input type="number" value={p.priceFC || ''} onChange={e=>updateProduct(p.id, 'priceFC', parseNum(e.target.value))} className="table-input text-right font-bold text-green-700" placeholder="0"/></td>
-                                                <td className="p-1 text-center">
-                                                    <button onClick={() => removeRow(p.id)} className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50" title="Xóa dòng"><Icons.Trash /></button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                    <tbody>
+                                        {products.map((p, i) => {
+                                            const rb = result.rowBreakdown ? result.rowBreakdown.find(r => r.id === p.id) : null;
+                                            return (
+                                                <tr key={p.id}>
+                                                    <td className="text-center text-slate-600 text-xs mono">{i + 1}</td>
+                                                    <td>
+                                                        <select className="inp inp-sm" value={p.alloy} onChange={e => updateRow(p.id, 'alloy', e.target.value)}>
+                                                            {ALLOYS.map(a => <option key={a} value={a}>{a}</option>)}
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <select className="inp inp-sm" value={p.thickness} onChange={e => updateRow(p.id, 'thickness', e.target.value)}>
+                                                            {THICKNESSES.map(t => <option key={t} value={t}>{t}</option>)}
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <select className="inp inp-sm" value={p.width} onChange={e => updateRow(p.id, 'width', e.target.value)}>
+                                                            {WIDTHS.map(w => <option key={w} value={w}>{w}</option>)}
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <input
+                                                            className="inp inp-sm mono text-right font-bold text-green-300"
+                                                            value={fv(p.weight)}
+                                                            onChange={e => updateRow(p.id, 'weight', pn(e.target.value))}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <input
+                                                            type="number"
+                                                            className="inp inp-sm mono text-right text-yellow-300"
+                                                            value={p.priceFC}
+                                                            onChange={e => updateRow(p.id, 'priceFC', parseFloat(e.target.value)||0)}
+                                                        />
+                                                    </td>
+                                                    <td className="text-right pr-2 mono text-xs text-slate-400">
+                                                        {fu((p.weight / 1000) * p.priceFC)}
+                                                    </td>
+                                                    <td className="text-right pr-2 mono text-xs">
+                                                        {rb ? (
+                                                            <span className={rb.rowPhysCost > (result.curAvg || 0) ? 'text-red-400' : 'text-green-400'}>
+                                                                {fv(rb.rowPhysCost)}
+                                                            </span>
+                                                        ) : <span className="text-slate-600">—</span>}
+                                                    </td>
+                                                    <td>
+                                                        <button className="btn-remove" onClick={() => removeRow(p.id)}>✕</button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
-                                    <tfoot className="bg-slate-50 font-bold text-slate-700">
-                                        <tr>
-                                            <td colSpan="4" className="p-2 text-right uppercase text-xs">TỔNG CỘNG LÔ HÀNG:</td>
-                                            <td className="p-2 text-right text-blue-800">{formatNum(result.totalWeight)} kg</td>
-                                            <td className="p-2 text-right text-green-800">{formatUSD(result.invoiceUSD)}</td>
+                                    <tfoot>
+                                        <tr style={{borderTop:'1px solid #1e3a5f'}}>
+                                            <td colSpan={4} className="text-right pr-2 text-xs font-bold text-slate-400 py-2">TỔNG CỘNG</td>
+                                            <td className="text-right pr-2 mono text-sm font-black text-green-300 py-2">
+                                                {result.totalWeight ? fv(result.totalWeight) : '—'}
+                                            </td>
+                                            <td></td>
+                                            <td className="text-right pr-2 mono text-xs font-bold text-yellow-300 py-2">
+                                                {result.invoiceUSD ? fu(result.invoiceUSD) : '—'}
+                                            </td>
+                                            <td className="text-right pr-2 mono text-xs font-bold text-blue-300 py-2">
+                                                {result.newBatchPhysicalCost ? fv(result.newBatchPhysicalCost)+' avg' : '—'}
+                                            </td>
                                             <td></td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
+
+                            {/* Breakdown chi phí lô */}
+                            {result.landedPhysicalVND > 0 && (
+                                <div className="px-4 pb-4">
+                                    <div className="bg-corp-900 border border-slate-800 rounded-lg p-3">
+                                        <div className="text-xs font-bold text-slate-500 uppercase mb-3">Phân tích chi phí lô hàng</div>
+                                        <div className="grid grid-cols-6 gap-3">
+                                            {[
+                                                { label: 'Invoice quy đổi', val: result.invoiceVND, color: 'text-slate-300' },
+                                                { label: `Phí quản lý (${inputs.managementFee}%)`, val: result.mgmtCostVND, color: 'text-purple-400' },
+                                                { label: 'Thuế NK', val: result.taxVND, color: 'text-yellow-400' },
+                                                { label: 'Cước + Logs', val: result.freightVND, color: 'text-orange-400' },
+                                                { label: 'Gia công', val: result.processingVND, color: 'text-sky-400' },
+                                                { label: 'Chi phí tài chính', val: result.finCostVND, color: 'text-red-400' },
+                                            ].map((item, i) => (
+                                                <div key={i} className="text-center">
+                                                    <div className={`mono text-sm font-bold ${item.color}`}>{fv(item.val)}</div>
+                                                    <div className="text-slate-600 text-[10px] mt-0.5">{item.label}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* EXECUTIVE SUMMARY */}
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center">
-                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Giá Vốn Tồn Kho hiện tại</div>
-                                <div className="text-2xl font-bold text-slate-600 mt-1">
-                                    {formatNum(result.currentAvgCost)} <span className="text-sm font-normal text-slate-400">đ/kg</span>
-                                </div>
-                                <div className="w-full bg-slate-100 h-1 mt-2 rounded overflow-hidden"><div className="bg-slate-400 h-full" style={{width: '100%'}}></div></div>
-                            </div>
+                        {/* ── RIGHT PANEL: Dashboard KPI ── */}
+                        <div className="w-72 bg-corp-900 h-full overflow-y-auto p-4 flex flex-col gap-4 shrink-0">
 
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-center relative overflow-hidden">
-                                <div className="text-xs font-bold text-green-600 uppercase tracking-wide">Giá lô mới về kho</div>
-                                <div className="text-2xl font-bold text-green-700 mt-1">
-                                    {formatNum(result.newBatchPhysicalCost)} <span className="text-sm font-normal text-green-500">đ/kg</span>
+                            {/* KPI: 4 ô */}
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="stat-card">
+                                    <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Giá BQ Hiện tại</div>
+                                    <div className="mono text-lg font-black text-slate-300">{result.curAvg ? fv(result.curAvg) : '—'}</div>
+                                    <div className="text-[10px] text-slate-600">đ/kg</div>
                                 </div>
-                                <div className="text-xs text-red-500 mt-1 font-semibold flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full inline-block"></span>
-                                    Chi phí vốn lô này: {formatNum(result.finCostKg)} đ/kg
+                                <div className="stat-card" style={{borderColor: result.newBatchPhysicalCost > (result.curAvg||0) ? '#7f1d1d' : '#14532d'}}>
+                                    <div className="text-[9px] font-bold text-slate-500 uppercase mb-1">Giá lô mới</div>
+                                    <div className={`mono text-lg font-black ${result.newBatchPhysicalCost > (result.curAvg||0) ? 'text-red-400' : 'text-green-400'}`}>{result.newBatchPhysicalCost ? fv(result.newBatchPhysicalCost) : '—'}</div>
+                                    <div className="text-[10px] text-slate-600">đ/kg vật lý</div>
                                 </div>
-                            </div>
-
-                            <div className="bg-corporate-800 text-white p-4 rounded-xl shadow-lg flex flex-col justify-center relative overflow-hidden">
-                                <div className="relative z-10">
-                                    <div className="text-xs font-bold text-indigo-300 uppercase tracking-wide">Giá Bình Quân Mới</div>
-                                    <div className="text-3xl font-bold mt-1">
-                                        {formatNum(result.newAvgCostKg)} <span className="text-lg font-normal opacity-70">đ/kg</span>
-                                    </div>
-                                    <div className="text-xs font-medium mt-1 text-indigo-200 flex items-center gap-1">
-                                        {result.deltaCost > 0 ? <span className="bg-red-500/20 px-1 rounded">▲ Tăng {formatNum(result.deltaCost)}</span> : <span className="bg-green-500/20 px-1 rounded">▼ Giảm {formatNum(Math.abs(result.deltaCost))}</span>}
-                                        <span>đ/kg</span>
-                                    </div>
-                                    <div className="text-[9px] text-slate-400 italic mt-1 leading-tight">
-                                        (Giá BQ bị kéo lên do lô mới cao hơn tồn kho hiện hữu)
+                                <div className="stat-card col-span-2" style={{background:'#0a1a3a', borderColor:'#3b82f6'}}>
+                                    <div className="text-[9px] font-bold text-blue-400 uppercase mb-1">Giá Bình Quân MỚI</div>
+                                    <div className="mono text-2xl font-black text-blue-300">{result.newAvgCost ? fv(result.newAvgCost) : '—'}</div>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <div className="text-[10px] text-slate-500">đ/kg</div>
+                                        {result.deltaCost !== undefined && (
+                                            <span className={`tag ${result.deltaCost > 0 ? 'tag-red' : 'tag-green'} mono text-[10px]`}>
+                                                {result.deltaCost > 0 ? '▲' : '▼'} {fv(Math.abs(result.deltaCost))}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white opacity-5 rounded-full blur-xl"></div>
                             </div>
-                        </div>
 
-                        {/* CHARTS & DECISION */}
-                        <div className="grid grid-cols-2 gap-6 flex-1">
-                            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">Biểu đồ Tác động Giá Vốn</h3>
-                                <div className="flex-1 relative min-h-[200px]">
+                            {/* Chart */}
+                            <div className="card" style={{background:'#060b14'}}>
+                                <div className="text-[9px] font-bold text-slate-600 uppercase mb-2">Biểu đồ tác động giá vốn</div>
+                                <div className="relative" style={{height:'140px'}}>
                                     <canvas ref={chartRef}></canvas>
                                 </div>
                             </div>
 
-                            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                                <div>
-                                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">Kết Quả Lớp Kinh Doanh</h3>
-                                    
-                                    <div className={`p-4 rounded-xl border ${result.realProfitKg > 0 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
-                                        <div className="text-sm font-bold text-slate-600">Lãi/Lỗ thực tế sau bán (đ/kg)</div>
-                                        <div className={`text-3xl font-black mt-1 ${result.realProfitKg > 0 ? 'text-green-700' : 'text-red-700'}`}>
-                                            {result.realProfitKg > 0 ? '+' : ''}{formatNum(result.realProfitKg)}
+                            {/* So sánh */}
+                            <div className="card">
+                                <div className="section-header">Ma trận quyết định</div>
+                                <div className="space-y-2 mb-3">
+                                    <div className="flex justify-between items-center p-2 rounded bg-corp-950 border border-slate-800">
+                                        <div>
+                                            <div className="text-[9px] text-slate-500 uppercase">Hợp đồng / KH</div>
+                                            <div className="mono text-sm font-bold text-slate-300">{fv(inputs.contractPrice)}</div>
                                         </div>
-                                        <div className="text-[10px] text-slate-500 italic mt-2 leading-tight">
-                                            Đã trừ {inputs.businessRiskPercent}% rủi ro vào giá bán và chi phí tài chính cho {inputs.customerCreditDays} ngày công nợ.
+                                        <span className={`tag ${result.newAvgCost <= inputs.contractPrice ? 'tag-green' : 'tag-red'}`}>
+                                            {result.newAvgCost <= inputs.contractPrice ? '✓ CÓ LÃI' : '✗ LỖ VỊ THẾ'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-2 rounded bg-corp-950 border border-slate-800">
+                                        <div>
+                                            <div className="text-[9px] text-slate-500 uppercase">Thị trường Spot</div>
+                                            <div className="mono text-sm font-bold text-slate-300">{fv(inputs.marketPrice)}</div>
                                         </div>
+                                        <span className={`tag ${result.newAvgCost <= inputs.marketPrice ? 'tag-blue' : 'tag-red'}`}>
+                                            {result.newAvgCost <= inputs.marketPrice ? 'CẠNH TRANH' : 'CAO HƠN TT'}
+                                        </span>
                                     </div>
                                 </div>
 
-                                <div className={`mt-4 text-center p-4 rounded-xl border-2 transition-colors ${result.recColor === 'text-green-600' ? 'bg-green-50 border-green-200' : result.recColor === 'text-blue-600' ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'}`}>
-                                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-60">Khuyến nghị Hệ thống</div>
-                                    <div className={`text-2xl font-black mt-1 ${result.recColor}`}>{result.recommendation}</div>
+                                {/* Lãi/lỗ thực */}
+                                <div className={`p-3 rounded-lg border ${result.realProfitKg > 0 ? 'bg-green-950 border-green-800' : 'bg-red-950 border-red-800'} mb-3`}>
+                                    <div className="text-[9px] font-bold text-slate-400 uppercase mb-1">Lãi/Lỗ thực sau bán</div>
+                                    <div className={`mono text-xl font-black ${result.realProfitKg > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                        {result.realProfitKg !== undefined ? (result.realProfitKg > 0 ? '+' : '') + fv(result.realProfitKg) : '—'}
+                                    </div>
+                                    <div className="text-[9px] text-slate-600 mt-0.5">đ/kg · đã trừ CP tài chính công nợ & rủi ro</div>
+                                </div>
+
+                                {/* Khuyến nghị */}
+                                <div className={`p-3 rounded-lg text-center border ${
+                                    result.recColor === 'text-green-400' ? 'bg-green-950 border-green-700' : 
+                                    result.recColor === 'text-blue-400' ? 'bg-blue-950 border-blue-700' : 
+                                    'bg-red-950 border-red-700'
+                                }`}>
+                                    <div className="text-[9px] text-slate-500 uppercase mb-1">Khuyến nghị hệ thống</div>
+                                    <div className={`text-xl font-black tracking-wide ${result.recColor}`}>{result.rec || '—'}</div>
                                 </div>
                             </div>
+
+                            {/* Tổng quan số lượng */}
+                            <div className="card">
+                                <div className="section-header">Tổng quan số lượng</div>
+                                <div className="space-y-2 text-xs">
+                                    {[
+                                        { label: 'Tồn kho hiện hữu', val: result.curTotalQty, unit: 'kg' },
+                                        { label: 'Lô mua mới', val: result.totalWeight, unit: 'kg', color: 'text-green-400' },
+                                        { label: 'Tồn kho sau nhập', val: result.newTotalQty, unit: 'kg', color: 'text-blue-400' },
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex justify-between items-center">
+                                            <span className="text-slate-500">{item.label}</span>
+                                            <span className={`mono font-bold ${item.color || 'text-slate-300'}`}>
+                                                {item.val ? fv(item.val) : '—'} {item.unit}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── PRINT TEMPLATE ── */}
+                    <div className="print-container p-10">
+                        <div className="text-center border-b-2 border-black pb-4 mb-6">
+                            <h1 className="text-xl font-bold uppercase">TỜ TRÌNH CHIẾN LƯỢC NHẬP HÀNG (PAKD BUY 2.2)</h1>
+                            <p className="italic mt-1 text-sm">Ngày: {new Date().toLocaleDateString('vi-VN')} | Nhà cung cấp: {inputs.supplierName} | Người lập: {inputs.creator}</p>
+                        </div>
+
+                        <h3 className="font-bold border-b border-gray-400 mb-2 uppercase text-sm">I. DANH SÁCH MÃ NHÔM LÔ MUA</h3>
+                        <table className="print-table mb-6">
+                            <thead>
+                                <tr>
+                                    <th>#</th><th>Mác nhôm</th><th>Dày</th><th>Khổ</th>
+                                    <th>KL (kg)</th><th>USD/Tấn</th><th>Invoice (USD)</th><th>Giá về kho (đ/kg)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(result.rowBreakdown || products).map((p, i) => (
+                                    <tr key={p.id}>
+                                        <td>{i+1}</td>
+                                        <td className="text-left font-bold">{p.alloy}</td>
+                                        <td>{p.thickness}</td>
+                                        <td>{p.width}</td>
+                                        <td>{fv(p.weight)}</td>
+                                        <td>{fu(p.priceFC)}</td>
+                                        <td>{fu((p.weight/1000)*p.priceFC)}</td>
+                                        <td className="font-bold">{p.rowPhysCost ? fv(p.rowPhysCost) : '—'}</td>
+                                    </tr>
+                                ))}
+                                <tr style={{background:'#f9fafb', fontWeight:'bold'}}>
+                                    <td colSpan={4}>TỔNG</td>
+                                    <td>{result.totalWeight ? fv(result.totalWeight) : '—'}</td>
+                                    <td>—</td>
+                                    <td>{result.invoiceUSD ? fu(result.invoiceUSD) : '—'}</td>
+                                    <td>{result.newBatchPhysicalCost ? fv(result.newBatchPhysicalCost) : '—'} (avg)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3 className="font-bold border-b border-gray-400 mb-2 uppercase text-sm">II. PHÂN TÍCH GIÁ VỐN LANDED COST</h3>
+                        <table className="print-table mb-6">
+                            <thead><tr><th>Khoản mục</th><th>Tổng (VND)</th><th>Đơn giá (đ/kg)</th></tr></thead>
+                            <tbody>
+                                <tr><td className="text-left">Invoice quy đổi ({fv(inputs.exchangeRate)} VND/USD)</td><td>{fv(result.invoiceVND)}</td><td>{fv(result.invoiceVND / (result.totalWeight||1))}</td></tr>
+                                <tr><td className="text-left">Phí quản lý ({inputs.managementFee}%)</td><td>{fv(result.mgmtCostVND)}</td><td>{fv(result.mgmtCostVND/(result.totalWeight||1))}</td></tr>
+                                <tr><td className="text-left">Thuế NK, Cước, Gia công</td><td>{fv((result.taxVND||0)+(result.freightVND||0)+(result.processingVND||0))}</td><td>{fv(((result.taxVND||0)+(result.freightVND||0)+(result.processingVND||0))/(result.totalWeight||1))}</td></tr>
+                                <tr style={{background:'#d1fae5',fontWeight:'bold'}}><td className="text-left">TỔNG GIÁ VỀ KHO (VẬT LÝ)</td><td>{fv(result.landedPhysicalVND)}</td><td>{fv(result.newBatchPhysicalCost)}</td></tr>
+                                <tr><td className="text-left">Chi phí tài chính ({inputs.paymentMethod})</td><td>{fv(result.finCostVND)}</td><td>{fv(result.finCostKg)}</td></tr>
+                                <tr style={{background:'#fef9c3',fontWeight:'bold'}}><td className="text-left">TỔNG GIÁ VỐN KINH TẾ</td><td>{fv((result.landedPhysicalVND||0)+(result.finCostVND||0))}</td><td>{fv(result.newBatchEconomicCost)}</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3 className="font-bold border-b border-gray-400 mb-2 uppercase text-sm">III. TÁC ĐỘNG GIÁ BÌNH QUÂN</h3>
+                        <div className="flex justify-around items-center border p-4 bg-gray-50 mb-6 text-center">
+                            <div><div className="text-xs text-gray-500">Giá BQ hiện tại</div><div className="font-bold text-xl">{fv(result.curAvg)}</div></div>
+                            <div className="text-2xl text-gray-300">→</div>
+                            <div><div className="text-xs text-gray-500">Giá lô mới</div><div className="font-bold text-xl text-blue-700">{fv(result.newBatchPhysicalCost)}</div></div>
+                            <div className="text-2xl text-gray-300">→</div>
+                            <div className="border-2 border-blue-600 p-3 rounded bg-white"><div className="text-xs text-blue-700 font-bold">GIÁ BQ SAU NHẬP</div><div className="font-black text-2xl text-blue-800">{fv(result.newAvgCost)}</div></div>
+                        </div>
+
+                        <div className="flex justify-between text-center mt-8 pt-8">
+                            <div className="w-1/3"><strong>Người Lập</strong><br/><br/>{inputs.creator}</div>
+                            <div className="w-1/3"><strong>Trưởng Phòng Mua Hàng</strong><br/><br/>(Ký duyệt)</div>
+                            <div className="w-1/3"><strong>Ban Giám Đốc</strong><br/><br/>(Phê duyệt)</div>
                         </div>
                     </div>
                 </div>
             );
         };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<PAKD_BUY_V3 />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
