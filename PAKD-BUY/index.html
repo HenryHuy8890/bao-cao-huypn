@@ -106,8 +106,12 @@ const THICKS  = ["0.4","0.5","0.6","0.7","0.8","0.9","1.0","1.2","1.5","2.0","2.
 const WIDTHS  = ["600","800","1000","1200","1220","1250","1500","1524","2000"];
 const LENGTHS = ["Coil","1000","1200","2000","2400","2500","3000","4000","6000","Custom"];
 
-const GSHEET_INVENTORY = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLlE3z-xCetz2WTc2fr3qLPhuwlMVUZvZ1E_JilajIWnJZTJImXx0u6r0vVp1ONlj0HwcXEDygHfU/pub?gid=0&single=true&output=csv";
-const GSHEET_MINSTOCK  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLlE3z-xCetz2WTc2fr3qLPhuwlMVUZvZ1E_JilajIWnJZTJImXx0u6r0vVp1ONlj0HwcXEDygHfU/pub?gid=1080747466&single=true&output=csv";
+// Link lấy dữ liệu tồn kho (tab đầu tiên có gid=0)
+const GSHEET_INVENTORY = "https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=0";
+
+// Link lấy dữ liệu Min Stock
+// CẢNH BÁO: Anh nhớ thay YOUR_MINSTOCK_GID bằng dãy số gid thực tế của tab MinStock nhé (khi click sang tab Min Stock trên file Google Sheet, anh nhìn lên thanh địa chỉ của trình duyệt sẽ thấy thông số gid=...)
+const GSHEET_MINSTOCK  = "https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1080747466";
 
 const skuKey   = r => `${r.alloy}|${r.temper}|${r.thickness}|${r.width}|${r.length}`;
 const skuLabel = r => `${r.alloy} ${r.temper}  ${r.thickness}×${r.width}×${r.length}`;
