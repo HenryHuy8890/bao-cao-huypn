@@ -383,46 +383,43 @@ const calcLimitsWarnings = (limitsData, inventory) => {
     gCreditOver, gCreditNear, gApOver, gApNear, gApPct};
 };
 
+// ==========================================
+// THAY THẾ DỮ LIỆU MẶC ĐỊNH BẰNG VÍ DỤ ẢNH
+// ==========================================
 const defInventory=[
-  {id:1,alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'2400',coating:'KP', status:'IN_STOCK',  qtyKg:3000,avgCost:90000},
-  {id:2,alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'2400',coating:'KP', status:'IN_TRANSIT',qtyKg:5000,avgCost:105000},
-  {id:3,alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'2400',coating:'1E', status:'IN_STOCK',  qtyKg:1200,avgCost:115000},
-  {id:4,alloy:'A3003',temper:'H14',thickness:'0.8',width:'1000',length:'Coil', coating:'KP', status:'IN_STOCK',  qtyKg:2000,avgCost:93000},
-  {id:5,alloy:'A3003',temper:'H14',thickness:'0.8',width:'1000',length:'Coil', coating:'KP', status:'IN_TRANSIT',qtyKg:4000,avgCost:99000},
-  {id:6,alloy:'A3003',temper:'H14',thickness:'0.8',width:'1000',length:'Coil', coating:'1E', status:'IN_STOCK',  qtyKg:800, avgCost:108000},
-  {id:7,alloy:'A1052',temper:'H14',thickness:'1.2',width:'1200',length:'Coil', coating:'KP', status:'IN_STOCK',  qtyKg:1500,avgCost:88000},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E', status:'IN_STOCK',  qtyKg:2986,avgCost:92820},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E', status:'IN_TRANSIT',qtyKg:10000,avgCost:101466},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E', status:'IN_STOCK',  qtyKg:0,avgCost:0},
+  {id:4,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP', status:'IN_STOCK',  qtyKg:0,avgCost:0},
 ];
 const defMinStock=[
-  {id:1,alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'2400',coating:'KP', minStockKg:5000},
-  {id:2,alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'2400',coating:'1E', minStockKg:1000},
-  {id:3,alloy:'A3003',temper:'H14',thickness:'0.8',width:'1000',length:'Coil', coating:'KP', minStockKg:4000},
-  {id:4,alloy:'A3003',temper:'H14',thickness:'0.8',width:'1000',length:'Coil', coating:'1E', minStockKg:500},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E', minStockKg:31000},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E', minStockKg:15000},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP', minStockKg:10000},
 ];
 const defSP=[
-  {id:1,alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'2400', coating:'KP',sellCost:109000,comment:'HĐ KH Minh Tuấn'},
-  {id:2,alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'2400', coating:'1E',sellCost:119000,comment:'PE coated'},
-  {id:3,alloy:'A3003',temper:'H14',thickness:'0.8',width:'1000',length:'Coil', coating:'KP',sellCost:101000,comment:''},
-  {id:4,alloy:'A1052',temper:'H14',thickness:'1.2',width:'1200',length:'Coil', coating:'KP',sellCost:97000, comment:''},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil', coating:'1E',sellCost:104000,comment:''},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil', coating:'1E',sellCost:104000,comment:''},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil', coating:'KP',sellCost:102000,comment:''},
 ];
 const defLimits=[
   {id:0,alloy:'total',inventoryLimit:5000000000,accountsPayableLimit:7000000000,actualAccountsPayable:5500000000},
-  {id:1,alloy:'A5052',inventoryLimit:2000000000,accountsPayableLimit:3000000000,actualAccountsPayable:2500000000},
-  {id:2,alloy:'A3003',inventoryLimit:1500000000,accountsPayableLimit:2000000000,actualAccountsPayable:1800000000},
-  {id:3,alloy:'A1052',inventoryLimit:800000000, accountsPayableLimit:1500000000,actualAccountsPayable:900000000},
+  {id:1,alloy:'A1050',inventoryLimit:3000000000,accountsPayableLimit:2000000000,actualAccountsPayable:1000000000},
 ];
 const defProducts=[
-  {id:1,alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'2400',coating:'KP',qtyKg:5000,priceFC:4250},
-  {id:2,alloy:'A3003',temper:'H14',thickness:'0.8',width:'1000',length:'Coil', coating:'KP',qtyKg:3000,priceFC:4050},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',qtyKg:12000,priceFC:3870},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',qtyKg:5000,priceFC:3870},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',qtyKg:8000,priceFC:3870},
 ];
 const defInputs={
   supplierName:'Yuwon Steel',creator:'Nguyễn Văn A',
-  paymentMethod:'LC',capitalCostPercent:6.5,
+  paymentMethod:'TT',capitalCostPercent:7.8,
   lcMargin:10,lcDays:90,lcOpenFee:0.2,lcInterest:5.8,
   exchangeRate:26150,managementFee:1.0,
-  leadTime:30,holdingTime:60,
-  freightTotal:45000000,importTax:0,processingCost:200,
-  contractPrice:105000,marketPrice:102000,
-  businessRiskPercent:2.0,customerCreditDays:30,lendingRate:12.0,
+  leadTime:0,holdingTime:0,
+  freightTotal:45000000,importTax:0,processingCost:0,
+  contractPrice:97000,marketPrice:97000,
+  businessRiskPercent:1.5,customerCreditDays:30,lendingRate:0,
 };
 
 const Ic={
@@ -688,16 +685,16 @@ const App=()=>{
     });
   },[result]);
 
-  const addProduct=()=>setProducts(p=>[...p,{id:uid(),alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',qtyKg:1000,priceFC:4000}]);
+  const addProduct=()=>setProducts(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',qtyKg:1000,priceFC:3870}]);
   const delProduct=id=>{if(products.length>1) setProducts(p=>p.filter(r=>r.id!==id));};
   const setProduct=(id,patch)=>setProducts(p=>p.map(r=>r.id===id?{...r,...patch}:r));
-  const addInv=()=>setInvs(p=>[...p,{id:uid(),alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',status:'IN_STOCK',qtyKg:0,avgCost:0}]);
+  const addInv=()=>setInvs(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',status:'IN_STOCK',qtyKg:0,avgCost:0}]);
   const delInv=id=>setInvs(p=>p.filter(r=>r.id!==id));
   const setInv=(id,patch)=>setInvs(p=>p.map(r=>r.id===id?{...r,...patch}:r));
-  const addMS=()=>setMinStockRows(p=>[...p,{id:uid(),alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',minStockKg:0}]);
+  const addMS=()=>setMinStockRows(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',minStockKg:0}]);
   const delMS=id=>setMinStockRows(p=>p.filter(r=>r.id!==id));
   const setMS=(id,patch)=>setMinStockRows(p=>p.map(r=>r.id===id?{...r,...patch}:r));
-  const addSP=()=>setSP(p=>[...p,{id:uid(),alloy:'A5052',temper:'H32',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',sellCost:0,comment:''}]);
+  const addSP=()=>setSP(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',sellCost:0,comment:''}]);
   const delSP=id=>setSP(p=>p.filter(r=>r.id!==id));
   const setSpR=(id,f,v)=>setSP(p=>p.map(r=>r.id===id?{...r,[f]:v}:r));
   const addLim=()=>setLimitsData(p=>[...p,{id:uid(),alloy:'',inventoryLimit:0,accountsPayableLimit:0,actualAccountsPayable:0}]);
