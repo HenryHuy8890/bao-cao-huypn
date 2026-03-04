@@ -207,12 +207,32 @@ const calcProductBreakdown = (products, land, fin, totalKg, inp) => {
     return {...p,invVND,landedRow,finRow,physPerKg,econPerKg};
   });
 };
-const findSellPrice = (alloy, temper, sellingPrices) => {
-  const byAT=sellingPrices.find(s=>{
+// Match giá bán theo full SKU: alloy|temper|thickness|width|length|coating
+// Ưu tiên: full 6 trường → fallback alloy+temper+coating → fallback alloy+temper
+const findSellPrice = (purchaseRow, sellingPrices) => {
+  const {alloy,temper,thickness,width,length,coating} = purchaseRow;
+  const coat = coating||'KP';
+  // 1. Full match: alloy + temper + thickness + width + length + coating
+  const full = sellingPrices.find(s=>
+    s.alloy===alloy && s.temper===temper &&
+    (s.thickness||'')===(thickness||'') &&
+    (s.width||'')===(width||'') &&
+    (s.length||'')===(length||'') &&
+    (s.coating||'KP')===coat
+  );
+  if(full) return {price:full.sellCost||full.price||0,label:`${full.alloy} ${full.temper} ${full.thickness}×${full.width}×${full.length} [${coat==='1E'?'PE':'NOPE'}]`,comment:full.comment||''};
+  // 2. Fallback: alloy + temper + coating (bỏ qua quy cách)
+  const byATC = sellingPrices.find(s=>
+    s.alloy===alloy && s.temper===temper && (s.coating||'KP')===coat
+    && !s.thickness && !s.width && !s.length
+  );
+  if(byATC) return {price:byATC.sellCost||byATC.price||0,label:`${byATC.alloy} ${byATC.temper} [${coat==='1E'?'PE':'NOPE'}] (fallback)`,comment:byATC.comment||''};
+  // 3. Fallback: alloy + temper only (legacy alloyTemper field)
+  const byAT = sellingPrices.find(s=>{
     if(s.alloyTemper) return s.alloyTemper===alloy+' '+temper||s.alloyTemper===alloy;
     return s.alloy===alloy && s.temper===temper;
   });
-  if(byAT) return {price:byAT.sellCost||byAT.price||0,label:(byAT.alloy||byAT.alloyTemper)+' '+(byAT.temper||''),comment:byAT.comment||''};
+  if(byAT) return {price:byAT.sellCost||byAT.price||0,label:`${byAT.alloy||byAT.alloyTemper} ${byAT.temper||''} (fallback AT)`,comment:byAT.comment||''};
   return null;
 };
 const calcSkuBlend = (inventory, purchaseRows, sellingPrices, inputs, minStockMap) => {
@@ -231,7 +251,7 @@ const calcSkuBlend = (inventory, purchaseRows, sellingPrices, inputs, minStockMa
     const finPerKg=p.qtyKg>0?p.finRow/p.qtyKg:0;
     const custFin=avgAfter*(inputs.lendingRate/100)*(inputs.customerCreditDays/365);
     const breakEven=avgAfter+finPerKg+custFin;
-    const spResult=findSellPrice(p.alloy,p.temper,sellingPrices);
+    const spResult=findSellPrice(p,sellingPrices);
     const sellPrice=spResult?spResult.price:0, sellLabel=spResult?spResult.label:'Chưa có giá', sellComment=spResult?spResult.comment:'';
     const hasSellPrice=!!spResult&&sellPrice>0;
     const realProfitPerKg=hasSellPrice?sellPrice*(1-inputs.businessRiskPercent/100)-breakEven:null;
@@ -584,7 +604,7 @@ const App=()=>{
     const avgProfitPerKg=totalQtyPriced>0?totalGrossProfit/totalQtyPriced:null;
     const profitMargin=inv.invoiceVND>0?totalGrossProfit/inv.invoiceVND*100:null;
     const allPriced=blends.every(b=>b.hasSellPrice);
-    const missingPriceSkus=blends.filter(b=>!b.hasSellPrice).map(b=>`${b.alloy} ${b.temper}`);
+    const missingPriceSkus=blends.filter(b=>!b.hasSellPrice).map(b=>`${b.alloy} ${b.temper} ${b.thickness}×${b.width}×${b.length} [${b.coating==='1E'?'PE':'NOPE'}]`);
     const rec=!hasRisk
       ?(totalGrossProfit>0?{txt:'✓ NÊN MUA – CÓ LÃI',cls:'tg'}:{txt:'HÒA VỐN – CÂN NHẮC',cls:'tb'})
       :{txt:'⚠ RỦI RO – XEM LẠI',cls:'tr'};
@@ -992,7 +1012,11 @@ const App=()=>{
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',background:bg4,borderRadius:5,padding:'8px 10px'}}>
                           <div>
                             <div style={{fontSize:'.63rem',color:'#5a7a92'}}>Giá bán KH</div>
-                            {b.hasSellPrice?(<><div className="mono" style={{fontSize:'.9rem',fontWeight:700,color:'#4ade80'}}>{fv(b.sellPrice)} đ/kg</div>{b.sellComment&&<div style={{fontSize:'.6rem',color:'#5a7a92'}}>{b.sellComment}</div>}</>)
+                            {b.hasSellPrice?(<>
+                              <div className="mono" style={{fontSize:'.9rem',fontWeight:700,color:'#4ade80'}}>{fv(b.sellPrice)} đ/kg</div>
+                              {b.sellLabel&&b.sellLabel.includes('fallback')&&<div style={{fontSize:'.58rem',color:'#f59e0b',marginTop:1}}>⚠ Fallback: {b.sellLabel}</div>}
+                              {b.sellComment&&<div style={{fontSize:'.6rem',color:'#5a7a92'}}>{b.sellComment}</div>}
+                            </>)
                               :<div style={{fontSize:'.78rem',color:'#5a7a92',fontStyle:'italic'}}>— Vào Tab Giá bán →</div>}
                           </div>
                           <div style={{textAlign:'center'}}>
@@ -1326,9 +1350,21 @@ const App=()=>{
                 </tr></thead>
                 <tbody>
                   {filteredSP.map((sp,i)=>{
+                    // Match full SKU: alloy+temper+thickness+width+length+coating
+                    const spCoat=sp.coating||'KP';
                     const matchBlend=result?.blends?.find(b=>
-                      b.alloy===(sp.alloy||'') && b.temper===(sp.temper||'') && (sp.coating?b.coating===sp.coating:true)
+                      b.alloy===(sp.alloy||'') &&
+                      b.temper===(sp.temper||'') &&
+                      (b.thickness||'')===(sp.thickness||'') &&
+                      (b.width||'')===(sp.width||'') &&
+                      (b.length||'')===(sp.length||'') &&
+                      (b.coating||'KP')===spCoat
                     ) || result?.blends?.find(b=>
+                      // Fallback: alloy+temper+coating nếu sp không có quy cách
+                      b.alloy===(sp.alloy||'') && b.temper===(sp.temper||'') && (b.coating||'KP')===spCoat
+                      && !sp.thickness && !sp.width && !sp.length
+                    ) || result?.blends?.find(b=>
+                      // Fallback legacy: alloy+temper only
                       b.alloy===(sp.alloy||sp.alloyTemper?.split(' ')[0]||'') && b.temper===(sp.temper||sp.alloyTemper?.split(' ')[1]||'')
                     );
                     const be=matchBlend?matchBlend.breakEven:null;
