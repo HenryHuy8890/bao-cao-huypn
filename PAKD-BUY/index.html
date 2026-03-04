@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAKD BUY 4.4 – H&D Aluminum Strategy</title>
+<title>PAKD BUY 4.5 – H&D Aluminum Strategy</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -318,63 +318,54 @@ const calcAlloySummary = (inventory, finPerKg, inputs, purchaseRows, sellingPric
 };
 
 // ── LIMITS WARNINGS ──────────────────────────────────────────────────────────
-// FIX #3: 3 cảnh báo đúng logic:
-// a. Vốn TK (kg×avgCost) > InventoryLimit
-// b. Vốn TK + ActualAccountsPayable > CreditLimit
-// c. ActualAccountsPayable > AccountsPayableLimit
+// Per-alloy: chỉ cảnh báo A (Vốn TK > InventoryLimit)
+// TOÀN KHO: 3 cảnh báo A/B/C lấy từ row alloy='total' trong GSheet
 const calcLimitsWarnings = (limitsData, inventory) => {
-  // Global cost values (kg × avgCost)
   const globalCostValue = calcInventoryValue(inventory);
   const globalCoatedCostValue = calcInventoryValue(inventory.filter(r=>(r.coating||'KP')==='1E'));
   const globalPlainCostValue = calcInventoryValue(inventory.filter(r=>(r.coating||'KP')!=='1E'));
-  const globalActualAP = limitsData.reduce((s,l)=>s+(l.actualAccountsPayable||0),0);
-  const globalAPLimit = limitsData.reduce((s,l)=>s+(l.accountsPayableLimit||0),0);
-  const globalInvLimit = limitsData.reduce((s,l)=>s+(l.inventoryLimit||0),0);
-  const globalCreditLimit = globalInvLimit + globalAPLimit; // CreditLimit = InventoryLimit + AccountsPayableLimit
-
-  const rows = limitsData.map(lim => {
+  // Tách row 'total' cho 3 cảnh báo toàn kho
+  const totalRow = limitsData.find(l=>l.alloy.toLowerCase()==='total')||null;
+  const alloyRows = limitsData.filter(l=>l.alloy.toLowerCase()!=='total');
+  // Lấy hạn mức toàn kho từ row 'total'
+  const globalInvLimit = totalRow ? (totalRow.inventoryLimit||0) : 0;
+  const globalAPLimit  = totalRow ? (totalRow.accountsPayableLimit||0) : 0;
+  const globalActualAP = totalRow ? (totalRow.actualAccountsPayable||0) : 0;
+  const globalCreditLimit = globalInvLimit + globalAPLimit;
+  // 3 cảnh báo toàn kho
+  const gInvOver   = globalInvLimit>0    && globalCostValue > globalInvLimit;
+  const gInvNear   = globalInvLimit>0    && globalCostValue > globalInvLimit*0.85 && !gInvOver;
+  const gInvPct    = globalInvLimit>0    ? Math.round(globalCostValue/globalInvLimit*100) : null;
+  const gTotalUsed = globalCostValue + globalActualAP;
+  const gCreditOver= globalCreditLimit>0 && gTotalUsed > globalCreditLimit;
+  const gCreditNear= globalCreditLimit>0 && gTotalUsed > globalCreditLimit*0.85 && !gCreditOver;
+  const gApOver    = globalAPLimit>0     && globalActualAP > globalAPLimit;
+  const gApNear    = globalAPLimit>0     && globalActualAP > globalAPLimit*0.85 && !gApOver;
+  const gApPct     = globalAPLimit>0     ? Math.round(globalActualAP/globalAPLimit*100) : null;
+  // Per-alloy: chỉ cảnh báo A
+  const rows = alloyRows.map(lim => {
     const alloyInv = inventory.filter(r=>r.alloy===lim.alloy);
-    // Vốn TK = kg × avgCost (giá vốn)
-    const invCostValue = calcInventoryValue(alloyInv);
-    const coatedCostValue = calcInventoryValue(alloyInv.filter(r=>(r.coating||'KP')==='1E'));
+    const invCostValue   = calcInventoryValue(alloyInv);
+    const coatedCostValue= calcInventoryValue(alloyInv.filter(r=>(r.coating||'KP')==='1E'));
     const plainCostValue = calcInventoryValue(alloyInv.filter(r=>(r.coating||'KP')!=='1E'));
-    const invKg = alloyInv.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+    const invKg    = alloyInv.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
     const coatedKg = alloyInv.filter(r=>(r.coating||'KP')==='1E').reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
-    const plainKg = alloyInv.filter(r=>(r.coating||'KP')!=='1E').reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
-
-    const invLim = lim.inventoryLimit||0;
-    const apLim = lim.accountsPayableLimit||0;
-    const apActual = lim.actualAccountsPayable||0;
-    // CreditLimit = InventoryLimit + AccountsPayableLimit
-    const creditLimit = invLim + apLim;
-
-    // Cảnh báo a: Vốn TK (kg×avgCost) > InventoryLimit
-    const invOver = invLim>0 && invCostValue > invLim;
-    const invNear = invLim>0 && invCostValue > invLim*0.85 && !invOver;
-    const invPct = invLim>0 ? Math.round(invCostValue/invLim*100) : null;
-
-    // Cảnh báo b: Vốn TK + ActualAccountsPayable > CreditLimit
-    const totalUsed = invCostValue + apActual;
-    const creditOver = creditLimit>0 && totalUsed > creditLimit;
-    const creditNear = creditLimit>0 && totalUsed > creditLimit*0.85 && !creditOver;
-
-    // Cảnh báo c: ActualAccountsPayable > AccountsPayableLimit
-    const apOver = apLim>0 && apActual > apLim;
-    const apNear = apLim>0 && apActual > apLim*0.85 && !apOver;
-    const apPct = apLim>0 ? Math.round(apActual/apLim*100) : null;
-
-    const hasAlert = invOver || apOver || creditOver;
-    const hasWarn = (!hasAlert) && (invNear || apNear || creditNear);
-    return {
-      ...lim, invKg, coatedKg, plainKg,
+    const plainKg  = alloyInv.filter(r=>(r.coating||'KP')!=='1E').reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+    const invLim   = lim.inventoryLimit||0;
+    const invOver  = invLim>0 && invCostValue > invLim;
+    const invNear  = invLim>0 && invCostValue > invLim*0.85 && !invOver;
+    const invPct   = invLim>0 ? Math.round(invCostValue/invLim*100) : null;
+    const hasAlert = invOver;
+    const hasWarn  = !hasAlert && invNear;
+    return {...lim, invKg, coatedKg, plainKg,
       invCostValue, coatedCostValue, plainCostValue,
-      invOver, invNear, invPct, apOver, apNear, apPct,
-      creditLimit, totalUsed, creditOver, creditNear,
-      hasAlert, hasWarn
-    };
+      invOver, invNear, invPct, hasAlert, hasWarn};
   });
-  return {rows, globalCostValue, globalCoatedCostValue, globalPlainCostValue,
-    globalActualAP, globalAPLimit, globalInvLimit, globalCreditLimit};
+  return {rows, totalRow,
+    globalCostValue, globalCoatedCostValue, globalPlainCostValue,
+    globalActualAP, globalAPLimit, globalInvLimit, globalCreditLimit,
+    gTotalUsed, gInvOver, gInvNear, gInvPct,
+    gCreditOver, gCreditNear, gApOver, gApNear, gApPct};
 };
 
 // ── DEFAULTS ──────────────────────────────────────────────────────────────────
@@ -402,7 +393,9 @@ const defSP=[
   {id:5,alloyTemper:'A6061 T6', price:115000,comment:''},
 ];
 // GSheet: Alloy|InventoryLimit|AccountsPayableLimit|ActualAccountsPayable
+// Row alloy='total' = hạn mức toàn công ty → 3 cảnh báo trong TOÀN KHO
 const defLimits=[
+  {id:0,alloy:'total',inventoryLimit:5000000000,accountsPayableLimit:7000000000,actualAccountsPayable:5500000000},
   {id:1,alloy:'A5052',inventoryLimit:2000000000,accountsPayableLimit:3000000000,actualAccountsPayable:2500000000},
   {id:2,alloy:'A3003',inventoryLimit:1500000000,accountsPayableLimit:2000000000,actualAccountsPayable:1800000000},
   {id:3,alloy:'A1052',inventoryLimit:800000000, accountsPayableLimit:1500000000,actualAccountsPayable:900000000},
@@ -816,7 +809,7 @@ const App=()=>{
           <div style={{background:'linear-gradient(135deg,#1d4ed8,#6d28d9)',borderRadius:'7px',width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:'15px',color:'#fff',fontFamily:'JetBrains Mono'}}>P</div>
           <div>
             <div style={{fontWeight:900,fontSize:'15px',letterSpacing:'-.02em',color:'#dce6f4'}}>PAKD BUY <span style={{color:'#60a5fa',fontFamily:'JetBrains Mono',fontSize:'12px'}}>4.4</span></div>
-            <div style={{fontSize:'11px',color:'#5a7a92',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>Coating 1E/KP · Vốn TK=kg×avgCost · 3 Cảnh báo hạn mức</div>
+            <div style={{fontSize:'11px',color:'#5a7a92',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>Vốn TK=kg×avgCost · ⚠A per-alloy · 3 CB Toàn kho (alloy=total)</div>
           </div>
           <div style={{width:'1px',height:'24px',background:border1,margin:'0 4px'}}/>
           {[
@@ -1353,66 +1346,6 @@ const App=()=>{
                 </div>
               </div>
 
-              {/* 3 CẢNH BÁO TỔNG QUAN */}
-              <div style={{background:'#06071a',border:'2px solid #1d4ed8',borderRadius:10,padding:'14px 18px',marginBottom:16}}>
-                <div style={{fontSize:'.68rem',color:'#60a5fa',fontWeight:800,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:10,display:'flex',alignItems:'center',gap:6}}><Ic.Alert/> TỔNG QUAN 3 CẢNH BÁO HẠN MỨC – TOÀN CÔNG TY</div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:11}}>
-                  {/* Cảnh báo a: Vốn TK > InventoryLimit */}
-                  {(()=>{
-                    const actual=limitsWarnings.globalCostValue;
-                    const limit=limitsWarnings.globalInvLimit;
-                    const over=limit>0&&actual>limit;
-                    const near=limit>0&&actual>limit*0.85&&!over;
-                    return(
-                      <div style={{background:over?'#1c0505':near?'#1c1500':bg4,border:`2px solid ${over?'#991b1b':near?'#854d0e':'#166534'}`,borderRadius:8,padding:'11px 13px'}}>
-                        <div style={{fontSize:'.66rem',fontWeight:800,color:over?'#fc8181':near?'#fcd34d':'#4ade80',marginBottom:6,display:'flex',alignItems:'center',gap:5}}>
-                          {over&&<Ic.Alert/>}📦 CẢnh báo A: Vốn TK {'>'} InventoryLimit
-                        </div>
-                        <div style={{fontSize:'.62rem',color:'#5a7a92',marginBottom:5}}>Vốn TK = kg × avgCost (giá vốn)</div>
-                        <LimitBar actual={actual} limit={limit} label={`Hạn mức: ${fv(limit)}đ`}/>
-                        {!limit&&<div style={{fontSize:'.65rem',color:'#3a5570',marginTop:4}}>Chưa cấu hình InventoryLimit</div>}
-                      </div>
-                    );
-                  })()}
-                  {/* Cảnh báo b: Vốn TK + AP > CreditLimit */}
-                  {(()=>{
-                    const invActual=limitsWarnings.globalCostValue;
-                    const apActual=limitsWarnings.globalActualAP;
-                    const totalUsed=invActual+apActual;
-                    const limit=limitsWarnings.globalCreditLimit;
-                    const over=limit>0&&totalUsed>limit;
-                    const near=limit>0&&totalUsed>limit*0.85&&!over;
-                    return(
-                      <div style={{background:over?'#1c0505':near?'#1c1500':bg4,border:`2px solid ${over?'#991b1b':near?'#854d0e':'#166534'}`,borderRadius:8,padding:'11px 13px'}}>
-                        <div style={{fontSize:'.66rem',fontWeight:800,color:over?'#fc8181':near?'#fcd34d':'#4ade80',marginBottom:6,display:'flex',alignItems:'center',gap:5}}>
-                          {over&&<Ic.Alert/>}💳 CẢnh báo B: Vốn TK + CN {'>'} CreditLimit
-                        </div>
-                        <div style={{fontSize:'.62rem',color:'#5a7a92',marginBottom:5}}>CreditLimit = InvLimit + APLimit = {fv(limit)}đ</div>
-                        <LimitBar actual={totalUsed} limit={limit} label={`Đã dùng (TK+CN): ${fv(totalUsed)}đ`}/>
-                        {!limit&&<div style={{fontSize:'.65rem',color:'#3a5570',marginTop:4}}>Chưa cấu hình CreditLimit</div>}
-                      </div>
-                    );
-                  })()}
-                  {/* Cảnh báo c: ActualAccountsPayable > AccountsPayableLimit */}
-                  {(()=>{
-                    const actual=limitsWarnings.globalActualAP;
-                    const limit=limitsWarnings.globalAPLimit;
-                    const over=limit>0&&actual>limit;
-                    const near=limit>0&&actual>limit*0.85&&!over;
-                    return(
-                      <div style={{background:over?'#1c0505':near?'#1c1500':bg4,border:`2px solid ${over?'#991b1b':near?'#854d0e':'#166534'}`,borderRadius:8,padding:'11px 13px'}}>
-                        <div style={{fontSize:'.66rem',fontWeight:800,color:over?'#fc8181':near?'#fcd34d':'#4ade80',marginBottom:6,display:'flex',alignItems:'center',gap:5}}>
-                          {over&&<Ic.Alert/>}🏦 CẢnh báo C: Công nợ {'>'} APLimit
-                        </div>
-                        <div style={{fontSize:'.62rem',color:'#5a7a92',marginBottom:5}}>CN thực tế vs AccountsPayableLimit</div>
-                        <LimitBar actual={actual} limit={limit} label={`APLimit: ${fv(limit)}đ`}/>
-                        {!limit&&<div style={{fontSize:'.65rem',color:'#3a5570',marginTop:4}}>Chưa cấu hình APLimit</div>}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-
               {/* ── TỔNG QUAN TOÀN KHO ── */}
               <div style={{marginBottom:20}}>
                 <div style={{fontSize:'.72rem',fontWeight:800,color:'#6b9ab8',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:11,display:'flex',alignItems:'center',gap:6}}><Ic.Chart/> A. Tổng quan toàn kho</div>
@@ -1434,7 +1367,7 @@ const App=()=>{
                     ))}
                   </div>
                   {/* Coating breakdown toàn kho */}
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:9}}>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:9,marginBottom:12}}>
                     {[
                       {lbl:'⬜ NOPE (Không phủ / KP)',kg:reportData.globalPlainKg,val:reportData.globalPlainCostValue,bg:'#0d0a00',br:'#ca8a04',c:'#facc15'},
                       {lbl:'🎨 PE (Có phủ / 1E)',     kg:reportData.globalCoatedKg,val:reportData.globalCoatedCostValue,bg:'#001c14',br:'#059669',c:'#34d399'},
@@ -1444,6 +1377,54 @@ const App=()=>{
                         <div style={{textAlign:'right'}}><div style={{fontSize:'.6rem',color:'#5a7a92'}}>Vốn (kg×avgCost)</div><div className="mono" style={{fontSize:'.78rem',color:x.c,fontWeight:700}}>{fv(x.val)}đ</div></div>
                       </div>
                     ))}
+                  </div>
+                  {/* 3 CẢNH BÁO TOÀN KHO – lấy từ GSheet row alloy='total' */}
+                  <div style={{borderTop:'1px solid #1e3347',paddingTop:11}}>
+                    <div style={{fontSize:'.63rem',color:limitsWarnings.gInvOver||limitsWarnings.gCreditOver||limitsWarnings.gApOver?'#fc8181':limitsWarnings.gInvNear||limitsWarnings.gCreditNear||limitsWarnings.gApNear?'#fcd34d':'#6b9ab8',fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:8,display:'flex',alignItems:'center',gap:5}}>
+                      <Ic.Alert/> 3 Cảnh báo hạn mức toàn kho (GSheet alloy="total")
+                      {!limitsWarnings.totalRow&&<span style={{color:'#854d0e',marginLeft:8,fontWeight:600,textTransform:'none'}}>⚠ Chưa có row alloy="total"</span>}
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:9}}>
+                      {/* A: Vốn TK > InventoryLimit */}
+                      <div style={{background:limitsWarnings.gInvOver?'#1c0505':limitsWarnings.gInvNear?'#1c1500':bg4,border:`1px solid ${limitsWarnings.gInvOver?'#991b1b':limitsWarnings.gInvNear?'#854d0e':border1}`,borderRadius:6,padding:'9px 11px'}}>
+                        <div style={{fontSize:'.62rem',fontWeight:800,color:limitsWarnings.gInvOver?'#fc8181':limitsWarnings.gInvNear?'#fcd34d':'#4ade80',marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
+                          {limitsWarnings.gInvOver&&<Ic.Alert/>}📦 A: Vốn TK {'>'} InventoryLimit
+                        </div>
+                        {limitsWarnings.globalInvLimit>0
+                          ?<LimitBar actual={limitsWarnings.globalCostValue} limit={limitsWarnings.globalInvLimit} label={`Hạn mức: ${fv(limitsWarnings.globalInvLimit)}đ`}/>
+                          :<div style={{fontSize:'.62rem',color:'#3a5570'}}>Chưa cấu hình</div>}
+                        {limitsWarnings.gInvPct!=null&&<div style={{fontSize:'.6rem',color:'#5a7a92',marginTop:3,textAlign:'right'}}>{limitsWarnings.gInvPct}% hạn mức</div>}
+                      </div>
+                      {/* B: Vốn TK + CN > CreditLimit */}
+                      <div style={{background:limitsWarnings.gCreditOver?'#1c0505':limitsWarnings.gCreditNear?'#1c1500':bg4,border:`1px solid ${limitsWarnings.gCreditOver?'#991b1b':limitsWarnings.gCreditNear?'#854d0e':border1}`,borderRadius:6,padding:'9px 11px'}}>
+                        <div style={{fontSize:'.62rem',fontWeight:800,color:limitsWarnings.gCreditOver?'#fc8181':limitsWarnings.gCreditNear?'#fcd34d':'#4ade80',marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
+                          {limitsWarnings.gCreditOver&&<Ic.Alert/>}💳 B: Vốn TK + CN {'>'} CreditLimit
+                        </div>
+                        {limitsWarnings.globalCreditLimit>0?(
+                          <>
+                            <div style={{fontSize:'.59rem',color:'#5a7a92',marginBottom:4}}>CreditLimit = InvLimit+APLimit = <strong style={{color:'#d8b4fe'}}>{fv(limitsWarnings.globalCreditLimit)}đ</strong></div>
+                            <LimitBar actual={limitsWarnings.gTotalUsed} limit={limitsWarnings.globalCreditLimit} label={`Đã dùng: ${fv(limitsWarnings.gTotalUsed)}đ`}/>
+                          </>
+                        ):<div style={{fontSize:'.62rem',color:'#3a5570'}}>Chưa cấu hình</div>}
+                      </div>
+                      {/* C: CN > APLimit */}
+                      <div style={{background:limitsWarnings.gApOver?'#1c0505':limitsWarnings.gApNear?'#1c1500':bg4,border:`1px solid ${limitsWarnings.gApOver?'#991b1b':limitsWarnings.gApNear?'#854d0e':border1}`,borderRadius:6,padding:'9px 11px'}}>
+                        <div style={{fontSize:'.62rem',fontWeight:800,color:limitsWarnings.gApOver?'#fc8181':limitsWarnings.gApNear?'#fcd34d':'#4ade80',marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
+                          {limitsWarnings.gApOver&&<Ic.Alert/>}🏦 C: Công nợ {'>'} APLimit
+                        </div>
+                        {limitsWarnings.globalAPLimit>0?(
+                          <>
+                            <LimitBar actual={limitsWarnings.globalActualAP} limit={limitsWarnings.globalAPLimit} label={`APLimit: ${fv(limitsWarnings.globalAPLimit)}đ`}/>
+                            <div style={{marginTop:6}}>
+                              <label className="lbl" style={{fontSize:'.56rem'}}>CN thực tế (cập nhật)</label>
+                              <input className="inp inp-xs mono" style={{color:'#fcd34d'}}
+                                value={fv(limitsWarnings.globalActualAP)}
+                                onChange={e=>{if(limitsWarnings.totalRow) setLim(limitsWarnings.totalRow.id,'actualAccountsPayable',pn(e.target.value));}}/>
+                            </div>
+                          </>
+                        ):<div style={{fontSize:'.62rem',color:'#3a5570'}}>Chưa cấu hình</div>}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1490,52 +1471,23 @@ const App=()=>{
                           <div style={{fontSize:'.6rem',color:'#5a7a92',marginBottom:2}}>Break-even</div>
                           <div className="mono" style={{fontSize:'.88rem',fontWeight:800,color:'#d8b4fe'}}>{fv(g.breakEven)} đ/kg</div>
                         </div>
-                        {/* FIX #3: 3 limit bars với logic đúng */}
-                        {limRow&&(
-                          <div style={{display:'flex',flexDirection:'column',gap:7}}>
-                            {/* Cảnh báo A: Vốn TK (kg×avgCost) > InventoryLimit */}
-                            {limRow.inventoryLimit>0&&(
-                              <div style={{background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${limRow.invOver?'#991b1b':limRow.invNear?'#854d0e':border1}`}}>
-                                <div style={{fontSize:'.62rem',color:limRow.invOver?'#fc8181':limRow.invNear?'#fcd34d':'#7ba3be',fontWeight:700,marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
-                                  {limRow.invOver&&<Ic.Alert/>}📦 CẢnh báo A: Vốn TK vs InventoryLimit
+                        {/* Chỉ cảnh báo A: Vốn TK > InventoryLimit */}
+                        {limRow&&limRow.inventoryLimit>0&&(
+                          <div style={{background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${limRow.invOver?'#991b1b':limRow.invNear?'#854d0e':border1}`}}>
+                            <div style={{fontSize:'.62rem',color:limRow.invOver?'#fc8181':limRow.invNear?'#fcd34d':'#7ba3be',fontWeight:700,marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
+                              {limRow.invOver&&<Ic.Alert/>}📦 Vốn TK vs InventoryLimit
+                              {limRow.invPct!=null&&<span style={{marginLeft:'auto',fontFamily:'JetBrains Mono,monospace',fontSize:'.65rem'}}>{limRow.invPct}%</span>}
+                            </div>
+                            <LimitBar actual={limRow.invCostValue} limit={limRow.inventoryLimit} label={`Hạn mức: ${fv(limRow.inventoryLimit)}đ`}/>
+                            {(limRow.coatedKg>0||limRow.plainKg>0)&&(
+                              <div style={{marginTop:7,display:'grid',gridTemplateColumns:'1fr 1fr',gap:5}}>
+                                <div style={{background:'#0d0a0080',borderRadius:4,padding:'4px 6px'}}>
+                                  <div style={{fontSize:'.58rem',color:'#facc15'}}>⬜ NOPE: {fv(limRow.plainKg)}kg</div>
+                                  <div className="mono" style={{fontSize:'.65rem',color:'#facc15'}}>{fv(limRow.plainCostValue)}đ</div>
                                 </div>
-                                <LimitBar actual={limRow.invCostValue} limit={limRow.inventoryLimit} label={`Vốn TK (kg×avgCost): ${fv(limRow.invCostValue)}đ`}/>
-                                {(limRow.coatedKg>0||limRow.plainKg>0)&&(
-                                  <div style={{marginTop:7,display:'grid',gridTemplateColumns:'1fr 1fr',gap:5}}>
-                                    <div style={{background:'#0d0a0080',borderRadius:4,padding:'4px 6px'}}>
-                                      <div style={{fontSize:'.58rem',color:'#facc15'}}>⬜ NOPE: {fv(limRow.plainKg)}kg</div>
-                                      <div className="mono" style={{fontSize:'.65rem',color:'#facc15'}}>{fv(limRow.plainCostValue)}đ</div>
-                                    </div>
-                                    <div style={{background:'#001c1480',borderRadius:4,padding:'4px 6px'}}>
-                                      <div style={{fontSize:'.58rem',color:'#34d399'}}>🎨 PE: {fv(limRow.coatedKg)}kg</div>
-                                      <div className="mono" style={{fontSize:'.65rem',color:'#34d399'}}>{fv(limRow.coatedCostValue)}đ</div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            {/* Cảnh báo B: Vốn TK + ActualAccountsPayable > CreditLimit */}
-                            {(limRow.inventoryLimit>0||limRow.accountsPayableLimit>0)&&(
-                              <div style={{background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${limRow.creditOver?'#991b1b':limRow.creditNear?'#854d0e':border1}`}}>
-                                <div style={{fontSize:'.62rem',color:limRow.creditOver?'#fc8181':limRow.creditNear?'#fcd34d':'#7ba3be',fontWeight:700,marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
-                                  {limRow.creditOver&&<Ic.Alert/>}💳 CẢnh báo B: Vốn TK + CN vs CreditLimit
-                                </div>
-                                <div style={{fontSize:'.6rem',color:'#5a7a92',marginBottom:4}}>
-                                  CreditLimit = {fv(limRow.inventoryLimit)}đ + {fv(limRow.accountsPayableLimit)}đ = <strong style={{color:'#d8b4fe'}}>{fv(limRow.creditLimit)}đ</strong>
-                                </div>
-                                <LimitBar actual={limRow.totalUsed} limit={limRow.creditLimit} label={`Đã dùng = Vốn TK + CN = ${fv(limRow.totalUsed)}đ`}/>
-                              </div>
-                            )}
-                            {/* Cảnh báo C: ActualAccountsPayable > AccountsPayableLimit */}
-                            {limRow.accountsPayableLimit>0&&(
-                              <div style={{background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${limRow.apOver?'#991b1b':limRow.apNear?'#854d0e':border1}`}}>
-                                <div style={{fontSize:'.62rem',color:limRow.apOver?'#fc8181':limRow.apNear?'#fcd34d':'#7ba3be',fontWeight:700,marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
-                                  {limRow.apOver&&<Ic.Alert/>}🏦 CẢnh báo C: Công nợ thực tế vs APLimit
-                                </div>
-                                <LimitBar actual={limRow.actualAccountsPayable||0} limit={limRow.accountsPayableLimit} label={`APLimit: ${fv(limRow.accountsPayableLimit)}đ`}/>
-                                <div style={{marginTop:5}}>
-                                  <label className="lbl" style={{fontSize:'.57rem'}}>CN Thực tế (cập nhật)</label>
-                                  <input className="inp inp-xs mono" style={{color:'#fcd34d'}} value={fv(limRow.actualAccountsPayable||0)} onChange={e=>setLim(limRow.id,'actualAccountsPayable',pn(e.target.value))}/>
+                                <div style={{background:'#001c1480',borderRadius:4,padding:'4px 6px'}}>
+                                  <div style={{fontSize:'.58rem',color:'#34d399'}}>🎨 PE: {fv(limRow.coatedKg)}kg</div>
+                                  <div className="mono" style={{fontSize:'.65rem',color:'#34d399'}}>{fv(limRow.coatedCostValue)}đ</div>
                                 </div>
                               </div>
                             )}
@@ -1560,7 +1512,7 @@ const App=()=>{
                     <th>CreditLimit đ<br/><span style={{fontSize:'.6rem',fontWeight:400}}>(= Inv + AP)</span></th>
                     <th>Vốn TK thực tế đ<br/><span style={{fontSize:'.6rem',fontWeight:400}}>(kg × avgCost)</span></th>
                     <th>CN Thực tế đ</th>
-                    <th>⚠A Tồn</th><th>⚠B Credit</th><th>⚠C CN</th><th></th>
+                    <th>⚠A Vốn TK vs InvLimit</th><th></th>
                   </tr></thead>
                   <tbody>
                     {limitsWarnings.rows.map((lim,i)=>(
@@ -1570,31 +1522,14 @@ const App=()=>{
                         </td>
                         <td style={{width:130}}><input className="inp inp-xs mono" style={{textAlign:'right',color:'#4ade80'}} value={fv(lim.inventoryLimit)} onChange={e=>setLim(lim.id,'inventoryLimit',pn(e.target.value))}/></td>
                         <td style={{width:130}}><input className="inp inp-xs mono" style={{textAlign:'right',color:'#fb923c'}} value={fv(lim.accountsPayableLimit)} onChange={e=>setLim(lim.id,'accountsPayableLimit',pn(e.target.value))}/></td>
-                        <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#d8b4fe',fontWeight:700}}>{fv(lim.creditLimit)}</td>
-                        {/* FIX #1+#3: hiển thị Vốn TK = kg × avgCost */}
+                        <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#d8b4fe',fontWeight:700}}>{fv((lim.inventoryLimit||0)+(lim.accountsPayableLimit||0))}</td>
                         <td className="mono" style={{textAlign:'right',paddingRight:9,color:lim.invOver?'#fc8181':lim.invNear?'#fcd34d':'#93c5fd',fontWeight:700}}>{fv(lim.invCostValue)}</td>
                         <td style={{width:140}}><input className="inp inp-xs mono" style={{textAlign:'right',color:'#fcd34d'}} value={fv(lim.actualAccountsPayable||0)} onChange={e=>setLim(lim.id,'actualAccountsPayable',pn(e.target.value))}/></td>
-                        {/* Cảnh báo A */}
+                        {/* Cảnh báo A only */}
                         <td style={{textAlign:'center'}}>
                           {lim.inventoryLimit>0?(
                             <span className={`tag ${lim.invOver?'tr':lim.invNear?'ty':'tg'}`} style={{fontSize:'.63rem'}}>
                               {lim.invPct!=null?lim.invPct+'%':'—'} {lim.invOver?'▲ VƯỢT':lim.invNear?'⚡ GẦN':'✓ OK'}
-                            </span>
-                          ):<span style={{color:'#3a5570',fontSize:'.63rem'}}>—</span>}
-                        </td>
-                        {/* Cảnh báo B */}
-                        <td style={{textAlign:'center'}}>
-                          {lim.creditLimit>0?(
-                            <span className={`tag ${lim.creditOver?'tr':lim.creditNear?'ty':'tg'}`} style={{fontSize:'.63rem'}}>
-                              {lim.creditLimit>0?Math.round(lim.totalUsed/lim.creditLimit*100)+'%':'—'} {lim.creditOver?'▲ VƯỢT':lim.creditNear?'⚡ GẦN':'✓ OK'}
-                            </span>
-                          ):<span style={{color:'#3a5570',fontSize:'.63rem'}}>—</span>}
-                        </td>
-                        {/* Cảnh báo C */}
-                        <td style={{textAlign:'center'}}>
-                          {lim.accountsPayableLimit>0?(
-                            <span className={`tag ${lim.apOver?'tr':lim.apNear?'ty':'tg'}`} style={{fontSize:'.63rem'}}>
-                              {lim.apPct!=null?lim.apPct+'%':'—'} {lim.apOver?'▲ VƯỢT':lim.apNear?'⚡ GẦN':'✓ OK'}
                             </span>
                           ):<span style={{color:'#3a5570',fontSize:'.63rem'}}>—</span>}
                         </td>
@@ -1606,10 +1541,9 @@ const App=()=>{
                 <div className="card-inset" style={{marginTop:11}}>
                   <p style={{fontSize:'.78rem',color:'#5a7a92',lineHeight:1.8}}>
                     💡 GSheet Hạn mức cột: <strong style={{color:'#93c5fd'}}>Alloy | InventoryLimit | AccountsPayableLimit | ActualAccountsPayable</strong><br/>
-                    GSheet cột coating: <strong style={{color:'#34d399'}}>1E</strong> = PE (có phủ) · <strong style={{color:'#facc15'}}>KP</strong> = NOPE (không phủ)<br/>
-                    <strong style={{color:'#4ade80'}}>⚠A</strong>: Vốn TK (kg×avgCost) {'>'} InventoryLimit ·
-                    <strong style={{color:'#d8b4fe'}}> ⚠B</strong>: Vốn TK + CN {'>'} CreditLimit ·
-                    <strong style={{color:'#fb923c'}}> ⚠C</strong>: CN {'>'} APLimit
+                    Row <strong style={{color:'#60a5fa'}}>alloy="total"</strong> → 3 cảnh báo toàn kho A/B/C trong box TOÀN KHO ·
+                    Từng alloy chỉ so sánh <strong style={{color:'#4ade80'}}>Vốn TK vs InventoryLimit</strong><br/>
+                    coating GSheet: <strong style={{color:'#34d399'}}>1E</strong>=PE · <strong style={{color:'#facc15'}}>KP</strong>=NOPE
                   </p>
                 </div>
               </div>
