@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAKD BUY 4.7 – H&D Aluminum Strategy (High Contrast)</title>
+<title>PAKD BUY 4.7 – H&D Aluminum Strategy</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -21,7 +21,7 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#0f172a;height:100v
 
 .inp{width:100%;background:#ffffff;border:1px solid #94a3b8;color:#0f172a;border-radius:4px;padding:5px 8px;font-size:.82rem;font-weight:600;transition:all .15s;}
 .inp:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.2);}
-.inp::placeholder{color:#64748b; font-weight: 500;}
+.inp::placeholder{color:#64748b;font-weight:500;}
 .inp-xs{padding:4px 6px;font-size:.78rem;}
 .inp-sm{padding:5px 7px;font-size:.80rem;}
 select.inp option{background:#ffffff;}
@@ -113,317 +113,283 @@ select.inp option{background:#ffffff;}
 
 .sec-txt{color:#1e293b !important;}
 
-/* === CSS CHUYÊN BIỆT CHO IN ẤN (REPORT A4) === */
-.print-container { display: none; }
+/* === CSS IN ẤN === */
+.print-container{display:none;}
 @media print{
-  .no-print, .screen-container { display: none !important; }
-  .print-container { 
-      display: block !important; 
-      font-family: 'Times New Roman', Times, serif; 
-      color: #000; 
-      background: #fff;
-      padding: 20px;
-  }
-  body { background: white; color: black; height: auto; overflow: visible; }
-  @page { size: A4 landscape; margin: 15mm; }
-  .print-title { text-align: center; font-size: 18pt; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;}
-  .print-subtitle { text-align: center; font-size: 11pt; font-style: italic; margin-bottom: 20px; }
-  .print-section { margin-bottom: 20px; }
-  .print-section-title { font-size: 12pt; font-weight: bold; border-bottom: 1.5px solid #000; padding-bottom: 4px; margin-bottom: 10px; text-transform: uppercase;}
-  .print-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .print-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .print-box { border: 1px solid #000; padding: 10px; border-radius: 4px; }
-  .print-box-title { font-size: 10pt; font-weight: bold; color: #555; text-transform: uppercase; margin-bottom: 5px; }
-  .print-box-value { font-size: 14pt; font-weight: bold; }
-  .print-table-a4 { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 10px;}
-  .print-table-a4 th, .print-table-a4 td { border: 1px solid #000; padding: 6px; text-align: center; }
-  .print-table-a4 th { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; font-weight: bold; }
-  .print-table-a4 td.left { text-align: left; }
-  .print-table-a4 td.right { text-align: right; }
-  .print-table-a4 tfoot td { font-weight: bold; background-color: #f9f9f9 !important; -webkit-print-color-adjust: exact;}
-  .text-green { color: #166534 !important; }
-  .text-red { color: #991b1b !important; }
-  .text-blue { color: #1d4ed8 !important; }
+  .no-print,.screen-container{display:none !important;}
+  .print-container{display:block !important;font-family:'Times New Roman',Times,serif;color:#000;background:#fff;padding:20px;}
+  body{background:white;color:black;height:auto;overflow:visible;}
+  @page{size:A4 landscape;margin:15mm;}
+  .print-title{text-align:center;font-size:18pt;font-weight:bold;margin-bottom:5px;text-transform:uppercase;}
+  .print-subtitle{text-align:center;font-size:11pt;font-style:italic;margin-bottom:20px;}
+  .print-section{margin-bottom:20px;}
+  .print-section-title{font-size:12pt;font-weight:bold;border-bottom:1.5px solid #000;padding-bottom:4px;margin-bottom:10px;text-transform:uppercase;}
+  .print-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .print-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .print-box{border:1px solid #000;padding:10px;border-radius:4px;}
+  .print-box-title{font-size:10pt;font-weight:bold;color:#555;text-transform:uppercase;margin-bottom:5px;}
+  .print-box-value{font-size:14pt;font-weight:bold;}
+  .print-table-a4{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:10px;}
+  .print-table-a4 th,.print-table-a4 td{border:1px solid #000;padding:6px;text-align:center;}
+  .print-table-a4 th{background-color:#f0f0f0 !important;-webkit-print-color-adjust:exact;font-weight:bold;}
+  .print-table-a4 td.left{text-align:left;}
+  .print-table-a4 td.right{text-align:right;}
+  .print-table-a4 tfoot td{font-weight:bold;background-color:#f9f9f9 !important;-webkit-print-color-adjust:exact;}
+  .text-green{color:#166534 !important;}
+  .text-red{color:#991b1b !important;}
+  .text-blue{color:#1d4ed8 !important;}
 }
 </style>
 </head>
 <body>
 <div id="root" style="height:100vh;display:flex;flex-direction:column;overflow:hidden;"></div>
 <script type="text/babel">
-const {useState,useEffect,useRef,useMemo,useCallback} = React;
+const {useState,useEffect,useRef,useMemo,useCallback}=React;
 
-const ALLOYS  = ["A1050","A1052","A1060","A3003","A3003 CT","A3105","A5052","A5083","A6061","A6063"];
-const TEMPERS = ["H14","H16","H18","H24","H32","H34","H111","O","T5","T6"];
-const THICKS  = ["0.4","0.5","0.6","0.7","0.8","0.9","1.0","1.2","1.5","2.0","2.5","3.0","4.0","5.0","6.0"];
-const WIDTHS  = ["600","800","1000","1200","1220","1250","1500","1524","2000"];
-const LENGTHS = ["Coil","1000","1200","2000","2400","2500","3000","4000","6000","Custom"];
+const ALLOYS=["A1050","A1052","A1060","A3003","A3003 CT","A3105","A5052","A5083","A6061","A6063"];
+const TEMPERS=["H14","H16","H18","H24","H32","H34","H111","O","T5","T6"];
+const THICKS=["0.4","0.5","0.6","0.7","0.8","0.9","1.0","1.2","1.5","2.0","2.5","3.0","4.0","5.0","6.0"];
+const WIDTHS=["600","800","1000","1200","1220","1250","1500","1524","2000"];
+const LENGTHS=["Coil","1000","1200","2000","2400","2500","3000","4000","6000","Custom"];
 
-const coatingFromGSheet = (val) => {
+const coatingFromGSheet=(val)=>{
   if(!val) return 'KP';
-  const v = String(val).trim().toUpperCase();
-  if(v==='1E' || v==='PE' || v==='YES' || v==='1' || v==='TRUE') return '1E';
+  const v=String(val).trim().toUpperCase();
+  if(v==='1E'||v==='PE'||v==='YES'||v==='1'||v==='TRUE') return '1E';
   return 'KP';
 };
-const coatingShort = (c) => c==='1E' ? 'PE' : 'NOPE';
+const coatingShort=(c)=>c==='1E'?'PE':'NOPE';
 
-const GSHEET_INVENTORY = "https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=0";
-const GSHEET_MINSTOCK  = "https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1080747466";
-const GSHEET_SELLING   = "https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1080747466";
-const GSHEET_LIMITS    = "https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1995461192";
+const GSHEET_INVENTORY="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=0";
+const GSHEET_MINSTOCK="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1080747466";
+const GSHEET_LIMITS="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1995461192";
 
-const skuKey   = r => `${r.alloy}|${r.temper}|${r.thickness}|${r.width}|${r.length}|${r.coating||'KP'}`;
-const skuLabel = r => `${r.alloy} ${r.temper}  ${r.thickness}×${r.width}×${r.length} [${coatingShort(r.coating||'KP')}]`;
+const skuKey=r=>`${r.alloy}|${r.temper}|${r.thickness}|${r.width}|${r.length}|${r.coating||'KP'}`;
+const skuLabel=r=>`${r.alloy} ${r.temper}  ${r.thickness}×${r.width}×${r.length} [${coatingShort(r.coating||'KP')}]`;
 
-const uid  = () => Date.now() + Math.random();
-const fv   = v => (isNaN(v)||!isFinite(v)) ? '0' : new Intl.NumberFormat('vi-VN').format(Math.round(v));
-const fu   = v => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:1}).format(v||0);
-const pn   = s => parseFloat(String(s).replace(/\./g,'').replace(/,/g,''))||0;
+const uid=()=>Date.now()+Math.random();
+const fv=v=>(isNaN(v)||!isFinite(v))?'0':new Intl.NumberFormat('vi-VN').format(Math.round(v));
+const fu=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:1}).format(v||0);
+const pn=s=>parseFloat(String(s).replace(/\./g,'').replace(/,/g,''))||0;
 
-function parseCsv(text) {
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/\r/g,'').replace(/\s+/g,''));
-  return lines.slice(1).map(line => {
-    const vals = []; let cur='', inQ=false;
+function parseCsv(text){
+  const lines=text.trim().split('\n');
+  if(lines.length<2) return [];
+  const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/\r/g,'').replace(/\s+/g,''));
+  return lines.slice(1).map(line=>{
+    const vals=[];let cur='',inQ=false;
     for(let c of line){
       if(c==='"') inQ=!inQ;
-      else if(c===',' && !inQ){vals.push(cur.trim().replace(/\r/g,''));cur='';}
+      else if(c===','&&!inQ){vals.push(cur.trim().replace(/\r/g,''));cur='';}
       else cur+=c;
     }
     vals.push(cur.trim().replace(/\r/g,''));
-    const obj = {};
-    headers.forEach((h,i) => obj[h] = (vals[i]||'').replace(/^"|"$/g,'').trim());
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=(vals[i]||'').replace(/^"|"$/g,'').trim());
     return obj;
-  }).filter(r => Object.values(r).some(v=>v!==''));
+  }).filter(r=>Object.values(r).some(v=>v!==''));
 }
-async function fetchCsv(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+async function fetchCsv(url){
+  const res=await fetch(url);
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
   return parseCsv(await res.text());
 }
 
-const weightedAvg = rows => {
-  const qty = rows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0), 0);
-  const val = rows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0), 0);
-  return qty > 0 ? val/qty : 0;
+const weightedAvg=rows=>{
+  const qty=rows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+  const val=rows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0),0);
+  return qty>0?val/qty:0;
 };
 
-const groupBySku = rows => {
-  const map = {};
-  rows.forEach(r => {
-    const k = skuKey(r);
-    if (!map[k]) map[k] = {key:k,label:skuLabel(r),alloy:r.alloy,temper:r.temper,thickness:r.thickness,width:r.width,length:r.length,coating:r.coating||'KP',inStock:[],inTransit:[]};
-    if (r.status==='IN_STOCK') map[k].inStock.push(r); else map[k].inTransit.push(r);
+const groupBySku=rows=>{
+  const map={};
+  rows.forEach(r=>{
+    const k=skuKey(r);
+    if(!map[k]) map[k]={key:k,label:skuLabel(r),alloy:r.alloy,temper:r.temper,thickness:r.thickness,width:r.width,length:r.length,coating:r.coating||'KP',inStock:[],inTransit:[]};
+    if(r.status==='IN_STOCK') map[k].inStock.push(r); else map[k].inTransit.push(r);
   });
   return Object.values(map);
 };
 
-const calcInvoice = (products, exRate) => {
-  const usd = products.reduce((s,p)=>s+(p.qtyKg/1000)*p.priceFC, 0);
-  return {invoiceUSD:usd, invoiceVND:usd*exRate};
+const calcInvoice=(products,exRate)=>{
+  const usd=products.reduce((s,p)=>s+(p.qtyKg/1000)*p.priceFC,0);
+  return{invoiceUSD:usd,invoiceVND:usd*exRate};
 };
-const calcLanded = (invoiceVND, totalKg, inp) => {
-  const mgmt=invoiceVND*(inp.managementFee/100), tax=invoiceVND*(inp.importTax/100);
-  const freight=Math.max(0,inp.freightTotal), proc=inp.processingCost*totalKg;
+const calcLanded=(invoiceVND,totalKg,inp)=>{
+  const mgmt=invoiceVND*(inp.managementFee/100),tax=invoiceVND*(inp.importTax/100);
+  const freight=Math.max(0,inp.freightTotal),proc=inp.processingCost*totalKg;
   const total=invoiceVND+mgmt+tax+freight+proc;
-  return {mgmt,tax,freight,proc,landedVND:total,landedPerKg:totalKg>0?total/totalKg:0};
+  return{mgmt,tax,freight,proc,landedVND:total,landedPerKg:totalKg>0?total/totalKg:0};
 };
-const calcFinance = (invoiceVND, land, totalKg, inp) => {
-  const days=inp.leadTime+inp.holdingTime; let fin=0;
+const calcFinance=(invoiceVND,land,totalKg,inp)=>{
+  const days=inp.leadTime+inp.holdingTime;let fin=0;
   if(inp.paymentMethod==='TT'){
     fin=(invoiceVND+land.tax+land.freight)*(inp.capitalCostPercent/100)*(days/365);
   } else {
     fin=invoiceVND*(inp.lcOpenFee/100)+invoiceVND*(inp.lcInterest/100)*(inp.lcDays/365)
        +(invoiceVND*inp.lcMargin/100+land.tax+land.freight)*(inp.capitalCostPercent/100)*(days/365);
   }
-  return {finVND:fin,finPerKg:totalKg>0?fin/totalKg:0};
+  return{finVND:fin,finPerKg:totalKg>0?fin/totalKg:0};
 };
-const calcProductBreakdown = (products, land, fin, totalKg, inp) => {
-  return products.map(p => {
+const calcProductBreakdown=(products,land,fin,totalKg,inp)=>{
+  return products.map(p=>{
     const ratio=totalKg>0?p.qtyKg/totalKg:0;
     const invVND=(p.qtyKg/1000)*p.priceFC*inp.exchangeRate;
-    const mgmt=invVND*(inp.managementFee/100), tax=invVND*(inp.importTax/100);
-    const freight=land.freight*ratio, proc=inp.processingCost*p.qtyKg;
-    const finRow=fin.finVND*ratio, landedRow=invVND+mgmt+tax+freight+proc;
+    const mgmt=invVND*(inp.managementFee/100),tax=invVND*(inp.importTax/100);
+    const freight=land.freight*ratio,proc=inp.processingCost*p.qtyKg;
+    const finRow=fin.finVND*ratio,landedRow=invVND+mgmt+tax+freight+proc;
     const physPerKg=p.qtyKg>0?landedRow/p.qtyKg:0;
     const econPerKg=physPerKg+(p.qtyKg>0?finRow/p.qtyKg:0);
-    return {...p,invVND,landedRow,finRow,physPerKg,econPerKg};
+    return{...p,invVND,landedRow,finRow,physPerKg,econPerKg};
   });
 };
 
-const findSellPrice = (purchaseRow, sellingPrices) => {
-  const {alloy,temper,thickness,width,length,coating} = purchaseRow;
-  const coat = coating||'KP';
-  const full = sellingPrices.find(s=>
-    s.alloy===alloy && s.temper===temper &&
-    (s.thickness||'')===(thickness||'') &&
-    (s.width||'')===(width||'') &&
-    (s.length||'')===(length||'') &&
-    (s.coating||'KP')===coat
-  );
-  if(full) return {price:full.sellCost||full.price||0,label:`${full.alloy} ${full.temper} ${full.thickness}×${full.width}×${full.length} [${coat==='1E'?'PE':'NOPE'}]`,comment:full.comment||''};
-  const byATC = sellingPrices.find(s=>
-    s.alloy===alloy && s.temper===temper && (s.coating||'KP')===coat
-    && !s.thickness && !s.width && !s.length
-  );
-  if(byATC) return {price:byATC.sellCost||byATC.price||0,label:`${byATC.alloy} ${byATC.temper} [${coat==='1E'?'PE':'NOPE'}] (fallback)`,comment:byATC.comment||''};
-  const byAT = sellingPrices.find(s=>{
+const findSellPrice=(purchaseRow,sellingPrices)=>{
+  const{alloy,temper,thickness,width,length,coating}=purchaseRow;
+  const coat=coating||'KP';
+  const full=sellingPrices.find(s=>s.alloy===alloy&&s.temper===temper&&(s.thickness||'')===(thickness||'')&&(s.width||'')===(width||'')&&(s.length||'')===(length||'')&&(s.coating||'KP')===coat);
+  if(full) return{price:full.sellCost||full.price||0,label:`${full.alloy} ${full.temper} ${full.thickness}×${full.width}×${full.length} [${coat==='1E'?'PE':'NOPE'}]`,comment:full.comment||''};
+  const byATC=sellingPrices.find(s=>s.alloy===alloy&&s.temper===temper&&(s.coating||'KP')===coat&&!s.thickness&&!s.width&&!s.length);
+  if(byATC) return{price:byATC.sellCost||byATC.price||0,label:`${byATC.alloy} ${byATC.temper} [${coat==='1E'?'PE':'NOPE'}] (fallback)`,comment:byATC.comment||''};
+  const byAT=sellingPrices.find(s=>{
     if(s.alloyTemper) return s.alloyTemper===alloy+' '+temper||s.alloyTemper===alloy;
-    return s.alloy===alloy && s.temper===temper;
+    return s.alloy===alloy&&s.temper===temper;
   });
-  if(byAT) return {price:byAT.sellCost||byAT.price||0,label:`${byAT.alloy||byAT.alloyTemper} ${byAT.temper||''} (fallback AT)`,comment:byAT.comment||''};
+  if(byAT) return{price:byAT.sellCost||byAT.price||0,label:`${byAT.alloy||byAT.alloyTemper} ${byAT.temper||''} (fallback AT)`,comment:byAT.comment||''};
   return null;
 };
 
-const calcSkuBlend = (inventory, purchaseRows, sellingPrices, inputs, minStockMap, maxStockMap) => {
+const calcSkuBlend=(inventory,purchaseRows,sellingPrices,inputs,minStockMap,maxStockMap)=>{
   const skuGroups=groupBySku(inventory);
-  return purchaseRows.map(p => {
-    const k=skuKey(p), grp=skuGroups.find(g=>g.key===k);
-    const stockRows=grp?grp.inStock:[], transitRows=grp?grp.inTransit:[];
+  return purchaseRows.map(p=>{
+    const k=skuKey(p),grp=skuGroups.find(g=>g.key===k);
+    const stockRows=grp?grp.inStock:[],transitRows=grp?grp.inTransit:[];
     const allExisting=[...stockRows,...transitRows];
-    const avgCurrent=weightedAvg(allExisting), avgStock=weightedAvg(stockRows), avgTransit=weightedAvg(transitRows);
+    const avgCurrent=weightedAvg(allExisting),avgStock=weightedAvg(stockRows),avgTransit=weightedAvg(transitRows);
     const qtyStock=stockRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
     const qtyTransit=transitRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
     const qtyExisting=qtyStock+qtyTransit;
     const newRow={qtyKg:p.qtyKg,avgCost:p.physPerKg||0};
-    
     const avgAfter=weightedAvg([...allExisting.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})),newRow]);
     const qtyAfter=qtyExisting+p.qtyKg;
-    
     const finPerKg=p.qtyKg>0?p.finRow/p.qtyKg:0;
     const custFin=avgAfter*(inputs.lendingRate/100)*(inputs.customerCreditDays/365);
-    
     const spResult=findSellPrice(p,sellingPrices);
     const sellPrice=spResult?spResult.price:0;
     const sellLabel=spResult?spResult.label:'Chưa có giá';
     const sellComment=spResult?spResult.comment:'';
     const hasSellPrice=!!spResult&&sellPrice>0;
-
-    const riskCost = sellPrice * (inputs.businessRiskPercent / 100);
-    const breakEven = avgAfter + finPerKg + custFin + riskCost;
-
-    const realProfitPerKg=hasSellPrice ? sellPrice - breakEven : null;
-    const isRisk=hasSellPrice ? breakEven > sellPrice : false;
-    const grossProfitVND=hasSellPrice ? realProfitPerKg*p.qtyKg : null;
-    
+    const riskCost=sellPrice*(inputs.businessRiskPercent/100);
+    const breakEven=avgAfter+finPerKg+custFin+riskCost;
+    const realProfitPerKg=hasSellPrice?sellPrice-breakEven:null;
+    const isRisk=hasSellPrice?breakEven>sellPrice:false;
+    const grossProfitVND=hasSellPrice?realProfitPerKg*p.qtyKg:null;
     const minStock=minStockMap[k]||0;
-    const maxStock=maxStockMap[k]||null; 
+    const maxStock=maxStockMap[k]||null;
     const available=qtyAfter;
     const stockRatio=minStock>0?available/minStock:999;
     const stockStatus=maxStock!==null&&available>maxStock?'OVER':stockRatio<0.8?'LOW':stockRatio>2?'EXCESS':'OK';
     const stockDelta=minStock>0?(available-minStock):null;
-    
-    return {...p,skuKey:k,skuLbl:skuLabel(p),avgCurrent,avgStock,avgTransit,qtyStock,qtyTransit,qtyExisting,avgAfter,qtyAfter,breakEven,custFin,sellPrice,sellLabel,sellComment,hasSellPrice,realProfitPerKg,grossProfitVND,isRisk,minStock,maxStock,available,stockRatio,stockStatus,stockDelta};
+    return{...p,skuKey:k,skuLbl:skuLabel(p),avgCurrent,avgStock,avgTransit,qtyStock,qtyTransit,qtyExisting,avgAfter,qtyAfter,breakEven,custFin,sellPrice,sellLabel,sellComment,hasSellPrice,realProfitPerKg,grossProfitVND,isRisk,minStock,maxStock,available,stockRatio,stockStatus,stockDelta};
   });
 };
 
-const calcInventoryValue = (inventoryRows) => {
-  return inventoryRows.reduce((s,r) => {
-    const qty = parseFloat(r.qtyKg)||0;
-    const cost = parseFloat(r.avgCost)||0;
-    return s + qty * cost;
-  }, 0);
+const calcInventoryValue=(inventoryRows)=>{
+  return inventoryRows.reduce((s,r)=>{
+    const qty=parseFloat(r.qtyKg)||0;
+    const cost=parseFloat(r.avgCost)||0;
+    return s+qty*cost;
+  },0);
 };
 
-const calcAlloySummary = (inventory, finPerKg, inputs, purchaseRows, sellingPrices) => {
-  const alloyMap = {};
-  inventory.forEach(r => {
-    const a=r.alloy; const qty=parseFloat(r.qtyKg)||0; const cost=parseFloat(r.avgCost)||0;
-    if(!alloyMap[a]) alloyMap[a]={alloy:a,rows:[],totalKg:0,totalCostValue:0,
-      coatedKg:0,plainKg:0,coatedCostValue:0,plainCostValue:0};
+const calcAlloySummary=(inventory,finPerKg,inputs,purchaseRows,sellingPrices)=>{
+  const alloyMap={};
+  inventory.forEach(r=>{
+    const a=r.alloy;const qty=parseFloat(r.qtyKg)||0;const cost=parseFloat(r.avgCost)||0;
+    if(!alloyMap[a]) alloyMap[a]={alloy:a,rows:[],totalKg:0,totalCostValue:0,coatedKg:0,plainKg:0,coatedCostValue:0,plainCostValue:0};
     alloyMap[a].rows.push(r);
-    alloyMap[a].totalKg+=qty;
-    alloyMap[a].totalCostValue+=qty*cost;
-    if((r.coating||'KP')==='1E'){
-      alloyMap[a].coatedKg+=qty; alloyMap[a].coatedCostValue+=qty*cost;
-    } else {
-      alloyMap[a].plainKg+=qty; alloyMap[a].plainCostValue+=qty*cost;
-    }
+    alloyMap[a].totalKg+=qty;alloyMap[a].totalCostValue+=qty*cost;
+    if((r.coating||'KP')==='1E'){alloyMap[a].coatedKg+=qty;alloyMap[a].coatedCostValue+=qty*cost;}
+    else{alloyMap[a].plainKg+=qty;alloyMap[a].plainCostValue+=qty*cost;}
   });
   const allRows=inventory.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0}));
   const globalKg=allRows.reduce((s,r)=>s+r.qtyKg,0);
   const globalCostValue=allRows.reduce((s,r)=>s+r.qtyKg*r.avgCost,0);
   const globalAvg=weightedAvg(allRows);
-
   const globalCoatedKg=inventory.filter(r=>(r.coating||'KP')==='1E').reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const globalPlainKg=inventory.filter(r=>(r.coating||'KP')!=='1E').reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const globalCoatedCostValue=inventory.filter(r=>(r.coating||'KP')==='1E').reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0),0);
   const globalPlainCostValue=inventory.filter(r=>(r.coating||'KP')!=='1E').reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0),0);
-
-  const purchaseAlloyMap = {};
+  const purchaseAlloyMap={};
   (purchaseRows||[]).forEach(p=>{
-    const a=p.alloy; if(!purchaseAlloyMap[a]) purchaseAlloyMap[a]={qtyKg:0,totalCost:0};
-    purchaseAlloyMap[a].qtyKg+=p.qtyKg; purchaseAlloyMap[a].totalCost+=p.qtyKg*(p.physPerKg||0);
+    const a=p.alloy;if(!purchaseAlloyMap[a]) purchaseAlloyMap[a]={qtyKg:0,totalCost:0};
+    purchaseAlloyMap[a].qtyKg+=p.qtyKg;purchaseAlloyMap[a].totalCost+=p.qtyKg*(p.physPerKg||0);
   });
-  const alloyStats = Object.values(alloyMap).map(g=>{
+  const alloyStats=Object.values(alloyMap).map(g=>{
     const avgBefore=g.totalKg>0?g.totalCostValue/g.totalKg:0;
     const pa=purchaseAlloyMap[g.alloy]||{qtyKg:0,totalCost:0};
     const totalAfterKg=g.totalKg+pa.qtyKg;
     const totalAfterValue=g.totalCostValue+pa.totalCost;
     const avgAfter=totalAfterKg>0?totalAfterValue/totalAfterKg:avgBefore;
     const custFin=avgAfter*(inputs.lendingRate/100)*(inputs.customerCreditDays/365);
-    const breakEven=avgAfter+(finPerKg||0)+custFin; 
-    return {alloy:g.alloy,totalKg:g.totalKg,totalCostValue:g.totalCostValue,
-      coatedKg:g.coatedKg,plainKg:g.plainKg,coatedCostValue:g.coatedCostValue,plainCostValue:g.plainCostValue,
-      avgBefore,avgAfter,breakEven,totalAfterKg,totalAfterValue};
+    const breakEven=avgAfter+(finPerKg||0)+custFin;
+    return{alloy:g.alloy,totalKg:g.totalKg,totalCostValue:g.totalCostValue,coatedKg:g.coatedKg,plainKg:g.plainKg,coatedCostValue:g.coatedCostValue,plainCostValue:g.plainCostValue,avgBefore,avgAfter,breakEven,totalAfterKg,totalAfterValue};
   });
   const allPRows=Object.values(purchaseAlloyMap);
   const globalAfterKg=globalKg+allPRows.reduce((s,p)=>s+p.qtyKg,0);
   const globalAfterValue=globalCostValue+allPRows.reduce((s,p)=>s+p.totalCost,0);
   const globalAvgAfter=globalAfterKg>0?globalAfterValue/globalAfterKg:globalAvg;
-  return {alloyStats,globalKg,globalCostValue,globalAvg,globalAvgAfter,
-    globalAfterKg,globalAfterValue,globalCoatedKg,globalPlainKg,globalCoatedCostValue,globalPlainCostValue};
+  const globalBreakEven=globalAvgAfter*(1+(inputs.businessRiskPercent||0)/100)+(finPerKg||0);
+  return{alloyStats,globalKg,globalCostValue,globalAvg,globalAvgAfter,globalBreakEven,globalAfterKg,globalAfterValue,globalCoatedKg,globalPlainKg,globalCoatedCostValue,globalPlainCostValue};
 };
 
-const calcLimitsWarnings = (limitsData, inventory) => {
-  const globalCostValue = calcInventoryValue(inventory);
-  const totalKg = inventory.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
-  const lim = limitsData[0] || {};
-  const totalCreditMin = lim.totalCreditMin || 0;
-  const totalCreditMax = lim.totalCreditMax || 0;
-  const inventoryMinVND = lim.inventoryMinVND || 0;
-  const inventoryMaxVND = lim.inventoryMaxVND || 0;
-  const inventoryMinKg = lim.inventoryMinKg || 0;
-  const inventoryMaxKg = lim.inventoryMaxKg || 0;
-  const apLimit = lim.accountsPayableLimit || 0;
-  const actualAP = lim.actualAccountsPayable || 0;
-  const totalUsed = globalCostValue + actualAP;
-
-  const warnOverKg    = inventoryMaxKg > 0 && totalKg > inventoryMaxKg;
-  const warnUnderKg   = inventoryMinKg > 0 && totalKg < inventoryMinKg;
-  const warnOverAP    = apLimit > 0 && actualAP > apLimit;
-  const warnUnderCredit = totalCreditMin > 0 && totalUsed < totalCreditMin;
-  const warnOverCredit  = totalCreditMax > 0 && totalUsed > totalCreditMax;
-
-  return {lim, globalCostValue, totalKg, actualAP, apLimit, totalUsed,
-    totalCreditMin, totalCreditMax, inventoryMinVND, inventoryMaxVND, inventoryMinKg, inventoryMaxKg,
-    warnOverKg, warnUnderKg, warnOverAP, warnUnderCredit, warnOverCredit,
-    totalAlerts: [warnOverKg,warnUnderKg,warnOverAP,warnUnderCredit,warnOverCredit].filter(Boolean).length
+// ─── calcLimitsWarnings: v4.7 schema ───────────────────────────────────────
+const calcLimitsWarnings=(limitsData,inventory)=>{
+  const globalCostValue=calcInventoryValue(inventory);
+  const totalKg=inventory.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+  const lim=limitsData[0]||{};
+  const totalCreditMin=lim.totalCreditMin||0;
+  const totalCreditMax=lim.totalCreditMax||0;
+  const inventoryMinKg=lim.inventoryMinKg||0;
+  const inventoryMaxKg=lim.inventoryMaxKg||0;
+  const apLimit=lim.accountsPayableLimit||0;
+  const actualAP=lim.actualAccountsPayable||0;
+  const totalUsed=globalCostValue+actualAP;
+  const warnOverKg=inventoryMaxKg>0&&totalKg>inventoryMaxKg;
+  const warnUnderKg=inventoryMinKg>0&&totalKg<inventoryMinKg;
+  const warnOverAP=apLimit>0&&actualAP>apLimit;
+  const warnUnderCredit=totalCreditMin>0&&totalUsed<totalCreditMin;
+  const warnOverCredit=totalCreditMax>0&&totalUsed>totalCreditMax;
+  return{
+    lim,globalCostValue,totalKg,actualAP,apLimit,totalUsed,
+    totalCreditMin,totalCreditMax,inventoryMinKg,inventoryMaxKg,
+    warnOverKg,warnUnderKg,warnOverAP,warnUnderCredit,warnOverCredit,
+    totalAlerts:[warnOverKg,warnUnderKg,warnOverAP,warnUnderCredit,warnOverCredit].filter(Boolean).length
   };
 };
 
 const defInventory=[
-  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E', status:'IN_STOCK',  qtyKg:2986,avgCost:92820},
-  {id:2,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E', status:'IN_TRANSIT',qtyKg:10000,avgCost:101466},
-  {id:3,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E', status:'IN_STOCK',  qtyKg:0,avgCost:0},
-  {id:4,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP', status:'IN_STOCK',  qtyKg:0,avgCost:0},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',status:'IN_STOCK',qtyKg:2986,avgCost:92820},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',status:'IN_TRANSIT',qtyKg:10000,avgCost:101466},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',status:'IN_STOCK',qtyKg:0,avgCost:0},
+  {id:4,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',status:'IN_STOCK',qtyKg:0,avgCost:0},
 ];
 const defMinStock=[
-  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E', minStockKg:31000, maxStockKg:50000},
-  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E', minStockKg:15000, maxStockKg:null},
-  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP', minStockKg:10000, maxStockKg:30000},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',minStockKg:31000,maxStockKg:50000},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',minStockKg:15000,maxStockKg:null},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',minStockKg:10000,maxStockKg:30000},
 ];
 const defSP=[
-  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil', coating:'1E',sellCost:104000,comment:''},
-  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil', coating:'1E',sellCost:104000,comment:''},
-  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil', coating:'KP',sellCost:102000,comment:''},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',sellCost:104000,comment:''},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',sellCost:104000,comment:''},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',sellCost:102000,comment:''},
 ];
 const defLimits=[{
   id:1,
-  totalCreditMin:5000000000, totalCreditMax:15000000000,
-  inventoryMinVND:2000000000, inventoryMaxVND:8000000000,
-  inventoryMinKg:20000, inventoryMaxKg:80000,
-  accountsPayableLimit:7000000000, actualAccountsPayable:5500000000,
+  totalCreditMin:5000000000,totalCreditMax:15000000000,
+  inventoryMinVND:2000000000,inventoryMaxVND:8000000000,
+  inventoryMinKg:20000,inventoryMaxKg:80000,
+  accountsPayableLimit:7000000000,actualAccountsPayable:5500000000,
 }];
 const defProducts=[
   {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',qtyKg:12000,priceFC:3870},
@@ -441,35 +407,78 @@ const defInputs={
 };
 
 const Ic={
-  Plus:    ()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>,
-  X:       ()=><svg style={{width:12,height:12}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>,
-  Ship:    ()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>,
-  Chart:   ()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>,
-  Save:    ()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>,
-  Tag:     ()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>,
-  Print:   ()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>,
-  Refresh: ()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>,
+  Plus:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>,
+  X:()=><svg style={{width:12,height:12}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>,
+  Ship:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>,
+  Chart:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>,
+  Save:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>,
+  Tag:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>,
+  Print:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>,
+  Refresh:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>,
   Download:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>,
-  Alert:   ()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>,
+  Alert:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>,
   Database:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>,
-  Money:   ()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
-  Filter:  ()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>,
-  Report:  ()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>,
+  Money:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+  Filter:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>,
+  Report:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>,
+};
+
+// ─── FilterBar component (was missing!) ────────────────────────────────────
+const FilterBar=({filter,setFilter,alloys,showStatus=false,showCoating=true,showStockAlert=false,showOverAlert=false,total,filtered})=>{
+  const bg4='#f1f5f9',border1='#e2e8f0';
+  return(
+    <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:11,background:bg4,border:`1px solid ${border1}`,borderRadius:6,padding:'7px 10px'}}>
+      <span style={{fontSize:'.65rem',color:'#475569',fontWeight:800,display:'flex',alignItems:'center',gap:4}}><Ic.Filter/> Lọc:</span>
+      {showStatus&&(
+        <select className="inp inp-xs" style={{width:'auto',minWidth:110}} value={filter.status||'ALL'} onChange={e=>setFilter(f=>({...f,status:e.target.value}))}>
+          <option value="ALL">Tất cả trạng thái</option>
+          <option value="IN_STOCK">🟢 Trong kho</option>
+          <option value="IN_TRANSIT">🟡 Đang về</option>
+        </select>
+      )}
+      <select className="inp inp-xs" style={{width:'auto',minWidth:100}} value={filter.alloy||'ALL'} onChange={e=>setFilter(f=>({...f,alloy:e.target.value}))}>
+        <option value="ALL">Tất cả mác</option>
+        {alloys.map(a=><option key={a} value={a}>{a}</option>)}
+      </select>
+      {showCoating&&(
+        <select className="inp inp-xs" style={{width:'auto',minWidth:110}} value={filter.coating||'ALL'} onChange={e=>setFilter(f=>({...f,coating:e.target.value}))}>
+          <option value="ALL">Tất cả coating</option>
+          <option value="1E">🎨 PE (1E)</option>
+          <option value="KP">⬜ NOPE (KP)</option>
+        </select>
+      )}
+      {showStockAlert&&(
+        <select className="inp inp-xs" style={{width:'auto',minWidth:130}} value={filter.stockAlert||'ALL'} onChange={e=>setFilter(f=>({...f,stockAlert:e.target.value}))}>
+          <option value="ALL">Tất cả tồn kho</option>
+          <option value="LOW">🔴 Thiếu hàng (&lt;80%)</option>
+          <option value="NEAR">🟡 Gần min (80–100%)</option>
+          <option value="OK">🟢 Đạt min</option>
+          <option value="EXCESS">🔵 Dư nhiều (&gt;200%)</option>
+          {showOverAlert&&<option value="OVER">🟣 Quá max</option>}
+        </select>
+      )}
+      <input className="inp inp-xs" style={{minWidth:140,flex:1}} placeholder="🔍 Tìm kiếm SKU…" value={filter.search||''} onChange={e=>setFilter(f=>({...f,search:e.target.value}))}/>
+      {filter.search||filter.alloy!=='ALL'||filter.coating!=='ALL'||(filter.status&&filter.status!=='ALL')||(filter.stockAlert&&filter.stockAlert!=='ALL')?(
+        <button className="btn btn-xs btn-ghost" onClick={()=>setFilter(f=>({...f,status:'ALL',alloy:'ALL',coating:'ALL',stockAlert:'ALL',search:''}))}>✕ Xóa lọc</button>
+      ):null}
+      <span style={{fontSize:'.65rem',color:'#64748b',fontWeight:700,whiteSpace:'nowrap'}}>{filtered}/{total} dòng</span>
+    </div>
+  );
 };
 
 const SkuSel=({row,onChange,showCoating=true})=>{
   const S=(f,v)=>onChange({...row,[f]:v});
-  const toggleCoating = () => S('coating', row.coating==='1E' ? 'KP' : '1E');
+  const toggleCoating=()=>S('coating',row.coating==='1E'?'KP':'1E');
   return(
     <div style={{display:'flex',gap:'3px',alignItems:'center',flexWrap:'nowrap'}}>
       <input list="alloy-list" className="inp inp-xs font-bold" style={{width:76}} value={row.alloy} onChange={e=>S('alloy',e.target.value)} placeholder="Mác"/>
-      <input list="temper-list" className="inp inp-xs font-semibold" style={{width:58, color:'#2563eb'}} value={row.temper} onChange={e=>S('temper',e.target.value)} placeholder="Cứng"/>
+      <input list="temper-list" className="inp inp-xs font-semibold" style={{width:58,color:'#2563eb'}} value={row.temper} onChange={e=>S('temper',e.target.value)} placeholder="Cứng"/>
       <span style={{color:'#334155',fontSize:'.8rem',fontWeight:'bold',flexShrink:0}}>•</span>
-      <input list="thick-list" className="inp inp-xs font-semibold" style={{width:52, color:'#b45309'}} value={row.thickness} onChange={e=>S('thickness',e.target.value)} placeholder="Dày"/>
+      <input list="thick-list" className="inp inp-xs font-semibold" style={{width:52,color:'#b45309'}} value={row.thickness} onChange={e=>S('thickness',e.target.value)} placeholder="Dày"/>
       <span style={{color:'#334155',fontSize:'.8rem',fontWeight:'bold',flexShrink:0}}>×</span>
-      <input list="width-list" className="inp inp-xs font-semibold" style={{width:60, color:'#b45309'}} value={row.width} onChange={e=>S('width',e.target.value)} placeholder="Rộng"/>
+      <input list="width-list" className="inp inp-xs font-semibold" style={{width:60,color:'#b45309'}} value={row.width} onChange={e=>S('width',e.target.value)} placeholder="Rộng"/>
       <span style={{color:'#334155',fontSize:'.8rem',fontWeight:'bold',flexShrink:0}}>×</span>
-      <input list="length-list" className="inp inp-xs font-semibold" style={{width:68, color:'#b45309'}} value={row.length} onChange={e=>S('length',e.target.value)} placeholder="Dài"/>
+      <input list="length-list" className="inp inp-xs font-semibold" style={{width:68,color:'#b45309'}} value={row.length} onChange={e=>S('length',e.target.value)} placeholder="Dài"/>
       {showCoating&&(
         <button onClick={toggleCoating} className={`status-btn ${row.coating==='1E'?'s-coated':'s-plain'} off`}
           style={{padding:'3px 7px',fontSize:'.65rem',flexShrink:0,minWidth:68}} title="Toggle NOPE / PE">
@@ -481,7 +490,7 @@ const SkuSel=({row,onChange,showCoating=true})=>{
 };
 
 const StockBar=({available,minStock,maxStock,showDelta=true})=>{
-  if(!minStock) return <span style={{fontSize:'.65rem',color:'#475569', fontWeight:600}}>—</span>;
+  if(!minStock) return <span style={{fontSize:'.65rem',color:'#475569',fontWeight:600}}>—</span>;
   const ratio=Math.min(available/minStock,2.5);
   const pctW=Math.min((ratio/2.5)*100,100);
   const isOver=maxStock!==null&&maxStock>0&&available>maxStock;
@@ -489,12 +498,12 @@ const StockBar=({available,minStock,maxStock,showDelta=true})=>{
   const delta=available-minStock;
   return(
     <div style={{minWidth:90}}>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',color:'#334155',marginBottom:2, fontWeight: 600}}>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',color:'#334155',marginBottom:2,fontWeight:600}}>
         <span className="mono">{fv(available)} kg</span>
         <span style={{color,fontWeight:800}}>{isOver?'▲ QUÁ MAX':Math.round(ratio*100)+'%'}</span>
       </div>
       <div className="stock-bar"><div className="stock-bar-fill" style={{width:`${pctW}%`,background:color}}/></div>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',marginTop:2, fontWeight: 600}}>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',marginTop:2,fontWeight:600}}>
         <span style={{color:'#475569'}}>min {fv(minStock)}{maxStock?` / max ${fv(maxStock)}`:''} kg</span>
         {showDelta&&<span style={{color,fontWeight:800}}>{isOver?'▲ over max':delta>=0?'▲ dư +':'▼ thiếu '}{isOver?fv(available-maxStock):fv(Math.abs(delta))} kg</span>}
       </div>
@@ -505,20 +514,20 @@ const StockBar=({available,minStock,maxStock,showDelta=true})=>{
 const LimitBar=({actual,limit,label,color,unit='đ'})=>{
   if(!limit) return null;
   const pct=Math.round(actual/limit*100);
-  const over=actual>limit, near=actual>limit*0.85&&!over;
+  const over=actual>limit,near=actual>limit*0.85&&!over;
   const c=color||(over?'#dc2626':near?'#d97706':'#16a34a');
   const delta=actual-limit;
   return(
     <div>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.65rem',color:'#334155',marginBottom:2, fontWeight: 600}}>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.65rem',color:'#334155',marginBottom:2,fontWeight:600}}>
         <span>{label}</span><span style={{color:c,fontWeight:800}}>{pct}% hạn mức</span>
       </div>
       <div className="stock-bar" style={{height:6}}><div className="stock-bar-fill" style={{width:`${Math.min(pct,100)}%`,background:c}}/></div>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.65rem',marginTop:3, fontWeight: 600}}>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.65rem',marginTop:3,fontWeight:600}}>
         <span className="mono" style={{color:'#1d4ed8'}}>{fv(actual)}{unit}</span>
         {over&&<span style={{color:'#b91c1c',fontWeight:800}}>▲ Vượt {fv(Math.abs(delta))}{unit}</span>}
         {near&&<span style={{color:'#b45309',fontWeight:800}}>⚡ Còn {fv(limit-actual)}{unit}</span>}
-        {!over&&!near&&<span style={{color:'#15803d', fontWeight:800}}>▼ Còn {fv(limit-actual)}{unit}</span>}
+        {!over&&!near&&<span style={{color:'#15803d',fontWeight:800}}>▼ Còn {fv(limit-actual)}{unit}</span>}
       </div>
     </div>
   );
@@ -561,7 +570,7 @@ const App=()=>{
     try{
       const toFetch=[];
       if(which==='all'||which==='inv') toFetch.push(fetchCsv(GSHEET_INVENTORY).then(d=>({type:'inv',data:d})));
-      if(which==='all'||which==='ms')  toFetch.push(fetchCsv(GSHEET_MINSTOCK).then(d=>({type:'ms',data:d})));
+      if(which==='all'||which==='ms') toFetch.push(fetchCsv(GSHEET_MINSTOCK).then(d=>({type:'ms',data:d})));
       if(which==='all'||which==='lim') toFetch.push(fetchCsv(GSHEET_LIMITS).then(d=>({type:'lim',data:d})));
       const results=await Promise.allSettled(toFetch);
       let errMsg=null;
@@ -573,7 +582,7 @@ const App=()=>{
           const rows=data.filter(r=>r.alloy).map((r,i)=>({
             id:uid()+i,alloy:r.alloy||'A5052',temper:r.temper||'H32',
             thickness:r.thickness||'1.0',width:r.width||'1200',length:r.length||'Coil',
-            coating: coatingFromGSheet(r.coating||r['coating']||'KP'),
+            coating:coatingFromGSheet(r.coating||'KP'),
             status:(r.status||'IN_STOCK').toUpperCase(),
             qtyKg:parseFloat(r.qtykg||r.qty_kg||r['qty kg']||0),
             avgCost:parseFloat(r.avgcost||r.avg_cost||r['avg cost']||0),
@@ -584,24 +593,21 @@ const App=()=>{
           const rows=data.filter(r=>r.alloy).map((r,i)=>({
             id:uid()+i,alloy:r.alloy||'A5052',temper:r.temper||'H32',
             thickness:r.thickness||'1.0',width:r.width||'1200',length:r.length||'Coil',
-            coating: coatingFromGSheet(r.coating||'KP'),
-            minStockKg:parseFloat(r.minstockkg||r.min_stock_kg||r['min stock kg']||r['minstockkg']||0),
-            maxStockKg:(()=>{
-              const raw=r.maxstockkg||r.max_stock_kg||r['max stock kg']||r['maxstockkg']||'';
-              return raw===''?null:parseFloat(raw)||null;
-            })(),
+            coating:coatingFromGSheet(r.coating||'KP'),
+            minStockKg:parseFloat(r.minstockkg||r.min_stock_kg||r['min stock kg']||0),
+            maxStockKg:(()=>{const raw=r.maxstockkg||r.max_stock_kg||r['max stock kg']||'';return raw===''?null:parseFloat(raw)||null;})(),
           }));
           if(rows.length>0) setMinStockRows(rows);
         }
         if(type==='lim'){
           const rows=data.filter(r=>Object.values(r).some(v=>v!=='')).map((r,i)=>({
             id:uid()+i,
-            totalCreditMin:parseFloat(r.totalcreditmin||r['totalcreditmin(vnd)']||r['total credit min']||0),
-            totalCreditMax:parseFloat(r.totalcreditmax||r['totalcreditmax(vnd)']||r['total credit max']||0),
-            inventoryMinVND:parseFloat(r.inventoryminvnd||r['inventorymin(vnd)']||r['inventory min vnd']||0),
-            inventoryMaxVND:parseFloat(r.inventorymaxvnd||r['inventorymax(vnd)']||r['inventory max vnd']||0),
-            inventoryMinKg:parseFloat(r.inventoryminkg||r['inventorymin(kg)']||r['inventory min kg']||0),
-            inventoryMaxKg:parseFloat(r.inventorymaxkg||r['inventorymax(kg)']||r['inventory max kg']||0),
+            totalCreditMin:parseFloat(r.totalcreditmin||r['total credit min']||0),
+            totalCreditMax:parseFloat(r.totalcreditmax||r['total credit max']||0),
+            inventoryMinVND:parseFloat(r.inventoryminvnd||r['inventory min vnd']||0),
+            inventoryMaxVND:parseFloat(r.inventorymaxvnd||r['inventory max vnd']||0),
+            inventoryMinKg:parseFloat(r.inventoryminkg||r['inventory min kg']||0),
+            inventoryMaxKg:parseFloat(r.inventorymaxkg||r['inventory max kg']||0),
             accountsPayableLimit:parseFloat(r.accountspayablelimit||r['accounts payable limit']||0),
             actualAccountsPayable:parseFloat(r.actualaccountspayable||r['actual accounts payable']||0),
           }));
@@ -626,13 +632,10 @@ const App=()=>{
     const newPurchRows=rows.map(r=>({qtyKg:r.qtyKg,avgCost:r.physPerKg}));
     const globalAvgBefore=weightedAvg(allInvRows);
     const globalAvgAfter=weightedAvg([...allInvRows,...newPurchRows]);
-    let globalBreakEven = 0;
-    const totalBlendQty = blends.reduce((sum, b) => sum + b.qtyAfter, 0);
-    if(totalBlendQty > 0) {
-      globalBreakEven = blends.reduce((sum, b) => sum + (b.breakEven * b.qtyAfter), 0) / totalBlendQty;
-    } else {
-      globalBreakEven=globalAvgAfter*(1+inputs.businessRiskPercent/100)+fin.finPerKg;
-    }
+    let globalBreakEven=0;
+    const totalBlendQty=blends.reduce((sum,b)=>sum+b.qtyAfter,0);
+    if(totalBlendQty>0){globalBreakEven=blends.reduce((sum,b)=>sum+(b.breakEven*b.qtyAfter),0)/totalBlendQty;}
+    else{globalBreakEven=globalAvgAfter*(1+inputs.businessRiskPercent/100)+fin.finPerKg;}
     const hasRisk=blends.some(b=>b.isRisk);
     const hasLowStock=blends.some(b=>b.stockStatus==='LOW');
     const totalContainer=totalKg/1000;
@@ -643,14 +646,8 @@ const App=()=>{
     const avgProfitPerKg=totalQtyPriced>0?totalGrossProfit/totalQtyPriced:null;
     const profitMargin=inv.invoiceVND>0?totalGrossProfit/inv.invoiceVND*100:null;
     const allPriced=blends.every(b=>b.hasSellPrice);
-    const rec=!hasRisk
-      ?(totalGrossProfit>0?{txt:'✓ NÊN MUA – CÓ LÃI',cls:'tg'}:{txt:'HÒA VỐN – CÂN NHẮC',cls:'tb'})
-      :{txt:'⚠ RỦI RO – XEM LẠI',cls:'tr'};
-    return{totalKg,...inv,...land,...fin,rows,blends,
-      globalAvgBefore,globalAvgAfter,globalBreakEven,
-      hasRisk,hasLowStock,rec,totalContainer,containerOk,
-      totalGrossProfit,totalQtyPriced,avgProfitPerKg,profitMargin,
-      allPriced};
+    const rec=!hasRisk?(totalGrossProfit>0?{txt:'✓ NÊN MUA – CÓ LÃI',cls:'tg'}:{txt:'HÒA VỐN – CÂN NHẮC',cls:'tb'}):{txt:'⚠ RỦI RO – XEM LẠI',cls:'tr'};
+    return{totalKg,...inv,...land,...fin,rows,blends,globalAvgBefore,globalAvgAfter,globalBreakEven,hasRisk,hasLowStock,rec,totalContainer,containerOk,totalGrossProfit,totalQtyPriced,avgProfitPerKg,profitMargin,allPriced};
   },[inputs,products,inventory,sellingPrices,minStockMap,maxStockMap]);
 
   const reportData=useMemo(()=>{
@@ -659,9 +656,7 @@ const App=()=>{
     return calcAlloySummary(inventory,finPerKg,inputs,purchaseRows,sellingPrices);
   },[inventory,result,inputs,sellingPrices]);
 
-  const limitsWarnings=useMemo(()=>{
-    return calcLimitsWarnings(limitsData,inventory);
-  },[limitsData,inventory]);
+  const limitsWarnings=useMemo(()=>calcLimitsWarnings(limitsData,inventory),[limitsData,inventory]);
 
   useEffect(()=>{
     if(!result||!chartRef.current) return;
@@ -671,10 +666,10 @@ const App=()=>{
       type:'bar',
       data:{labels,datasets:[
         {label:'BQ Hiện tại',data:result.blends.map(b=>b.avgCurrent),backgroundColor:'#475569',borderRadius:3},
-        {label:'Lô mới',     data:result.blends.map(b=>b.physPerKg), backgroundColor:'#16a34a',borderRadius:3},
-        {label:'BQ Sau nhập',data:result.blends.map(b=>b.avgAfter),  backgroundColor:'#2563eb',borderRadius:3},
-        {label:'Break-even', data:result.blends.map(b=>b.breakEven), backgroundColor:'#7c3aed',borderRadius:3},
-        {label:'Giá bán KH', data:result.blends.map(b=>b.sellPrice||0),backgroundColor:'#15803d',borderRadius:3},
+        {label:'Lô mới',data:result.blends.map(b=>b.physPerKg),backgroundColor:'#16a34a',borderRadius:3},
+        {label:'BQ Sau nhập',data:result.blends.map(b=>b.avgAfter),backgroundColor:'#2563eb',borderRadius:3},
+        {label:'Break-even',data:result.blends.map(b=>b.breakEven),backgroundColor:'#7c3aed',borderRadius:3},
+        {label:'Giá bán KH',data:result.blends.map(b=>b.sellPrice||0),backgroundColor:'#15803d',borderRadius:3},
       ]},
       options:{
         responsive:true,maintainAspectRatio:false,
@@ -685,8 +680,8 @@ const App=()=>{
         scales:{
           x:{grid:{color:'#e2e8f0'},ticks:{color:'#334155',font:{size:9,weight:'bold'}}},
           y:{grid:{color:'#e2e8f0'},beginAtZero:false,
-             min:result.blends.length?Math.min(...result.blends.flatMap(b=>[b.avgCurrent||0,b.physPerKg||0]))*0.97:0,
-             ticks:{color:'#334155',font:{size:9,weight:'bold'},callback:v=>fv(v)}}
+            min:result.blends.length?Math.min(...result.blends.flatMap(b=>[b.avgCurrent||0,b.physPerKg||0]))*0.97:0,
+            ticks:{color:'#334155',font:{size:9,weight:'bold'},callback:v=>fv(v)}}
         }
       }
     });
@@ -780,12 +775,8 @@ const App=()=>{
     });
   },[sellingPrices,spFilter]);
 
-  const bg1='#f8fafc',bg2='#ffffff',bg3='#ffffff',bg4='#f1f5f9';
+  const bg1='#f8fafc',bg2='#ffffff',bg4='#f1f5f9';
   const border1='#e2e8f0',border2='#cbd5e1';
-
-  const filtInvTotalKg=filteredInventory.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
-  const filtInvTotalMin=filteredInventory.reduce((s,r)=>s+(minStockMap[skuKey(r)]||0),0);
-  const filtInvDelta=filtInvTotalKg-filtInvTotalMin;
 
   const filtMsTotalKg=filteredMs.reduce((s,r)=>{
     const k=skuKey(r);
@@ -829,12 +820,12 @@ const App=()=>{
           ))}
         </div>
         <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-          <div style={{display:'flex',alignItems:'center',gap:6,background:bg4,border:`1px solid ${border1}`,borderRadius:5,padding:'3px 9px',fontSize:'.68rem', fontWeight:600}}>
+          <div style={{display:'flex',alignItems:'center',gap:6,background:bg4,border:`1px solid ${border1}`,borderRadius:5,padding:'3px 9px',fontSize:'.68rem',fontWeight:600}}>
             <span className="sec-txt"><Ic.Database/></span>
-            {dbStatus.loading?(<span style={{color:'#2563eb',display:'flex',alignItems:'center',gap:4, fontWeight:700}}><div className="spinner" style={{width:12,height:12}}/> Đang tải...</span>)
-              :dbStatus.error?(<span style={{color:'#dc2626', fontWeight:700}}>⚠ Lỗi</span>)
-              :dbStatus.lastSync?(<span style={{color:'#16a34a', fontWeight:700}}>✓ {dbStatus.lastSync}</span>)
-              :(<span style={{color:'#475569', fontWeight:700}}>Local</span>)}
+            {dbStatus.loading?(<span style={{color:'#2563eb',display:'flex',alignItems:'center',gap:4,fontWeight:700}}><div className="spinner" style={{width:12,height:12}}/> Đang tải...</span>)
+              :dbStatus.error?(<span style={{color:'#dc2626',fontWeight:700}}>⚠ Lỗi</span>)
+              :dbStatus.lastSync?(<span style={{color:'#16a34a',fontWeight:700}}>✓ {dbStatus.lastSync}</span>)
+              :(<span style={{color:'#475569',fontWeight:700}}>Local</span>)}
             <button onClick={()=>syncGoogleSheet('all')} disabled={dbStatus.loading} className="btn btn-ghost" style={{padding:'1px 6px',fontSize:'.65rem',gap:3,marginLeft:2}}>
               <Ic.Refresh/> Sync All
             </button>
@@ -886,7 +877,7 @@ const App=()=>{
                 <div>
                   <label className="lbl" style={{color:'#b91c1c'}}>Quản lý kinh doanh %</label>
                   <input type="number" step=".1" className="inp inp-xs mono" style={{color:'#b91c1c',fontWeight:700}} value={inputs.businessRiskPercent} onChange={e=>setInp('businessRiskPercent',parseFloat(e.target.value)||0)}/>
-                  <div style={{fontSize:'.62rem',color:'#475569',marginTop:4, fontWeight:600}}>Tính trên Giá bán KH · Cộng thẳng vào Break-even</div>
+                  <div style={{fontSize:'.62rem',color:'#475569',marginTop:4,fontWeight:600}}>Tính trên Giá bán KH · Cộng thẳng vào Break-even</div>
                 </div>
               </div>
               {result&&(
@@ -910,34 +901,23 @@ const App=()=>{
                   {result&&<span className="tag ts mono">{fv(result.totalKg)} kg</span>}
                   {result&&<span className="tag ty mono">{fu(result.invoiceUSD)}</span>}
                 </div>
-                <button className="btn btn-ghost btn-sm" onClick={addProduct} style={{display:'flex',alignItems:'center',gap:4}}><Ic.Plus/> Thêm SKU</button>
+                <button className="btn btn-ghost btn-sm" onClick={addProduct}><Ic.Plus/> Thêm SKU</button>
               </div>
               <div style={{overflowY:'auto',maxHeight:'28%',padding:'7px 13px',background:bg2}}>
                 <table className="tbl">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th style={{textAlign:'left',paddingLeft:5}}>SKU: Mác · Cứng · Dày × Rộng × Dài</th>
-                      <th>KL kg</th><th>USD/Tấn</th><th>Invoice</th><th>Về kho đ/kg</th><th></th>
-                    </tr>
-                  </thead>
+                  <thead><tr><th>#</th><th style={{textAlign:'left',paddingLeft:5}}>SKU: Mác · Cứng · Dày × Rộng × Dài</th><th>KL kg</th><th>USD/Tấn</th><th>Invoice</th><th>Về kho đ/kg</th><th></th></tr></thead>
                   <tbody>
                     {products.map((p,i)=>{
                       const rb=result?.rows?.find(r=>r.id===p.id);
                       return(
                         <tr key={p.id}>
-                          <td style={{textAlign:'center',color:'#475569',fontSize:'.75rem', fontWeight:'bold'}} className="mono">{i+1}</td>
+                          <td style={{textAlign:'center',color:'#475569',fontSize:'.75rem',fontWeight:'bold'}} className="mono">{i+1}</td>
                           <td style={{paddingLeft:5}}><SkuSel row={p} onChange={patch=>setProduct(p.id,patch)}/></td>
-                          <td style={{width:90}}>
-                            <input className="inp inp-xs mono" style={{textAlign:'right',color:'#15803d',fontWeight:700}} value={fv(p.qtyKg)} onChange={e=>setProduct(p.id,{qtyKg:pn(e.target.value)})}/>
-                          </td>
-                          <td style={{width:80}}>
-                            <input type="number" className="inp inp-xs mono" style={{textAlign:'right',color:'#b45309',fontWeight:700}} value={p.priceFC} onChange={e=>setProduct(p.id,{priceFC:parseFloat(e.target.value)||0})}/>
-                          </td>
+                          <td style={{width:90}}><input className="inp inp-xs mono" style={{textAlign:'right',color:'#15803d',fontWeight:700}} value={fv(p.qtyKg)} onChange={e=>setProduct(p.id,{qtyKg:pn(e.target.value)})}/></td>
+                          <td style={{width:80}}><input type="number" className="inp inp-xs mono" style={{textAlign:'right',color:'#b45309',fontWeight:700}} value={p.priceFC} onChange={e=>setProduct(p.id,{priceFC:parseFloat(e.target.value)||0})}/></td>
                           <td className="mono" style={{textAlign:'right',paddingRight:7,color:'#1e293b',fontWeight:700,fontSize:'.78rem'}}>{fu((p.qtyKg/1000)*p.priceFC)}</td>
                           <td style={{textAlign:'right',paddingRight:7}}>
-                            {rb?<span className="mono" style={{fontSize:'.82rem',fontWeight:700,color:rb.physPerKg>(result?.globalAvgBefore||0)?'#dc2626':'#15803d'}}>{fv(rb.physPerKg)}</span>
-                                :<span style={{color:'#64748b'}}>—</span>}
+                            {rb?<span className="mono" style={{fontSize:'.82rem',fontWeight:700,color:rb.physPerKg>(result?.globalAvgBefore||0)?'#dc2626':'#15803d'}}>{fv(rb.physPerKg)}</span>:<span style={{color:'#64748b'}}>—</span>}
                           </td>
                           <td><button className="btn-danger" onClick={()=>delProduct(p.id)}><Ic.X/></button></td>
                         </tr>
@@ -945,16 +925,14 @@ const App=()=>{
                     })}
                   </tbody>
                   {result&&(
-                    <tfoot>
-                      <tr>
-                        <td colSpan={2} style={{textAlign:'right',color:'#1e293b',fontSize:'.7rem',paddingRight:9}}>TỔNG / BQ</td>
-                        <td className="mono" style={{textAlign:'right',paddingRight:7,color:'#15803d'}}>{fv(result.totalKg)}</td>
-                        <td/>
-                        <td className="mono" style={{textAlign:'right',paddingRight:7,color:'#b45309'}}>{fu(result.invoiceUSD)}</td>
-                        <td className="mono" style={{textAlign:'right',paddingRight:7,color:'#1d4ed8'}}>{fv(result.landedPerKg)} avg</td>
-                        <td/>
-                      </tr>
-                    </tfoot>
+                    <tfoot><tr>
+                      <td colSpan={2} style={{textAlign:'right',color:'#1e293b',fontSize:'.7rem',paddingRight:9}}>TỔNG / BQ</td>
+                      <td className="mono" style={{textAlign:'right',paddingRight:7,color:'#15803d'}}>{fv(result.totalKg)}</td>
+                      <td/>
+                      <td className="mono" style={{textAlign:'right',paddingRight:7,color:'#b45309'}}>{fu(result.invoiceUSD)}</td>
+                      <td className="mono" style={{textAlign:'right',paddingRight:7,color:'#1d4ed8'}}>{fv(result.landedPerKg)} avg</td>
+                      <td/>
+                    </tr></tfoot>
                   )}
                 </table>
               </div>
@@ -962,7 +940,6 @@ const App=()=>{
               <div style={{padding:'6px 13px 5px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'9px'}}>
                   <span className="sec-txt"><Ic.Chart/></span><span style={{fontWeight:800,fontSize:'.86rem',color:'#0f172a'}}>Phân tích SKU · Kho + Đường + Lô mới + MinStock</span>
-                  <span style={{fontSize:'.7rem',color:'#475569', fontWeight:600}}>↳ Break-even từ BQ sau nhập</span>
                 </div>
                 <div style={{display:'flex',gap:'9px',fontSize:'.68rem',color:'#334155'}}>
                   <span><span className="tag tg" style={{fontSize:'.64rem'}}>IN_STOCK</span></span>
@@ -981,11 +958,7 @@ const App=()=>{
                             <div style={{fontSize:'.72rem',color:'#334155',marginTop:2,fontWeight:600,fontFamily:'JetBrains Mono'}}>{b.thickness}mm × {b.width} × {b.length}</div>
                           </div>
                           <div style={{display:'flex',gap:4,flexDirection:'column',alignItems:'flex-end'}}>
-                            {b.hasSellPrice?(
-                                <span className={`tag ${b.isRisk?'tr':b.realProfitPerKg>0?'tg':'ty'}`}>
-                                  {b.isRisk ? '⚠ LỖ VỊ THẾ' : b.realProfitPerKg>0 ? '✓ CÓ LÃI' : '≈ HÒA VỐN'}
-                                </span>
-                            ):<span className="tag ts">Chưa có giá bán</span>}
+                            {b.hasSellPrice?(<span className={`tag ${b.isRisk?'tr':b.realProfitPerKg>0?'tg':'ty'}`}>{b.isRisk?'⚠ LỖ VỊ THẾ':b.realProfitPerKg>0?'✓ CÓ LÃI':'≈ HÒA VỐN'}</span>):<span className="tag ts">Chưa có giá bán</span>}
                             {b.stockStatus==='LOW'&&<span className="tag to pulse"><Ic.Alert/> THIẾU HÀNG</span>}
                             {b.stockStatus==='OVER'&&<span className="tag tp pulse">▲ QUÁ MAX</span>}
                             {b.stockStatus==='EXCESS'&&<span className="tag tp">DƯ HÀNG</span>}
@@ -993,9 +966,9 @@ const App=()=>{
                         </div>
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'5px',marginBottom:9}}>
                           {[
-                            {ico:'🟢',lbl:'Trong kho',qty:b.qtyStock,  avg:b.avgStock,  bg:'#f0fdf4',br:'#bbf7d0',vc:'#16a34a',ac:'#15803d'},
-                            {ico:'🟡',lbl:'Đang về',  qty:b.qtyTransit,avg:b.avgTransit,bg:'#fefce8',br:'#fef08a',vc:'#d97706',ac:'#b45309'},
-                            {ico:'🔵',lbl:'Lô mới',   qty:b.qtyKg,     avg:b.physPerKg, bg:'#eff6ff',br:'#bfdbfe',vc:'#2563eb',ac:'#1d4ed8'},
+                            {ico:'🟢',lbl:'Trong kho',qty:b.qtyStock,avg:b.avgStock,bg:'#f0fdf4',br:'#bbf7d0',vc:'#16a34a',ac:'#15803d'},
+                            {ico:'🟡',lbl:'Đang về',qty:b.qtyTransit,avg:b.avgTransit,bg:'#fefce8',br:'#fef08a',vc:'#d97706',ac:'#b45309'},
+                            {ico:'🔵',lbl:'Lô mới',qty:b.qtyKg,avg:b.physPerKg,bg:'#eff6ff',br:'#bfdbfe',vc:'#2563eb',ac:'#1d4ed8'},
                           ].map((x,j)=>(
                             <div key={j} style={{background:x.bg,border:`1px solid ${x.br}`,borderRadius:5,padding:'6px 8px'}}>
                               <div style={{fontSize:'.65rem',color:x.ac,fontWeight:800,marginBottom:3}}>{x.ico} {x.lbl}</div>
@@ -1015,11 +988,11 @@ const App=()=>{
                             <StockBar available={b.available} minStock={b.minStock} maxStock={b.maxStock}/>
                           </div>
                         )}
-                        <div style={{display:'flex',alignItems:'stretch',gap:4,marginBottom:9,background:bg4,borderRadius:5,padding:'7px 9px', border:`1px solid ${border1}`}}>
+                        <div style={{display:'flex',alignItems:'stretch',gap:4,marginBottom:9,background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${border1}`}}>
                           {[
                             {l:'BQ Hiện tại',v:b.avgCurrent,q:b.qtyExisting,c:'#475569'},null,
-                            {l:'BQ Sau nhập',v:b.avgAfter,  q:b.qtyAfter,   c:b.avgAfter>b.avgCurrent?'#dc2626':'#2563eb',bold:true},null,
-                            {l:'Break-even', v:b.breakEven, q:null,          c:'#6d28d9'},
+                            {l:'BQ Sau nhập',v:b.avgAfter,q:b.qtyAfter,c:b.avgAfter>b.avgCurrent?'#dc2626':'#2563eb',bold:true},null,
+                            {l:'Break-even',v:b.breakEven,q:null,c:'#6d28d9'},
                           ].map((x,j)=>x===null?(
                             <div key={j} style={{color:'#94a3b8',fontSize:'1rem',alignSelf:'center',paddingTop:9}}>→</div>
                           ):(
@@ -1030,15 +1003,14 @@ const App=()=>{
                             </div>
                           ))}
                         </div>
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',background:bg4,borderRadius:5,padding:'8px 10px', border:`1px solid ${border1}`}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',background:bg4,borderRadius:5,padding:'8px 10px',border:`1px solid ${border1}`}}>
                           <div>
                             <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700}}>Giá bán KH</div>
                             {b.hasSellPrice?(<>
                               <div className="mono" style={{fontSize:'.9rem',fontWeight:800,color:'#15803d'}}>{fv(b.sellPrice)} đ/kg</div>
                               {b.sellLabel&&b.sellLabel.includes('fallback')&&<div style={{fontSize:'.58rem',color:'#d97706',fontWeight:600,marginTop:1}}>⚠ Fallback: {b.sellLabel}</div>}
                               {b.sellComment&&<div style={{fontSize:'.6rem',color:'#334155',fontWeight:600}}>{b.sellComment}</div>}
-                            </>)
-                              :<div style={{fontSize:'.78rem',color:'#64748b',fontStyle:'italic',fontWeight:600}}>— Vào Tab Giá bán →</div>}
+                            </>):<div style={{fontSize:'.78rem',color:'#64748b',fontStyle:'italic',fontWeight:600}}>— Vào Tab Giá bán →</div>}
                           </div>
                           <div style={{textAlign:'center'}}>
                             <div style={{fontSize:'.6rem',color:'#475569',fontWeight:700}}>Lãi/kg</div>
@@ -1062,11 +1034,11 @@ const App=()=>{
               </div>
               {result&&(
                 <div style={{padding:'6px 13px 9px',borderTop:`1px solid ${border1}`,flexShrink:0,background:bg2}}>
-                  <div style={{display:'flex', gap:'5px', justifyContent:'center'}}>
+                  <div style={{display:'flex',gap:'5px',justifyContent:'center'}}>
                     {[
-                      {l:'Invoice',      v:result.invoiceVND, c:'#334155'},
+                      {l:'Invoice',v:result.invoiceVND,c:'#334155'},
                       {l:`QL ${inputs.managementFee}%`,v:result.mgmt,c:'#6d28d9'},
-                      {l:'CP tài chính', v:result.finVND,     c:'#b91c1c'},
+                      {l:'CP tài chính',v:result.finVND,c:'#b91c1c'},
                     ].map((x,i)=>(
                       <div key={i} style={{background:bg1,border:`1px solid ${border1}`,borderRadius:4,padding:'4px 12px',textAlign:'center'}}>
                         <div className="mono" style={{fontSize:'.76rem',fontWeight:800,color:x.c}}>{fv(x.v)}</div>
@@ -1082,7 +1054,7 @@ const App=()=>{
             <div style={{width:'248px',flexShrink:0,background:bg2,overflowY:'auto',padding:'10px',display:'flex',flexDirection:'column',gap:'9px'}}>
               {result?(
                 <>
-                  <div style={{background:result.totalGrossProfit>0?'#f0fdf4':result.totalGrossProfit<0?'#fef2f2':'#eff6ff',border:`1px solid ${result.totalGrossProfit>0?'#86efac':result.totalGrossProfit<0?'#fca5a5':'#bfdbfe'}`,borderRadius:9,padding:'14px 13px',textAlign:'center',boxShadow:'0 1px 2px rgba(0,0,0,0.05)'}}>
+                  <div style={{background:result.totalGrossProfit>0?'#f0fdf4':result.totalGrossProfit<0?'#fef2f2':'#eff6ff',border:`1px solid ${result.totalGrossProfit>0?'#86efac':result.totalGrossProfit<0?'#fca5a5':'#bfdbfe'}`,borderRadius:9,padding:'14px 13px',textAlign:'center'}}>
                     <div style={{fontSize:'.66rem',color:result.totalGrossProfit>0?'#14532d':result.totalGrossProfit<0?'#7f1d1d':'#1e3a8a',fontWeight:800,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:6,display:'flex',alignItems:'center',justifyContent:'center',gap:5}}><Ic.Money/> Lợi nhuận Đơn Hàng</div>
                     {result.allPriced?(
                       <>
@@ -1113,7 +1085,6 @@ const App=()=>{
                       </div>
                     )}
                   </div>
-                  
                   <div className="kpi" style={{borderColor:'#93c5fd'}}>
                     <div className="kpi-l" style={{color:'#1d4ed8'}}>BQ Sau Nhập (toàn kho)</div>
                     <div className="kpi-v" style={{color:'#2563eb'}}>{fv(result.globalAvgAfter)}</div>
@@ -1129,7 +1100,6 @@ const App=()=>{
                     <div className="kpi-v" style={{color:'#7c3aed',fontSize:'1.05rem'}}>{fv(result.globalBreakEven)}</div>
                     <div className="kpi-s">Trung bình trọng số B-E các SKU</div>
                   </div>
-                  
                   <div className="chart-box" style={{height:180}}>
                     <div style={{fontSize:'.66rem',color:'#334155',fontWeight:800,textTransform:'uppercase',marginBottom:4}}>Giá vốn vs Giá bán KH</div>
                     <canvas ref={chartRef} style={{height:150}}></canvas>
@@ -1148,8 +1118,8 @@ const App=()=>{
             <div style={{maxWidth:'1200px',margin:'0 auto'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
                 <div>
-                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📦 Tồn kho chi tiết theo SKU + Coating (NOPE/PE)</h2>
-                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>GSheet cột coating: <strong style={{color:'#15803d'}}>1E</strong> (PE có phủ) hoặc <strong style={{color:'#b45309'}}>KP</strong> (NOPE không phủ) · Tổng Vốn = kg × avgCost</p>
+                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📦 Tồn kho chi tiết theo SKU + Coating</h2>
+                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>Coating: <strong style={{color:'#15803d'}}>1E</strong> = PE (có phủ) · <strong style={{color:'#b45309'}}>KP</strong> = NOPE (không phủ)</p>
                 </div>
                 <div style={{display:'flex',gap:8}}>
                   <button className="btn btn-ghost btn-sm" onClick={()=>syncGoogleSheet('inv')} disabled={dbStatus.loading}>{dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync</button>
@@ -1157,7 +1127,7 @@ const App=()=>{
                 </div>
               </div>
               <FilterBar filter={invFilter} setFilter={setInvFilter} alloys={uniqueInvAlloys} showStatus={true} showCoating={true} showStockAlert={true} total={inventory.length} filtered={filteredInventory.length}/>
-              {dbStatus.error&&(<div style={{background:'#fee2e2',border:'1px solid #fca5a5',borderRadius:6,padding:'9px 13px',marginBottom:13,fontSize:'.78rem',color:'#b91c1c',display:'flex',alignItems:'center',gap:8,fontWeight:700}}><Ic.Alert/> {dbStatus.error}</div>)}
+              {dbStatus.error&&<div style={{background:'#fee2e2',border:'1px solid #fca5a5',borderRadius:6,padding:'9px 13px',marginBottom:13,fontSize:'.78rem',color:'#b91c1c',display:'flex',alignItems:'center',gap:8,fontWeight:700}}><Ic.Alert/> {dbStatus.error}</div>}
               <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
                 <thead><tr><th>#</th><th style={{textAlign:'left',paddingLeft:5}}>SKU</th><th>Coating</th><th>Status</th><th>KL kg</th><th>Giá vốn đ/kg</th><th>Tổng Vốn VND</th><th>MinStock</th><th>Thiếu/Dư kg</th><th></th></tr></thead>
                 <tbody>
@@ -1172,9 +1142,7 @@ const App=()=>{
                         <td style={{textAlign:'center',color:'#64748b',fontSize:'.75rem',fontWeight:700}} className="mono">{i+1}</td>
                         <td style={{paddingLeft:5,minWidth:380}}><SkuSel row={r} onChange={patch=>setInv(r.id,patch)} showCoating={false}/></td>
                         <td style={{textAlign:'center',width:80}}>
-                          <button onClick={()=>setInv(r.id,{coating:r.coating==='1E'?'KP':'1E'})}
-                            className={`status-btn ${r.coating==='1E'?'s-coated':'s-plain'} off`}
-                            style={{padding:'2px 7px',fontSize:'.65rem',width:'100%'}}>
+                          <button onClick={()=>setInv(r.id,{coating:r.coating==='1E'?'KP':'1E'})} className={`status-btn ${r.coating==='1E'?'s-coated':'s-plain'} off`} style={{padding:'2px 7px',fontSize:'.65rem',width:'100%'}}>
                             {r.coating==='1E'?'🎨 PE':'⬜ NOPE'}
                           </button>
                         </td>
@@ -1191,11 +1159,7 @@ const App=()=>{
                           {ms>0?(<div><div style={{fontSize:'.65rem',color:ratio<0.8?'#dc2626':ratio<1?'#d97706':ratio>2?'#6d28d9':'#16a34a',fontWeight:800}}>{Math.round((ratio||0)*100)}%</div><div style={{fontSize:'.58rem',color:'#475569',fontWeight:600}}>{fv(ms)}kg</div></div>):<span style={{color:'#64748b',fontSize:'.65rem'}}>—</span>}
                         </td>
                         <td style={{textAlign:'right',paddingRight:9}}>
-                          {delta!=null?(
-                            <span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:delta>=0?'#15803d':'#b91c1c'}}>
-                              {delta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(delta))} kg
-                            </span>
-                          ):<span style={{color:'#64748b',fontSize:'.65rem'}}>—</span>}
+                          {delta!=null?(<span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:delta>=0?'#15803d':'#b91c1c'}}>{delta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(delta))} kg</span>):<span style={{color:'#64748b',fontSize:'.65rem'}}>—</span>}
                         </td>
                         <td><button className="btn-danger" onClick={()=>delInv(r.id)}><Ic.X/></button></td>
                       </tr>
@@ -1210,19 +1174,18 @@ const App=()=>{
                   <td/><td/><td/>
                 </tr></tfoot>
               </table>
-
               <div style={{marginTop:15}}>
                 <div style={{fontSize:'.75rem',fontWeight:900,color:'#1e293b',textTransform:'uppercase',letterSpacing:'.06em',marginBottom:9}}>Tóm tắt theo SKU (Kho + Đường pooled)</div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(230px,1fr))',gap:'9px'}}>
                   {groupBySku(inventory).map(g=>{
-                    const all = [...g.inStock,...g.inTransit];
-                    const qtyS = g.inStock.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
-                    const qtyT = g.inTransit.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
-                    const avgAll = weightedAvg(all.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
-                    const msKg = minStockMap[g.key] || 0;
-                    const total = qtyS + qtyT;
-                    const ratio = msKg > 0 ? total/msKg : null;
-                    return (
+                    const all=[...g.inStock,...g.inTransit];
+                    const qtyS=g.inStock.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+                    const qtyT=g.inTransit.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+                    const avgAll=weightedAvg(all.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
+                    const msKg=minStockMap[g.key]||0;
+                    const total=qtyS+qtyT;
+                    const ratio=msKg>0?total/msKg:null;
+                    return(
                       <div key={g.key} className={`sku-card ${ratio!==null&&ratio<0.8?'alert-low':ratio!==null&&ratio>0.8&&ratio<1?'warn':''}`}>
                         <div style={{fontWeight:800,fontSize:'.82rem',color:'#0f172a',marginBottom:5}}>{g.label}</div>
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5,marginBottom:6}}>
@@ -1235,7 +1198,7 @@ const App=()=>{
                             <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:'#b45309'}}>{fv(qtyT)} kg</div>
                           </div>
                         </div>
-                        {msKg > 0 && <div style={{marginBottom:6}}><StockBar available={total} minStock={msKg}/></div>}
+                        {msKg>0&&<div style={{marginBottom:6}}><StockBar available={total} minStock={msKg}/></div>}
                         <div style={{display:'flex',justifyContent:'space-between'}}>
                           <span style={{fontSize:'.7rem',color:'#475569',fontWeight:600}}>Tổng <strong className="mono" style={{color:'#0f172a'}}>{fv(total)} kg</strong></span>
                           <span style={{fontSize:'.7rem',color:'#475569',fontWeight:600}}>BQ <strong className="mono" style={{color:'#2563eb'}}>{fv(avgAll)} đ/kg</strong></span>
@@ -1255,8 +1218,8 @@ const App=()=>{
             <div style={{maxWidth:'1060px',margin:'0 auto'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
                 <div>
-                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📏 Min/Max Stock per SKU + Coating (NOPE/PE)</h2>
-                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>GSheet cột: alloy|temper|thickness|width|length|coating|minstockkg|<strong style={{color:'#6d28d9'}}>maxstockkg</strong> · Ô trống maxstockkg = không giới hạn (∞)</p>
+                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📏 Min/Max Stock per SKU + Coating</h2>
+                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>Ô trống maxstockkg = không giới hạn (∞)</p>
                 </div>
                 <div style={{display:'flex',gap:8}}>
                   <button className="btn btn-ghost btn-sm" onClick={()=>syncGoogleSheet('ms')} disabled={dbStatus.loading}>{dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync</button>
@@ -1282,36 +1245,22 @@ const App=()=>{
                         <td style={{textAlign:'center',color:'#64748b',fontSize:'.75rem',fontWeight:700}} className="mono">{i+1}</td>
                         <td style={{paddingLeft:5,minWidth:380}}><SkuSel row={r} onChange={patch=>setMS(r.id,patch)} showCoating={false}/></td>
                         <td style={{width:80,textAlign:'center'}}>
-                          <button onClick={()=>setMS(r.id,{coating:r.coating==='1E'?'KP':'1E'})}
-                            className={`status-btn ${r.coating==='1E'?'s-coated':'s-plain'} off`}
-                            style={{padding:'2px 6px',fontSize:'.65rem',width:'100%'}}>
+                          <button onClick={()=>setMS(r.id,{coating:r.coating==='1E'?'KP':'1E'})} className={`status-btn ${r.coating==='1E'?'s-coated':'s-plain'} off`} style={{padding:'2px 6px',fontSize:'.65rem',width:'100%'}}>
                             {r.coating==='1E'?'🎨 PE':'⬜ NOPE'}
                           </button>
                         </td>
                         <td style={{width:120}}><input className="inp inp-xs mono" style={{textAlign:'right',color:'#7c3aed',fontWeight:800}} value={fv(r.minStockKg)} onChange={e=>setMS(r.id,{minStockKg:pn(e.target.value)})}/></td>
                         <td style={{width:120}}>
-                          <input className="inp inp-xs mono" style={{textAlign:'right',color:'#6d28d9',fontWeight:800}} 
-                            value={r.maxStockKg===null||r.maxStockKg===undefined?'':fv(r.maxStockKg)} 
-                            onChange={e=>{const v=e.target.value.trim();setMS(r.id,{maxStockKg:v===''?null:pn(v)});}}
-                            placeholder="∞ không giới hạn"/>
+                          <input className="inp inp-xs mono" style={{textAlign:'right',color:'#6d28d9',fontWeight:800}} value={r.maxStockKg===null||r.maxStockKg===undefined?'':fv(r.maxStockKg)} onChange={e=>{const v=e.target.value.trim();setMS(r.id,{maxStockKg:v===''?null:pn(v)});}} placeholder="∞ không giới hạn"/>
                         </td>
                         <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#2563eb',fontSize:'.82rem',fontWeight:700}}>{fv(curQty)}</td>
                         <td style={{textAlign:'center',width:90}}>
-                          {ratio!==null?(
-                            <div>
-                              <div className="stock-bar" style={{height:5,margin:'0 8px 2px'}}><div className="stock-bar-fill" style={{width:`${Math.min((ratio/2.5)*100,100)}%`,background:statusColor}}/></div>
-                              <span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:statusColor}}>{Math.round(ratio*100)}%</span>
-                            </div>
-                          ):<span style={{color:'#64748b'}}>—</span>}
+                          {ratio!==null?(<div><div className="stock-bar" style={{height:5,margin:'0 8px 2px'}}><div className="stock-bar-fill" style={{width:`${Math.min((ratio/2.5)*100,100)}%`,background:statusColor}}/></div><span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:statusColor}}>{Math.round(ratio*100)}%</span></div>):<span style={{color:'#64748b'}}>—</span>}
                         </td>
                         <td style={{textAlign:'right',paddingRight:9,width:155}}>
-                          {isOver?(
-                            <span className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#6d28d9'}}>▲ quá max +{fv(curQty-mx)} kg</span>
-                          ):delta!=null?(
-                            <span className="mono" style={{fontSize:'.78rem',fontWeight:800,color:delta>=0?'#15803d':'#b91c1c'}}>
-                              {delta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(delta))} kg
-                            </span>
-                          ):<span style={{color:'#64748b'}}>—</span>}
+                          {isOver?(<span className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#6d28d9'}}>▲ quá max +{fv(curQty-mx)} kg</span>)
+                           :delta!=null?(<span className="mono" style={{fontSize:'.78rem',fontWeight:800,color:delta>=0?'#15803d':'#b91c1c'}}>{delta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(delta))} kg</span>)
+                           :<span style={{color:'#64748b'}}>—</span>}
                         </td>
                         <td style={{textAlign:'center'}}>
                           <span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:statusColor,padding:'2px 8px',background:isOver?'#f3e8ff':ratio!==null&&ratio<0.8?'#fee2e2':ratio!==null&&ratio<1?'#fef9c3':ratio!==null&&ratio>2?'#e0e7ff':'#dcfce7',borderRadius:4,border:`1px solid ${statusColor}40`}}>{status}</span>
@@ -1327,18 +1276,13 @@ const App=()=>{
                   <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#6d28d9'}}>{filtMsTotalMax>0?fv(filtMsTotalMax)+' kg max':'—'}</td>
                   <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#2563eb'}}>{fv(filtMsTotalKg)} kg</td>
                   <td/>
-                  <td className="mono" style={{textAlign:'right',paddingRight:9,fontWeight:900,color:filtMsDelta>=0?'#15803d':'#b91c1c'}}>
-                    {filtMsDelta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(filtMsDelta))} kg
-                  </td>
+                  <td className="mono" style={{textAlign:'right',paddingRight:9,fontWeight:900,color:filtMsDelta>=0?'#15803d':'#b91c1c'}}>{filtMsDelta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(filtMsDelta))} kg</td>
                   <td colSpan={2}/>
                 </tr></tfoot>
               </table>
-
               <div className="card-inset" style={{marginTop:13}}>
                 <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,lineHeight:1.8}}>
                   💡 <strong style={{color:'#dc2626'}}>{'<'}80%</strong> THIẾU · <strong style={{color:'#d97706'}}>80–100%</strong> GẦN MIN · <strong style={{color:'#16a34a'}}>100–200%</strong> OK · <strong style={{color:'#4f46e5'}}>{'>'}200%</strong> DƯ · <strong style={{color:'#6d28d9'}}>{'>'} MaxStock</strong> QUÁ MAX
-                  <br/>GSheet cột: <strong style={{color:'#15803d'}}>alloy | temper | thickness | width | length | coating | minstockkg | <span style={{color:'#6d28d9'}}>maxstockkg</span></strong>
-                  <br/>maxstockkg trống = không giới hạn (∞)
                 </p>
               </div>
             </div>
@@ -1352,23 +1296,11 @@ const App=()=>{
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:15}}>
                 <div>
                   <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>🏷️ Giá Bán Kế Hoạch theo SKU</h2>
-                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>
-                    GSheet <strong style={{color:'#15803d'}}>gid=1080747466</strong> · Cột: alloy | temper | thickness | width | length | Coating | SellCost | Comment
-                  </p>
+                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>Nhập thủ công · Coating: 1E=PE, KP=NOPE</p>
                 </div>
-                <div style={{display:'flex',gap:8}}>
-                  <button className="btn btn-orange btn-sm" onClick={()=>syncGoogleSheet('sp')} disabled={dbStatus.loading}>{dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync Giá Bán</button>
-                  <button className="btn btn-ghost btn-sm" onClick={addSP}><Ic.Plus/> Thêm SKU</button>
-                </div>
+                <button className="btn btn-ghost btn-sm" onClick={addSP}><Ic.Plus/> Thêm SKU</button>
               </div>
-
               <FilterBar filter={spFilter} setFilter={setSpFilter} alloys={uniqueSpAlloys} showStatus={false} showCoating={true} showStockAlert={false} total={sellingPrices.length} filtered={filteredSP.length}/>
-
-              <div style={{background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8,padding:'10px 14px',marginBottom:14,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-                <span style={{color:'#1d4ed8'}}><Ic.Database/></span>
-                <span style={{fontSize:'.72rem',color:'#1d4ed8',fontWeight:800}}>alloy | temper | thickness | width | length | Coating (1E/KP) | SellCost | Comment</span>
-                <span style={{fontSize:'.66rem',color:'#334155',fontWeight:600}}>· Giá bán dùng tính lợi nhuận, không dùng cho cảnh báo hạn mức · Coating: 1E=PE, KP=NOPE</span>
-              </div>
               <div style={{overflowX:'auto'}}>
               <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',minWidth:1000,boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
                 <thead><tr>
@@ -1384,16 +1316,9 @@ const App=()=>{
                 <tbody>
                   {filteredSP.map((sp,i)=>{
                     const spCoat=sp.coating||'KP';
-                    const matchBlend=result?.blends?.find(b=>
-                      b.alloy===(sp.alloy||'') && b.temper===(sp.temper||'') &&
-                      (b.thickness||'')===(sp.thickness||'') && (b.width||'')===(sp.width||'') && (b.length||'')===(sp.length||'') &&
-                      (b.coating||'KP')===spCoat
-                    ) || result?.blends?.find(b=>
-                      b.alloy===(sp.alloy||'') && b.temper===(sp.temper||'') && (b.coating||'KP')===spCoat
-                      && !sp.thickness && !sp.width && !sp.length
-                    ) || result?.blends?.find(b=>
-                      b.alloy===(sp.alloy||sp.alloyTemper?.split(' ')[0]||'') && b.temper===(sp.temper||sp.alloyTemper?.split(' ')[1]||'')
-                    );
+                    const matchBlend=result?.blends?.find(b=>b.alloy===(sp.alloy||'')&&b.temper===(sp.temper||'')&&(b.thickness||'')===(sp.thickness||'')&&(b.width||'')===(sp.width||'')&&(b.length||'')===(sp.length||'')&&(b.coating||'KP')===spCoat)
+                      ||result?.blends?.find(b=>b.alloy===(sp.alloy||'')&&b.temper===(sp.temper||'')&&(b.coating||'KP')===spCoat&&!sp.thickness&&!sp.width&&!sp.length)
+                      ||result?.blends?.find(b=>b.alloy===(sp.alloy||sp.alloyTemper?.split(' ')[0]||'')&&b.temper===(sp.temper||sp.alloyTemper?.split(' ')[1]||''));
                     const be=matchBlend?matchBlend.breakEven:null;
                     const sc=sp.sellCost||sp.price||0;
                     const margin=be&&sc>0?sc-be:null;
@@ -1420,29 +1345,13 @@ const App=()=>{
                             </button>
                           </div>
                         </td>
+                        <td style={{minWidth:150}}><input className="inp inp-sm mono" style={{textAlign:'right',color:'#15803d',fontWeight:800,width:'100%'}} value={fv(sc)} onChange={e=>setSpR(sp.id,'sellCost',pn(e.target.value))}/></td>
+                        <td style={{minWidth:180}}><input className="inp inp-sm" style={{color:'#1e293b',fontWeight:500,width:'100%'}} value={sp.comment||''} onChange={e=>setSpR(sp.id,'comment',e.target.value)} placeholder="HĐ KH / Spot…"/></td>
                         <td style={{minWidth:150}}>
-                          <input className="inp inp-sm mono" style={{textAlign:'right',color:'#15803d',fontWeight:800,width:'100%'}} value={fv(sc)} onChange={e=>setSpR(sp.id,'sellCost',pn(e.target.value))}/>
-                        </td>
-                        <td style={{minWidth:180}}>
-                          <input className="inp inp-sm" style={{color:'#1e293b',fontWeight:500,width:'100%'}} value={sp.comment||''} onChange={e=>setSpR(sp.id,'comment',e.target.value)} placeholder="HĐ KH / Spot…"/>
-                        </td>
-                        <td style={{minWidth:150}}>
-                          {be?(
-                            <div>
-                              <div className="mono" style={{textAlign:'right',paddingRight:9,color:'#7c3aed',fontSize:'.8rem',fontWeight:800}}>{fv(be)} đ/kg</div>
-                              <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600,textAlign:'right',paddingRight:9}}>{matchBlend?matchBlend.alloy+' '+matchBlend.temper+' ['+(matchBlend.coating==='1E'?'PE':'NOPE')+']':''}</div>
-                            </div>
-                          ):<span style={{color:'#64748b',fontSize:'.72rem',paddingLeft:9,fontWeight:600}}>— (nhập lô mua)</span>}
+                          {be?(<div><div className="mono" style={{textAlign:'right',paddingRight:9,color:'#7c3aed',fontSize:'.8rem',fontWeight:800}}>{fv(be)} đ/kg</div></div>):<span style={{color:'#64748b',fontSize:'.72rem',paddingLeft:9,fontWeight:600}}>— (nhập lô mua)</span>}
                         </td>
                         <td style={{textAlign:'center',minWidth:140}}>
-                          {margin!=null?(
-                            <div>
-                              <span className={`tag ${margin>=0?'tg':'tr'} mono`} style={{fontSize:'.72rem'}}>
-                                {margin>=0?'+':''}{fv(margin)} đ/kg
-                              </span>
-                              {sc>0&&be>0&&<div style={{fontSize:'.6rem',color:margin>=0?'#15803d':'#b91c1c',marginTop:3,fontWeight:700}}>{Math.round(margin/sc*100)}% biên</div>}
-                            </div>
-                          ):<span style={{color:'#64748b',fontSize:'.72rem',fontWeight:600}}>—</span>}
+                          {margin!=null?(<div><span className={`tag ${margin>=0?'tg':'tr'} mono`} style={{fontSize:'.72rem'}}>{margin>=0?'+':''}{fv(margin)} đ/kg</span>{sc>0&&be>0&&<div style={{fontSize:'.6rem',color:margin>=0?'#15803d':'#b91c1c',marginTop:3,fontWeight:700}}>{Math.round(margin/sc*100)}% biên</div>}</div>):<span style={{color:'#64748b',fontSize:'.72rem',fontWeight:600}}>—</span>}
                         </td>
                         <td style={{width:34}}><button className="btn-danger" onClick={()=>delSP(sp.id)}><Ic.X/></button></td>
                       </tr>
@@ -1463,9 +1372,7 @@ const App=()=>{
                 <div>
                   <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📈 Báo cáo Tồn kho & Hạn mức</h2>
                   <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>
-                    ⚠ Vốn TK = kg × avgCost (giá vốn) ·
-                    CreditLimit = InventoryLimit + AccountsPayableLimit ·
-                    3 cảnh báo: Vốn TK {'>'} InvLimit | Vốn TK + AP {'>'} CreditLimit | AP {'>'} APLimit
+                    5 cảnh báo: KL &gt; MaxKg | KL &lt; MinKg | CN &gt; APLimit | Vốn+CN &lt; CreditMin | Vốn+CN &gt; CreditMax
                   </p>
                 </div>
                 <div style={{display:'flex',gap:8}}>
@@ -1474,148 +1381,166 @@ const App=()=>{
                 </div>
               </div>
 
-              <div style={{marginBottom:20}}>
-                <div style={{fontSize:'.72rem',fontWeight:900,color:'#1e293b',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:11,display:'flex',alignItems:'center',gap:6}}><Ic.Chart/> A. Tổng quan toàn kho</div>
-                <div style={{background:'#ffffff',border:'1px solid #bfdbfe',borderRadius:10,padding:'14px 18px',marginBottom:13,boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
-                  <div style={{fontSize:'.68rem',color:'#1d4ed8',fontWeight:900,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:10}}>🌐 TOÀN KHO – Vốn = kg × avgCost (Giá Vốn)</div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10,marginBottom:12}}>
-                    {[
-                      {l:'Tổng KL',     v:fv(reportData.globalKg)+' kg',             c:'#15803d'},
-                      {l:'Vốn TK',      v:fv(reportData.globalCostValue)+'đ',        c:'#1d4ed8',note:'kg × avgCost'},
-                      {l:'BQ Hiện tại', v:fv(reportData.globalAvg)+' đ/kg',          c:'#334155'},
-                      {l:'BQ Sau nhập', v:fv(reportData.globalAvgAfter)+' đ/kg',     c:reportData.globalAvgAfter>reportData.globalAvg?'#dc2626':'#2563eb',note:result?'Sau mua lô này':'Không có lô mới'},
-                      {l:'Break-even',  v:fv(reportData.globalBreakEven)+' đ/kg',    c:'#6d28d9'},
-                    ].map((x,i)=>(
-                      <div key={i} style={{textAlign:'center',background:bg4,borderRadius:6,padding:'9px 8px',border:`1px solid ${border1}`}}>
-                        <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700,marginBottom:4}}>{x.l}</div>
-                        <div className="mono" style={{fontSize:'.88rem',fontWeight:900,color:x.c,lineHeight:1.2}}>{x.v}</div>
-                        {x.note&&<div style={{fontSize:'.58rem',color:'#64748b',fontWeight:600,marginTop:3}}>{x.note}</div>}
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:9,marginBottom:12}}>
-                    {[
-                      {lbl:'⬜ NOPE (Không phủ / KP)',kg:reportData.globalPlainKg,val:reportData.globalPlainCostValue,bg:'#fef08a',br:'#fde047',c:'#854d0e'},
-                      {lbl:'🎨 PE (Có phủ / 1E)',     kg:reportData.globalCoatedKg,val:reportData.globalCoatedCostValue,bg:'#ccfbf1',br:'#99f6e4',c:'#0f766e'},
-                    ].map((x,i)=>(
-                      <div key={i} style={{background:x.bg,border:`1px solid ${x.br}`,borderRadius:6,padding:'8px 11px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                        <div><div style={{fontSize:'.65rem',color:x.c,fontWeight:800,marginBottom:3}}>{x.lbl}</div><div className="mono" style={{fontSize:'.88rem',fontWeight:800,color:x.c}}>{fv(x.kg)} kg</div></div>
-                        <div style={{textAlign:'right'}}><div style={{fontSize:'.6rem',color:x.c,opacity:.9,fontWeight:700}}>Vốn (kg×avgCost)</div><div className="mono" style={{fontSize:'.78rem',color:x.c,fontWeight:800}}>{fv(x.val)}đ</div></div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{borderTop:'1px solid #e2e8f0',paddingTop:11}}>
-                    <div style={{fontSize:'.63rem',color:limitsWarnings.gInvOver||limitsWarnings.gCreditOver||limitsWarnings.gApOver?'#dc2626':limitsWarnings.gInvNear||limitsWarnings.gCreditNear||limitsWarnings.gApNear?'#d97706':'#1e293b',fontWeight:900,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:8,display:'flex',alignItems:'center',gap:5}}>
-                      <Ic.Alert/> 3 Cảnh báo hạn mức toàn kho (GSheet alloy="total")
-                      {!limitsWarnings.totalRow&&<span style={{color:'#b45309',marginLeft:8,fontWeight:700,textTransform:'none'}}>⚠ Chưa có row alloy="total"</span>}
+              {/* KPI tổng quan */}
+              <div style={{background:'#ffffff',border:'1px solid #bfdbfe',borderRadius:10,padding:'14px 18px',marginBottom:16,boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
+                <div style={{fontSize:'.68rem',color:'#1d4ed8',fontWeight:900,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:10}}>🌐 TOÀN KHO – Vốn = kg × avgCost</div>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10,marginBottom:12}}>
+                  {[
+                    {l:'Tổng KL',v:fv(reportData.globalKg)+' kg',c:'#15803d'},
+                    {l:'Vốn TK',v:fv(reportData.globalCostValue)+'đ',c:'#1d4ed8'},
+                    {l:'BQ Hiện tại',v:fv(reportData.globalAvg)+' đ/kg',c:'#334155'},
+                    {l:'BQ Sau nhập',v:fv(reportData.globalAvgAfter)+' đ/kg',c:reportData.globalAvgAfter>reportData.globalAvg?'#dc2626':'#2563eb'},
+                    {l:'Break-even',v:fv(reportData.globalBreakEven)+' đ/kg',c:'#6d28d9'},
+                  ].map((x,i)=>(
+                    <div key={i} style={{textAlign:'center',background:bg4,borderRadius:6,padding:'9px 8px',border:`1px solid ${border1}`}}>
+                      <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700,marginBottom:4}}>{x.l}</div>
+                      <div className="mono" style={{fontSize:'.88rem',fontWeight:900,color:x.c,lineHeight:1.2}}>{x.v}</div>
                     </div>
-                    <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:9}}>
-                      <div style={{background:limitsWarnings.gInvOver?'#fef2f2':limitsWarnings.gInvNear?'#fffbeb':bg4,border:`1px solid ${limitsWarnings.gInvOver?'#fca5a5':limitsWarnings.gInvNear?'#fde047':border1}`,borderRadius:6,padding:'9px 11px'}}>
-                        <div style={{fontSize:'.62rem',fontWeight:900,color:limitsWarnings.gInvOver?'#dc2626':limitsWarnings.gInvNear?'#d97706':'#15803d',marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
-                          {limitsWarnings.gInvOver&&<Ic.Alert/>}📦 A: Vốn TK {'>'} InventoryLimit
-                        </div>
-                        {limitsWarnings.globalInvLimit>0
-                          ?<LimitBar actual={limitsWarnings.globalCostValue} limit={limitsWarnings.globalInvLimit} label={`Hạn mức: ${fv(limitsWarnings.globalInvLimit)}đ`}/>
-                          :<div style={{fontSize:'.62rem',color:'#64748b',fontWeight:600}}>Chưa cấu hình</div>}
-                        {limitsWarnings.gInvPct!=null&&<div style={{fontSize:'.6rem',color:'#475569',fontWeight:700,marginTop:3,textAlign:'right'}}>{limitsWarnings.gInvPct}% hạn mức</div>}
+                  ))}
+                </div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:9,marginBottom:12}}>
+                  {[
+                    {lbl:'⬜ NOPE (KP)',kg:reportData.globalPlainKg,val:reportData.globalPlainCostValue,bg:'#fef08a',br:'#fde047',c:'#854d0e'},
+                    {lbl:'🎨 PE (1E)',kg:reportData.globalCoatedKg,val:reportData.globalCoatedCostValue,bg:'#ccfbf1',br:'#99f6e4',c:'#0f766e'},
+                  ].map((x,i)=>(
+                    <div key={i} style={{background:x.bg,border:`1px solid ${x.br}`,borderRadius:6,padding:'8px 11px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <div><div style={{fontSize:'.65rem',color:x.c,fontWeight:800,marginBottom:3}}>{x.lbl}</div><div className="mono" style={{fontSize:'.88rem',fontWeight:800,color:x.c}}>{fv(x.kg)} kg</div></div>
+                      <div style={{textAlign:'right'}}><div style={{fontSize:'.6rem',color:x.c,fontWeight:700}}>Vốn</div><div className="mono" style={{fontSize:'.78rem',color:x.c,fontWeight:800}}>{fv(x.val)}đ</div></div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 5 Cảnh báo hạn mức v4.7 */}
+                <div style={{borderTop:`1px solid ${border1}`,paddingTop:11}}>
+                  <div style={{fontSize:'.63rem',color:'#1e293b',fontWeight:900,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:8,display:'flex',alignItems:'center',gap:5}}>
+                    <Ic.Alert/> 5 cảnh báo hạn mức
+                    {limitsWarnings.totalAlerts>0&&<span className="tag tr" style={{fontSize:'.6rem',marginLeft:4}}>{limitsWarnings.totalAlerts} vi phạm</span>}
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:8}}>
+                    {/* 1: KL > MaxKg */}
+                    <div style={{background:limitsWarnings.warnOverKg?'#fef2f2':bg4,border:`1px solid ${limitsWarnings.warnOverKg?'#fca5a5':border1}`,borderRadius:6,padding:'9px 10px'}}>
+                      <div style={{fontSize:'.6rem',fontWeight:900,color:limitsWarnings.warnOverKg?'#dc2626':'#334155',marginBottom:5}}>
+                        {limitsWarnings.warnOverKg&&'⚠ '}📦 KL &gt; MaxKg
                       </div>
-                      <div style={{background:limitsWarnings.gCreditOver?'#fef2f2':limitsWarnings.gCreditNear?'#fffbeb':bg4,border:`1px solid ${limitsWarnings.gCreditOver?'#fca5a5':limitsWarnings.gCreditNear?'#fde047':border1}`,borderRadius:6,padding:'9px 11px'}}>
-                        <div style={{fontSize:'.62rem',fontWeight:900,color:limitsWarnings.gCreditOver?'#dc2626':limitsWarnings.gCreditNear?'#d97706':'#15803d',marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
-                          {limitsWarnings.gCreditOver&&<Ic.Alert/>}💳 B: Vốn TK + CN {'>'} CreditLimit
-                        </div>
-                        {limitsWarnings.globalCreditLimit>0?(
-                          <>
-                            <div style={{fontSize:'.59rem',color:'#475569',fontWeight:700,marginBottom:4}}>CreditLimit = InvLimit+APLimit = <strong style={{color:'#6d28d9'}}>{fv(limitsWarnings.globalCreditLimit)}đ</strong></div>
-                            <LimitBar actual={limitsWarnings.gTotalUsed} limit={limitsWarnings.globalCreditLimit} label={`Đã dùng: ${fv(limitsWarnings.gTotalUsed)}đ`}/>
-                          </>
-                        ):<div style={{fontSize:'.62rem',color:'#64748b',fontWeight:600}}>Chưa cấu hình</div>}
+                      {limitsWarnings.inventoryMaxKg>0
+                        ?<LimitBar actual={limitsWarnings.totalKg} limit={limitsWarnings.inventoryMaxKg} label={`Max: ${fv(limitsWarnings.inventoryMaxKg)}kg`} unit="kg"/>
+                        :<div style={{fontSize:'.6rem',color:'#64748b',fontWeight:600}}>Chưa cấu hình</div>}
+                    </div>
+                    {/* 2: KL < MinKg */}
+                    <div style={{background:limitsWarnings.warnUnderKg?'#fffbeb':bg4,border:`1px solid ${limitsWarnings.warnUnderKg?'#fde047':border1}`,borderRadius:6,padding:'9px 10px'}}>
+                      <div style={{fontSize:'.6rem',fontWeight:900,color:limitsWarnings.warnUnderKg?'#b45309':'#334155',marginBottom:5}}>
+                        {limitsWarnings.warnUnderKg&&'⚠ '}📉 KL &lt; MinKg
                       </div>
-                      <div style={{background:limitsWarnings.gApOver?'#fef2f2':limitsWarnings.gApNear?'#fffbeb':bg4,border:`1px solid ${limitsWarnings.gApOver?'#fca5a5':limitsWarnings.gApNear?'#fde047':border1}`,borderRadius:6,padding:'9px 11px'}}>
-                        <div style={{fontSize:'.62rem',fontWeight:900,color:limitsWarnings.gApOver?'#dc2626':limitsWarnings.gApNear?'#d97706':'#15803d',marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
-                          {limitsWarnings.gApOver&&<Ic.Alert/>}🏦 C: Công nợ {'>'} APLimit
+                      {limitsWarnings.inventoryMinKg>0?(
+                        <div>
+                          <div style={{fontSize:'.65rem',fontWeight:700,color:'#1d4ed8'}} className="mono">{fv(limitsWarnings.totalKg)} kg</div>
+                          <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600,marginTop:2}}>Min: {fv(limitsWarnings.inventoryMinKg)} kg</div>
+                          <div style={{fontSize:'.6rem',fontWeight:800,color:limitsWarnings.warnUnderKg?'#b91c1c':'#15803d',marginTop:2}}>
+                            {limitsWarnings.warnUnderKg?`▼ Thiếu ${fv(limitsWarnings.inventoryMinKg-limitsWarnings.totalKg)} kg`:`▲ Dư ${fv(limitsWarnings.totalKg-limitsWarnings.inventoryMinKg)} kg`}
+                          </div>
                         </div>
-                        {limitsWarnings.globalAPLimit>0?(
-                          <>
-                            <LimitBar actual={limitsWarnings.globalActualAP} limit={limitsWarnings.globalAPLimit} label={`APLimit: ${fv(limitsWarnings.globalAPLimit)}đ`}/>
-                            <div style={{marginTop:6}}>
-                              <label className="lbl" style={{fontSize:'.56rem',color:'#475569'}}>CN thực tế (cập nhật)</label>
-                              <input className="inp inp-xs mono" style={{color:'#b45309',fontWeight:800}}
-                                value={fv(limitsWarnings.globalActualAP)}
-                                onChange={e=>{if(limitsWarnings.totalRow) setLim(limitsWarnings.totalRow.id,'actualAccountsPayable',pn(e.target.value));}}/>
-                            </div>
-                          </>
-                        ):<div style={{fontSize:'.62rem',color:'#64748b',fontWeight:600}}>Chưa cấu hình</div>}
+                      ):<div style={{fontSize:'.6rem',color:'#64748b',fontWeight:600}}>Chưa cấu hình</div>}
+                    </div>
+                    {/* 3: CN > APLimit */}
+                    <div style={{background:limitsWarnings.warnOverAP?'#fef2f2':bg4,border:`1px solid ${limitsWarnings.warnOverAP?'#fca5a5':border1}`,borderRadius:6,padding:'9px 10px'}}>
+                      <div style={{fontSize:'.6rem',fontWeight:900,color:limitsWarnings.warnOverAP?'#dc2626':'#334155',marginBottom:5}}>
+                        {limitsWarnings.warnOverAP&&'⚠ '}🏦 CN &gt; APLimit
                       </div>
+                      {limitsWarnings.apLimit>0
+                        ?<LimitBar actual={limitsWarnings.actualAP} limit={limitsWarnings.apLimit} label={`APLimit: ${fv(limitsWarnings.apLimit)}đ`}/>
+                        :<div style={{fontSize:'.6rem',color:'#64748b',fontWeight:600}}>Chưa cấu hình</div>}
+                      <div style={{marginTop:5}}>
+                        <label className="lbl" style={{fontSize:'.55rem',color:'#475569'}}>CN thực tế</label>
+                        <input className="inp inp-xs mono" style={{color:'#b45309',fontWeight:800}} value={fv(limitsWarnings.actualAP)} onChange={e=>setLimField('actualAccountsPayable',e.target.value)}/>
+                      </div>
+                    </div>
+                    {/* 4: Vốn+CN < CreditMin */}
+                    <div style={{background:limitsWarnings.warnUnderCredit?'#fffbeb':bg4,border:`1px solid ${limitsWarnings.warnUnderCredit?'#fde047':border1}`,borderRadius:6,padding:'9px 10px'}}>
+                      <div style={{fontSize:'.6rem',fontWeight:900,color:limitsWarnings.warnUnderCredit?'#b45309':'#334155',marginBottom:5}}>
+                        {limitsWarnings.warnUnderCredit&&'⚠ '}💰 Vốn+CN &lt; Min
+                      </div>
+                      {limitsWarnings.totalCreditMin>0?(
+                        <div>
+                          <div style={{fontSize:'.65rem',fontWeight:700,color:'#1d4ed8'}} className="mono">{fv(limitsWarnings.totalUsed)}đ</div>
+                          <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600,marginTop:2}}>Min: {fv(limitsWarnings.totalCreditMin)}đ</div>
+                          <div style={{fontSize:'.6rem',fontWeight:800,color:limitsWarnings.warnUnderCredit?'#b45309':'#15803d',marginTop:2}}>
+                            {limitsWarnings.warnUnderCredit?`Thừa tiền ${fv(limitsWarnings.totalCreditMin-limitsWarnings.totalUsed)}đ`:`OK`}
+                          </div>
+                        </div>
+                      ):<div style={{fontSize:'.6rem',color:'#64748b',fontWeight:600}}>Chưa cấu hình</div>}
+                    </div>
+                    {/* 5: Vốn+CN > CreditMax */}
+                    <div style={{background:limitsWarnings.warnOverCredit?'#fef2f2':bg4,border:`1px solid ${limitsWarnings.warnOverCredit?'#fca5a5':border1}`,borderRadius:6,padding:'9px 10px'}}>
+                      <div style={{fontSize:'.6rem',fontWeight:900,color:limitsWarnings.warnOverCredit?'#dc2626':'#334155',marginBottom:5}}>
+                        {limitsWarnings.warnOverCredit&&'⚠ '}💳 Vốn+CN &gt; Max
+                      </div>
+                      {limitsWarnings.totalCreditMax>0
+                        ?<LimitBar actual={limitsWarnings.totalUsed} limit={limitsWarnings.totalCreditMax} label={`Max: ${fv(limitsWarnings.totalCreditMax)}đ`}/>
+                        :<div style={{fontSize:'.6rem',color:'#64748b',fontWeight:600}}>Chưa cấu hình</div>}
                     </div>
                   </div>
                 </div>
 
-                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(380px,1fr))',gap:11}}>
-                  {reportData.alloyStats.map((g,i)=>{
-                    const limRow=limitsWarnings.rows.find(l=>l.alloy===g.alloy);
-                    return(
-                      <div key={i} className={`rpt-alloy ${limRow?.hasAlert?'has-alert':limRow?.hasWarn?'has-warn':''}`}>
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-                          <div style={{fontWeight:900,fontSize:'1rem',color:'#0f172a'}}>{g.alloy}</div>
-                          <div style={{display:'flex',gap:5}}>
-                            {limRow?.hasAlert&&<span className="tag tr pulse" style={{fontSize:'.62rem'}}><Ic.Alert/> VƯỢT HẠN MỨC</span>}
-                            {limRow&&!limRow.hasAlert&&limRow.hasWarn&&<span className="tag ty" style={{fontSize:'.62rem'}}>⚡ GẦN HẠN MỨC</span>}
-                          </div>
-                        </div>
-                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:9}}>
-                          {[
-                            {l:'KL tồn kho',  v:fv(g.totalKg)+' kg',         c:'#15803d'},
-                            {l:'Vốn TK',      v:fv(g.totalCostValue)+'đ',     c:'#1d4ed8',small:true,note:'kg×avgCost'},
-                            {l:'BQ Hiện tại', v:fv(g.avgBefore)+' đ/kg',      c:'#334155'},
-                            {l:'BQ Sau nhập', v:fv(g.avgAfter)+' đ/kg',       c:g.avgAfter>g.avgBefore?'#dc2626':'#2563eb'},
-                          ].map((x,j)=>(
-                            <div key={j} style={{background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${border1}`}}>
-                              <div style={{fontSize:'.6rem',color:'#475569',fontWeight:700,marginBottom:2}}>{x.l}{x.note&&<span style={{opacity:.8}}> ({x.note})</span>}</div>
-                              <div className="mono" style={{fontSize:x.small?'.78rem':'.85rem',fontWeight:800,color:x.c}}>{x.v}</div>
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5,marginBottom:9}}>
-                          <div style={{background:'#fef08a',border:'1px solid #fde047',borderRadius:5,padding:'6px 8px'}}>
-                            <div style={{fontSize:'.6rem',color:'#854d0e',fontWeight:800,marginBottom:2}}>⬜ NOPE (KP)</div>
-                            <div className="mono" style={{fontSize:'.82rem',color:'#a16207',fontWeight:800}}>{fv(g.plainKg)} kg</div>
-                            <div style={{fontSize:'.6rem',color:'#854d0e',fontWeight:600,marginTop:1}}>{fv(g.plainCostValue)}đ</div>
-                          </div>
-                          <div style={{background:'#ccfbf1',border:'1px solid #99f6e4',borderRadius:5,padding:'6px 8px'}}>
-                            <div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:800,marginBottom:2}}>🎨 PE (1E)</div>
-                            <div className="mono" style={{fontSize:'.82rem',color:'#0f766e',fontWeight:800}}>{fv(g.coatedKg)} kg</div>
-                            <div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:600,marginTop:1}}>{fv(g.coatedCostValue)}đ</div>
-                          </div>
-                        </div>
-                        <div style={{background:bg4,borderRadius:5,padding:'7px 9px',textAlign:'center',marginBottom:9,border:`1px solid ${border1}`}}>
-                          <div style={{fontSize:'.6rem',color:'#475569',fontWeight:700,marginBottom:2}}>Break-even</div>
-                          <div className="mono" style={{fontSize:'.88rem',fontWeight:900,color:'#7c3aed'}}>{fv(g.breakEven)} đ/kg</div>
-                        </div>
-                        {limRow&&limRow.inventoryLimit>0&&(
-                          <div style={{background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${limRow.invOver?'#fca5a5':limRow.invNear?'#fde047':border1}`}}>
-                            <div style={{fontSize:'.62rem',color:limRow.invOver?'#dc2626':limRow.invNear?'#d97706':'#1e293b',fontWeight:800,marginBottom:5,display:'flex',alignItems:'center',gap:4}}>
-                              {limRow.invOver&&<Ic.Alert/>}📦 Vốn TK vs InventoryLimit
-                              {limRow.invPct!=null&&<span style={{marginLeft:'auto',fontFamily:'JetBrains Mono,monospace',fontSize:'.65rem'}}>{limRow.invPct}%</span>}
-                            </div>
-                            <LimitBar actual={limRow.invCostValue} limit={limRow.inventoryLimit} label={`Hạn mức: ${fv(limRow.inventoryLimit)}đ`}/>
-                            {(limRow.coatedKg>0||limRow.plainKg>0)&&(
-                              <div style={{marginTop:7,display:'grid',gridTemplateColumns:'1fr 1fr',gap:5}}>
-                                <div style={{background:'#fef08a80',borderRadius:4,padding:'4px 6px'}}>
-                                  <div style={{fontSize:'.58rem',color:'#854d0e',fontWeight:700}}>⬜ NOPE: {fv(limRow.plainKg)}kg</div>
-                                  <div className="mono" style={{fontSize:'.65rem',color:'#854d0e',fontWeight:700}}>{fv(limRow.plainCostValue)}đ</div>
-                                </div>
-                                <div style={{background:'#ccfbf180',borderRadius:4,padding:'4px 6px'}}>
-                                  <div style={{fontSize:'.58rem',color:'#0f766e',fontWeight:700}}>🎨 PE: {fv(limRow.coatedKg)}kg</div>
-                                  <div className="mono" style={{fontSize:'.65rem',color:'#0f766e',fontWeight:700}}>{fv(limRow.coatedCostValue)}đ</div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                {/* Config panel */}
+                <div style={{marginTop:12,background:bg4,border:`1px solid ${border1}`,borderRadius:6,padding:'10px 14px'}}>
+                  <div style={{fontSize:'.63rem',fontWeight:900,color:'#334155',marginBottom:8}}>⚙ Cấu hình hạn mức (có thể chỉnh tay hoặc sync GSheet)</div>
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:7}}>
+                    {[
+                      {f:'inventoryMinKg',l:'Min KL (kg)',v:limitsWarnings.inventoryMinKg},
+                      {f:'inventoryMaxKg',l:'Max KL (kg)',v:limitsWarnings.inventoryMaxKg},
+                      {f:'totalCreditMin',l:'Credit Min (đ)',v:limitsWarnings.totalCreditMin},
+                      {f:'totalCreditMax',l:'Credit Max (đ)',v:limitsWarnings.totalCreditMax},
+                      {f:'accountsPayableLimit',l:'AP Limit (đ)',v:limitsWarnings.apLimit},
+                      {f:'actualAccountsPayable',l:'CN Thực tế (đ)',v:limitsWarnings.actualAP},
+                    ].map((x,i)=>(
+                      <div key={i}>
+                        <label className="lbl" style={{fontSize:'.58rem'}}>{x.l}</label>
+                        <input className="inp inp-xs mono" style={{fontWeight:700}} value={fv(x.v)} onChange={e=>setLimField(x.f,e.target.value)}/>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
+              </div>
+
+              {/* Per-alloy stats */}
+              <div style={{fontSize:'.72rem',fontWeight:900,color:'#1e293b',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:11}}>Chi tiết theo mác hợp kim</div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(380px,1fr))',gap:11}}>
+                {reportData.alloyStats.map((g,i)=>(
+                  <div key={i} className="rpt-alloy">
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+                      <div style={{fontWeight:900,fontSize:'1rem',color:'#0f172a'}}>{g.alloy}</div>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:9}}>
+                      {[
+                        {l:'KL tồn kho',v:fv(g.totalKg)+' kg',c:'#15803d'},
+                        {l:'Vốn TK',v:fv(g.totalCostValue)+'đ',c:'#1d4ed8'},
+                        {l:'BQ Hiện tại',v:fv(g.avgBefore)+' đ/kg',c:'#334155'},
+                        {l:'BQ Sau nhập',v:fv(g.avgAfter)+' đ/kg',c:g.avgAfter>g.avgBefore?'#dc2626':'#2563eb'},
+                      ].map((x,j)=>(
+                        <div key={j} style={{background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${border1}`}}>
+                          <div style={{fontSize:'.6rem',color:'#475569',fontWeight:700,marginBottom:2}}>{x.l}</div>
+                          <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:x.c}}>{x.v}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5,marginBottom:9}}>
+                      <div style={{background:'#fef08a',border:'1px solid #fde047',borderRadius:5,padding:'6px 8px'}}>
+                        <div style={{fontSize:'.6rem',color:'#854d0e',fontWeight:800,marginBottom:2}}>⬜ NOPE (KP)</div>
+                        <div className="mono" style={{fontSize:'.82rem',color:'#a16207',fontWeight:800}}>{fv(g.plainKg)} kg</div>
+                        <div style={{fontSize:'.6rem',color:'#854d0e',fontWeight:600,marginTop:1}}>{fv(g.plainCostValue)}đ</div>
+                      </div>
+                      <div style={{background:'#ccfbf1',border:'1px solid #99f6e4',borderRadius:5,padding:'6px 8px'}}>
+                        <div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:800,marginBottom:2}}>🎨 PE (1E)</div>
+                        <div className="mono" style={{fontSize:'.82rem',color:'#0f766e',fontWeight:800}}>{fv(g.coatedKg)} kg</div>
+                        <div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:600,marginTop:1}}>{fv(g.coatedCostValue)}đ</div>
+                      </div>
+                    </div>
+                    <div style={{background:bg4,borderRadius:5,padding:'7px 9px',textAlign:'center',border:`1px solid ${border1}`}}>
+                      <div style={{fontSize:'.6rem',color:'#475569',fontWeight:700,marginBottom:2}}>Break-even</div>
+                      <div className="mono" style={{fontSize:'.88rem',fontWeight:900,color:'#7c3aed'}}>{fv(g.breakEven)} đ/kg</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1663,154 +1588,70 @@ const App=()=>{
             </div>
           </div>
         )}
-
       </div>
 
-      {/* ════ HIDDEN PRINT TEMPLATE ════ */}
-      {result && (
-      <div className="print-container">
-        <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD)</div>
-        <div className="print-subtitle">Ngày in: {new Date().toLocaleDateString('vi-VN')} | Đơn vị tính: VNĐ & Kg</div>
-
-        <div className="print-section">
-          <div className="print-section-title">I. Thông số chung</div>
-          <div className="print-grid-4">
-            <div className="print-box">
-              <div className="print-box-title">Tỷ giá USD</div>
-              <div className="print-box-value">{fv(inputs.exchangeRate)}</div>
+      {/* PRINT TEMPLATE */}
+      {result&&(
+        <div className="print-container">
+          <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD)</div>
+          <div className="print-subtitle">Ngày in: {new Date().toLocaleDateString('vi-VN')} | Đơn vị tính: VNĐ & Kg</div>
+          <div className="print-section">
+            <div className="print-section-title">I. Thông số chung</div>
+            <div className="print-grid-4">
+              <div className="print-box"><div className="print-box-title">Tỷ giá USD</div><div className="print-box-value">{fv(inputs.exchangeRate)}</div></div>
+              <div className="print-box"><div className="print-box-title">Thanh toán</div><div className="print-box-value text-blue">{inputs.paymentMethod}</div></div>
+              <div className="print-box"><div className="print-box-title">Phí QL / QLKD</div><div className="print-box-value">{inputs.managementFee}% / {inputs.businessRiskPercent}%</div></div>
+              <div className="print-box"><div className="print-box-title">Tổng khối lượng</div><div className="print-box-value text-green">{fv(result.totalKg)} kg</div></div>
             </div>
-            <div className="print-box">
-              <div className="print-box-title">Thanh toán</div>
-              <div className="print-box-value text-blue">{inputs.paymentMethod}</div>
-            </div>
-            <div className="print-box">
-              <div className="print-box-title">Phí QL / QLKD</div>
-              <div className="print-box-value">{inputs.managementFee}% / {inputs.businessRiskPercent}%</div>
-            </div>
-            <div className="print-box">
-              <div className="print-box-title">Tổng khối lượng</div>
-              <div className="print-box-value text-green">{fv(result.totalKg)} kg</div>
-            </div>
+          </div>
+          <div className="print-section">
+            <div className="print-section-title">II. Chi tiết từng mã hàng (SKU)</div>
+            <table className="print-table-a4">
+              <thead><tr><th>Mác - Cứng</th><th>Quy cách & Phủ</th><th>KL Mua (kg)</th><th>Đơn giá (USD)</th><th>Giá về (đ/kg)</th><th>Break-even</th><th>Giá Bán</th><th>Lãi (đ/kg)</th></tr></thead>
+              <tbody>
+                {result.blends.map((b,i)=>(
+                  <tr key={i}>
+                    <td>{b.alloy} {b.temper}</td>
+                    <td>{b.thickness}x{b.width}x{b.length} [{b.coating==='1E'?'PE':'NOPE'}]</td>
+                    <td>{fv(b.qtyKg)}</td>
+                    <td>{fv(b.priceFC)}</td>
+                    <td>{fv(b.physPerKg)}</td>
+                    <td className="text-red">{fv(b.breakEven)}</td>
+                    <td className="text-green">{b.hasSellPrice?fv(b.sellPrice):'—'}</td>
+                    <td className={b.realProfitPerKg>=0?'text-green':'text-red'}>{b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{display:'flex',justifyContent:'space-around',marginTop:'40px',textAlign:'center'}}>
+            <div><strong>Lập bảng</strong><br/><br/><br/><span>{inputs.creator}</span></div>
+            <div><strong>Trưởng Phòng</strong><br/><br/><br/><span>Ký tên</span></div>
+            <div><strong>Giám Đốc Duyệt</strong><br/><br/><br/><span>Ký tên</span></div>
           </div>
         </div>
-
-        <div className="print-section">
-          <div className="print-section-title">II. Hiệu quả tài chính toàn lô</div>
-          <div className="print-grid-2">
-            <div>
-              <table className="print-table-a4">
-                <tbody>
-                  <tr><td className="left">Tổng tiền Invoice:</td><td className="right font-bold">{fu(result.invoiceUSD)}</td></tr>
-                  <tr><td className="left">Lãi vay L/C & TT:</td><td className="right text-red">{fv(result.finVND)} đ</td></tr>
-                  <tr><td className="left">Logistics & Thuế:</td><td className="right">{fv(result.landedVND - result.invoiceVND - result.mgmt - result.finVND)} đ</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div>
-              <table className="print-table-a4">
-                <tbody>
-                  <tr><td className="left">BQ Toàn kho hiện tại:</td><td className="right">{fv(result.globalAvgBefore)} đ/kg</td></tr>
-                  <tr><td className="left font-bold">BQ Toàn kho sau nhập:</td><td className="right font-bold text-blue">{fv(result.globalAvgAfter)} đ/kg</td></tr>
-                  <tr><td className="left font-bold text-red">LỢI NHUẬN DỰ KIẾN:</td><td className="right font-bold text-red">{result.totalGrossProfit >= 0 ? '+' : ''}{fv(result.totalGrossProfit)} đ</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div className="print-section">
-          <div className="print-section-title">III. Chi tiết từng mã hàng (SKU)</div>
-          <table className="print-table-a4">
-            <thead>
-              <tr>
-                <th>Mác - Cứng</th>
-                <th>Quy cách & Phủ</th>
-                <th>KL Mua (kg)</th>
-                <th>Đơn giá (USD)</th>
-                <th>Giá về (đ/kg)</th>
-                <th>Break-even</th>
-                <th>Giá Bán</th>
-                <th>Lãi (đ/kg)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.blends.map((b, i) => (
-                <tr key={i}>
-                  <td>{b.alloy} {b.temper}</td>
-                  <td>{b.thickness}x{b.width}x{b.length} [{b.coating==='1E'?'PE':'NOPE'}]</td>
-                  <td className="font-bold">{fv(b.qtyKg)}</td>
-                  <td>{fv(b.priceFC)}</td>
-                  <td>{fv(b.physPerKg)}</td>
-                  <td className="text-red font-bold">{fv(b.breakEven)}</td>
-                  <td className="text-green font-bold">{b.hasSellPrice ? fv(b.sellPrice) : '—'}</td>
-                  <td className={b.realProfitPerKg >= 0 ? 'text-green' : 'text-red'}>
-                    {b.hasSellPrice ? (b.realProfitPerKg >= 0 ? '+' : '') + fv(b.realProfitPerKg) : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '40px', textAlign: 'center' }}>
-          <div>
-            <strong>Lập bảng</strong><br/><br/><br/>
-            <span>{inputs.creator}</span>
-          </div>
-          <div>
-            <strong>Trưởng Phòng</strong><br/><br/><br/>
-            <span>Ký tên</span>
-          </div>
-          <div>
-            <strong>Giám Đốc Duyệt</strong><br/><br/><br/>
-            <span>Ký tên</span>
-          </div>
-        </div>
-      </div>
       )}
     </div>
   );
 };
 
 const exportCsv=(blends,inputs,result)=>{
-  const escapeCsv = (val) => {
-      if (val === null || val === undefined) return '""';
-      const str = String(val);
-      if (str.includes(';') || str.includes('"') || str.includes('\n')) {
-          return `"${str.replace(/"/g, '""')}"`;
-      }
-      return str;
+  const escapeCsv=(val)=>{
+    if(val===null||val===undefined) return '""';
+    const str=String(val);
+    if(str.includes(';')||str.includes('"')||str.includes('\n')) return `"${str.replace(/"/g,'""')}"`;
+    return str;
   };
-
-  const headers = ['SKU', 'Mác Nhôm', 'Độ cứng', 'Độ dày', 'Khổ rộng', 'Chiều dài', 'Coating', 'Qty Mua (Kg)', 'Giá Landed (đ/kg)', 'BQ Sau Nhập (đ/kg)', 'Break-even (đ/kg)', 'Giá Bán Kế Hoạch', 'Lãi/Lỗ (đ/kg)', 'Tổng Lãi/Lỗ VND', 'Min Stock Kg', 'Tồn sau mua', 'Tình trạng'];
-  
-  const rows = blends.map(b => [
-    b.skuLbl, b.alloy, b.temper, b.thickness, b.width, b.length, 
-    b.coating==='1E'?'PE':'NOPE',
-    b.qtyKg, 
-    Math.round(b.physPerKg), 
-    Math.round(b.avgAfter), 
-    Math.round(b.breakEven),
-    Math.round(b.sellPrice||0),
-    b.realProfitPerKg != null ? Math.round(b.realProfitPerKg) : 'Chưa có giá',
-    b.grossProfitVND != null ? Math.round(b.grossProfitVND) : 'Chưa có giá',
-    b.minStock, 
-    b.available,
-    b.stockStatus==='LOW' ? 'THIẾU HÀNG' : b.stockStatus==='EXCESS' ? 'DƯ HÀNG' : b.stockStatus==='OVER' ? 'QUÁ MAX' : 'OK'
-  ]);
-
+  const headers=['SKU','Mác Nhôm','Độ cứng','Độ dày','Khổ rộng','Chiều dài','Coating','Qty Mua (Kg)','Giá Landed (đ/kg)','BQ Sau Nhập (đ/kg)','Break-even (đ/kg)','Giá Bán','Lãi/Lỗ (đ/kg)','Tổng Lãi/Lỗ VND','Min Stock Kg','Tồn sau mua','Tình trạng'];
+  const rows=blends.map(b=>[b.skuLbl,b.alloy,b.temper,b.thickness,b.width,b.length,b.coating==='1E'?'PE':'NOPE',b.qtyKg,Math.round(b.physPerKg),Math.round(b.avgAfter),Math.round(b.breakEven),Math.round(b.sellPrice||0),b.realProfitPerKg!=null?Math.round(b.realProfitPerKg):'Chưa có giá',b.grossProfitVND!=null?Math.round(b.grossProfitVND):'Chưa có giá',b.minStock,b.available,b.stockStatus==='LOW'?'THIẾU HÀNG':b.stockStatus==='EXCESS'?'DƯ HÀNG':b.stockStatus==='OVER'?'QUÁ MAX':'OK']);
   rows.push([]);
-  rows.push(['TỔNG CỘNG', '', '', '', '', '', '', result.totalKg, '', '', '', '', '', result.totalGrossProfit != null ? Math.round(result.totalGrossProfit) : '']);
-
-  const csvContent = '\ufeff' + [headers, ...rows].map(row => row.map(escapeCsv).join(';')).join('\n');
-  
-  const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; 
-  a.download = `Bao_Cao_PAKD_${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.csv`;
-  a.click(); 
-  URL.revokeObjectURL(url);
+  rows.push(['TỔNG CỘNG','','','','','','',result.totalKg,'','','','','',result.totalGrossProfit!=null?Math.round(result.totalGrossProfit):'']);
+  const csvContent='\ufeff'+[headers,...rows].map(row=>row.map(escapeCsv).join(';')).join('\n');
+  const blob=new Blob([csvContent],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`Bao_Cao_PAKD_${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.csv`;
+  a.click();URL.revokeObjectURL(url);
 };
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
