@@ -124,7 +124,7 @@
         const FolderOpen = (props) => <IconBase {...props} d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />;
         const Edit = (props) => <IconBase {...props} d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />;
         const X = (props) => <IconBase {...props} d="M18 6L6 18M6 6l12 12" />;
-
+        
         const PakdManualLink = () => (
             <div className="mt-4 space-y-2 no-print">
                 <a href="https://docs.google.com/document/d/1AHCpd9XuVkD0r1KS-c7etbEUnsnVzvIv6C6xN7KTKdI/edit?tab=t.0" target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 px-3 py-2 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition text-slate-600 hover:text-slate-800">
@@ -144,7 +144,6 @@
             const vat = totalRevenue * 0.1;
             const totalWithVAT = totalRevenue + vat;
             const dateObj = new Date(inputs.quoteDate);
-            
             return (
                 <div className={`invoice-box print-container ${printMode === 'quotation' ? 'print-mode-active' : ''}`}>
                     <div className="invoice-header">
@@ -264,6 +263,7 @@
                                 <tr style={{backgroundColor: '#f1f5f9'}}><td style={{padding: '5px'}}><strong>= Lợi nhuận Kế toán:</strong></td><td className="text-right">{formatCurrency(metrics.accountingProfit)}</td></tr>
                                 <tr><td style={{padding: '5px', color: '#666'}}>(-) Chi phí vốn & Rủi ro:</td><td className="text-right" style={{color: '#666'}}>-{formatCurrency(metrics.accountingProfit - metrics.realProfit)}</td></tr>
                                 <tr style={{borderTop: '2px solid #000'}}><td style={{padding: '8px', fontSize: '12pt'}}><strong>KẾT QUẢ THỰC (NET PROFIT):</strong></td><td className="text-right" style={{fontSize: '14pt', color: metrics.realProfit > 0 ? '#166534' : '#991b1b'}}>{formatCurrency(metrics.realProfit)} ({formatPercent(metrics.realMargin)})</td></tr>
+                                <tr><td style={{padding: '5px', color: '#666'}}><strong>Thay đổi Vốn Hiện vật:</strong></td><td className="text-right" style={{fontSize: '12pt', fontWeight: 'bold', color: metrics.volumeChangeRatio > 0 ? '#991b1b' : '#1e40af'}}>{metrics.volumeChangeRatio > 0 ? '-' : '+'}{formatPercent(Math.abs(metrics.volumeChangeRatio))}</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -493,16 +493,20 @@
 
                 const totalAdditionalCosts = (costTransport || 0) + (costProcessing || 0) + (costPackaging || 0);
                 const totalFullCost = totalCogsHistory + totalAdditionalCosts;
+
                 const avgSellPrice = totalQuantity > 0 ? totalRevenue / totalQuantity : 0;
                 const avgHistoricalCost = totalQuantity > 0 ? totalFullCost / totalQuantity : 0;
                 const avgReplacementCost = totalQuantity > 0 ? totalReplacementCost / totalQuantity : 0;
                 const avgCompetitorPrice = totalQuantity > 0 ? totalCompetitorVal / totalQuantity : 0;
+
                 const accountingProfit = totalRevenue - totalCogsHistory - totalAdditionalCosts;
                 const capitalBase = totalCogsHistory;
                 const futureFinCost = capitalBase * (interestRateYear / 100) * (paymentDays / 365);
                 const riskCost = capitalBase * (riskProvision / 100);
+
                 const realProfit = accountingProfit - futureFinCost - riskCost;
                 const realMargin = totalRevenue > 0 ? (realProfit / totalRevenue) * 100 : 0;
+
                 const sunkCost = totalCogsHistory * (interestRateYear / 100) * (inventoryAge / 12);
                 const sunkCostRatio = totalCogsHistory > 0 ? (sunkCost / totalCogsHistory) * 100 : 0;
                 const volumeChangeRatio = replacementBase > 0 ? -(volumeLossWeighted / replacementBase) * 100 : 0;
@@ -519,23 +523,34 @@
                 const isStrategicClearance = inventoryAge > 6 || sunkCostRatio > 5;
 
                 if (isStrategicClearance) {
-                    status = 'PURPLE'; recommendation = 'ƯU TIÊN XẢ HÀNG (CẮT LỖ)'; reason = `Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay cao. BẮT BUỘC BÁN.`;
+                    status = 'PURPLE';
+                    recommendation = 'ƯU TIÊN XẢ HÀNG (CẮT LỖ)'; reason = `Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay cao. BẮT BUỘC BÁN.`;
                 } else {
                     if (totalRevenue < totalCogsHistory && volumeChangeRatio < -2) {
-                        status = 'BLUE'; recommendation = 'CƠ CẤU LẠI VỐN (BLUE)'; reason = `Lỗ kế toán nhưng LÃI QUY MÔ ${formatPercent(Math.abs(volumeChangeRatio))}. Bán để quay vòng vốn.`;
+                        status = 'BLUE';
+                        recommendation = 'CƠ CẤU LẠI VỐN (BLUE)'; reason = `Lỗ kế toán nhưng LÃI QUY MÔ ${formatPercent(Math.abs(volumeChangeRatio))}. Bán để quay vòng vốn.`;
                     } else {
                         let isProfitPass = false;
-                        if (customerRank === 'VIP' || customerRank === 'MEDIUM') { if (realMargin > 1.0) isProfitPass = true; } else { if (realMargin > 3.0) isProfitPass = true; }
+                        if (customerRank === 'VIP' || customerRank === 'MEDIUM') { if (realMargin > 1.0) isProfitPass = true; } 
+                        else { if (realMargin > 3.0) isProfitPass = true; }
+                        
                         if (isProfitPass) {
-                            if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL'; recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)'; reason = `Lãi đạt nhưng Hụt vốn lớn (${formatPercent(volumeChangeRatio)}).`; }
-                            else if (warningLevel === 'WARN') { status = 'YELLOW_CAPITAL'; recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (VÀNG)'; reason = `Lãi đạt nhưng Mất hàng ${formatPercent(volumeChangeRatio)}.`; }
-                            else { status = 'GREEN'; recommendation = 'DUYỆT NGAY (XANH LÁ)'; reason = `Lãi đạt & Bảo toàn vốn an toàn.`; }
+                            if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL';
+                                recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)'; reason = `Lãi đạt nhưng Hụt vốn lớn (${formatPercent(volumeChangeRatio)}).`;
+                            }
+                            else if (warningLevel === 'WARN') { status = 'YELLOW_CAPITAL';
+                                recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (VÀNG)'; reason = `Lãi đạt nhưng Mất hàng ${formatPercent(volumeChangeRatio)}.`;
+                            }
+                            else { status = 'GREEN';
+                                recommendation = 'DUYỆT NGAY (XANH LÁ)'; reason = `Lãi đạt & Bảo toàn vốn an toàn.`;
+                            }
                         } else {
                             if (realMargin >= 0 && (customerRank === 'VIP' || customerRank === 'MEDIUM')) {
                                 if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL'; recommendation = 'DỪNG LẠI (RỦI RO KÉP)'; reason = `Lãi quá mỏng & Mất vốn lớn.`; }
                                 else { status = 'YELLOW_APPROVE'; recommendation = 'CÂN NHẮC (LÃI MỎNG)'; reason = `Lãi thấp (${formatPercent(realMargin)}) nhưng là khách VIP.`; }
                             } else {
-                                status = 'RED_STOP'; recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)'; reason = `Lãi thực (${formatPercent(realMargin)}) không đạt kỳ vọng.`;
+                                status = 'RED_STOP';
+                                recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)'; reason = `Lãi thực (${formatPercent(realMargin)}) không đạt kỳ vọng.`;
                             }
                         }
                     }
@@ -552,7 +567,9 @@
             }, [metrics.revenue]);
 
             const handleCurrencyInputChange = (e) => { const { name, value } = e.target; setInputs(prev => ({ ...prev, [name]: parseVNCurrency(value) })); };
-            const handleInputChange = (e) => { const { name, value } = e.target; const numericFields = ['inventoryAge', 'interestRateYear', 'riskProvision', 'paymentDays']; setInputs(prev => ({ ...prev, [name]: numericFields.includes(name) ? (value === '' ? 0 : parseFloat(value)) : value })); };
+            const handleInputChange = (e) => { const { name, value } = e.target;
+                const numericFields = ['inventoryAge', 'interestRateYear', 'riskProvision', 'paymentDays']; setInputs(prev => ({ ...prev, [name]: numericFields.includes(name) ? (value === '' ? 0 : parseFloat(value)) : value }));
+            };
 
             const handlePrintPAKD = () => { setPrintMode('pakd'); setTimeout(() => window.print(), 200); };
             const handlePrintQuote = () => { setPrintMode('quotation'); setTimeout(() => window.print(), 200); };
@@ -579,6 +596,7 @@
                     default: return 'bg-red-50 border-red-500 text-red-800';
                 }
             };
+
             const getIcon = (status) => {
                 if (status === 'GREEN') return <CheckCircle className="w-12 h-12 text-green-600" />;
                 if (status === 'BLUE') return <Layers className="w-12 h-12 text-blue-600" />;
