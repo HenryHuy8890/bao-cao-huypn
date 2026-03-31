@@ -240,22 +240,32 @@ const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
   const qtyStock=skuGroup.inStock.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const qtyTransit=skuGroup.inTransit.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
 
+  // CP giữ hàng vẫn tính nội bộ nhưng không hiển thị cột riêng (Fix #2)
   const holdingCostPerKg=costBasisPhysical*(inputs.lendingRate/100)*(inputs.customerCreditDays/365);
 
-  // FIX #2: Sàn dựa trên businessRiskPercent (= % LN mục tiêu)
-  // nhưng tối thiểu phải >= giá vốn × 0.98 (không lỗ quá 2%)
+  const newImportPriceVND=updatedImportMatch?updatedImportMatch.priceVNDperKg:null;
+
+  // Fix #1: Sàn tối thiểu = Giá nhập mới × 98% (nếu có), fallback về giá vốn × 98%
+  const floorMinimumBase=newImportPriceVND&&newImportPriceVND>0?newImportPriceVND:costBasisPhysical;
+  const floorMinimum=floorMinimumBase*0.98;
+
   const riskFactor=(inputs.businessRiskPercent||0)/100;
   const floorByMargin=riskFactor<1?(costBasisPhysical+holdingCostPerKg)/(1-riskFactor):costBasisPhysical+holdingCostPerKg;
-  const floorMinimum=costBasisPhysical*0.98; // tối thiểu -2% so với giá vốn
   const floorAbsolute=Math.max(floorByMargin,floorMinimum);
 
-  const newImportPriceVND=updatedImportMatch?updatedImportMatch.priceVNDperKg:null;
   const calcRestockPct=(sellPrice)=>newImportPriceVND&&newImportPriceVND>0?((sellPrice-newImportPriceVND)/newImportPriceVND)*100:null;
-  const calcPriceForMargin=(marginPct)=>marginPct<100?floorAbsolute/(1-marginPct/100):floorAbsolute;
 
-  const priceCore=calcPriceForMargin(inputs.marginCore||2);
-  const priceLoyal=calcPriceForMargin(inputs.marginLoyal||4);
-  const priceNew=calcPriceForMargin(inputs.marginNew||6);
+  // Fix #3: Giá theo nhóm KH = sàn HV + sàn × addPct%
+  // Cốt lõi = sàn (addPct=0, tức là margin 0% thêm so với sàn)
+  // Thân thiết = sàn + sàn × 1%  → sàn × (1 + 1%)
+  // KH lẻ = sàn + sàn × 2%       → sàn × (1 + 2%)
+  // inputs.marginCore/Loyal/New giờ lưu số % cộng thêm (default: 0, 1, 2)
+  const addCore=(inputs.marginCore||0)/100;
+  const addLoyal=(inputs.marginLoyal||1)/100;
+  const addNew=(inputs.marginNew||2)/100;
+  const priceCore=floorAbsolute*(1+addCore);
+  const priceLoyal=floorAbsolute*(1+addLoyal);
+  const priceNew=floorAbsolute*(1+addNew);
 
   return{
     alloy:skuGroup.alloy,temper:skuGroup.temper,
@@ -263,8 +273,7 @@ const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
     length:skuGroup.length,coating:skuGroup.coating,
     skuKey:skuGroup.key,skuLabel:skuGroup.label,
     costBasisPhysical,totalQty,qtyStock,qtyTransit,
-    holdingCostPerKg,
-    floorByMargin,floorMinimum,floorAbsolute,
+    floorByMargin,floorMinimum,floorMinimumBase,floorAbsolute,
     isFloorCappedByMin:floorAbsolute===floorMinimum&&floorMinimum>floorByMargin,
     newImportPriceVND,updatedImportMatch,
     priceCore,priceLoyal,priceNew,
@@ -439,7 +448,7 @@ const defInputs={
   freightTotal:45000000,importTax:0,processingCost:0,
   // FIX #1: businessRiskPercent = "QLKD %" = "% LN Mục tiêu Giá Sàn" (dùng chung)
   businessRiskPercent:1.5,customerCreditDays:30,lendingRate:7.8,
-  marginCore:2.0,marginLoyal:4.0,marginNew:6.0,
+  marginCore:0,marginLoyal:1,marginNew:2,
 };
 
 const Ic={
@@ -801,16 +810,16 @@ const App=()=>{
                 <div style={{borderTop:`1px solid ${border1}`,paddingTop:8}}>
                   <div style={{fontSize:'.63rem',color:'#0f766e',fontWeight:800,marginBottom:6}}>📊 Margin mục tiêu theo nhóm KH</div>
                   {[
-                    {f:'marginCore',l:'👥 Cốt lõi %',c:'#1d4ed8'},
-                    {f:'marginLoyal',l:'💛 Thân thiết %',c:'#7c3aed'},
-                    {f:'marginNew',l:'🆕 KH Mới %',c:'#ea580c'},
+                    {f:'marginCore',l:'👥 Cốt lõi +%',c:'#1d4ed8'},
+                    {f:'marginLoyal',l:'💛 Thân thiết +%',c:'#7c3aed'},
+                    {f:'marginNew',l:'🆕 KH lẻ +%',c:'#ea580c'},
                   ].map(x=>(
                     <div key={x.f} style={{marginBottom:6}}>
                       <label className="lbl" style={{color:x.c}}>{x.l}</label>
                       <input type="number" step=".1" className="inp inp-xs mono" style={{color:x.c,fontWeight:700}} value={inputs[x.f]} onChange={e=>setInp(x.f,parseFloat(e.target.value)||0)}/>
                     </div>
                   ))}
-                  <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600,marginTop:4,lineHeight:1.5}}>Giá = Sàn / (1 − margin%)</div>
+                  <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600,marginTop:4,lineHeight:1.5}}>Giá = Sàn HV × (1 + %).<br/>Cốt lõi=0% → bằng sàn HV</div>
                 </div>
               </div>
               {result&&(
@@ -1103,8 +1112,8 @@ const App=()=>{
                     Phân tích giá tối thiểu + Tái tồn kho
                   </h2>
                   <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:5,lineHeight:1.6}}>
-                    Giá sàn = max( (GV + CP giữ hàng) ÷ (1 − QLKD%), GV × 98% )<br/>
-                    Sàn tối thiểu đảm bảo không lỗ quá 2% so với giá vốn kể cả khi QLKD% = 0<br/>
+                    Giá sàn = max( (GV + CP giữ hàng) ÷ (1 − QLKD%), Giá nhập mới × 98% )<br/>
+                    Sàn tối thiểu = Giá nhập mới × 98% (đảm bảo không lỗ quá 2% so với thị trường)<br/>
                     % Tái TK = (Giá bán − Giá nhập mới) ÷ Giá nhập mới × 100
                   </p>
                 </div>
@@ -1136,7 +1145,6 @@ const App=()=>{
                         <th rowSpan={2} style={{background:'#e2e8f0',width:70}}>Coat</th>
                         <th rowSpan={2} style={{background:'#e2e8f0',width:90}}>Tồn (kg)</th>
                         <th rowSpan={2} style={{background:'#f0fdf4',color:'#14532d',minWidth:100}}>Giá vốn blend</th>
-                        <th rowSpan={2} style={{background:'#f0fdf4',color:'#14532d',minWidth:90}}>CP giữ hàng</th>
                         <th rowSpan={2} style={{background:'#dcfce7',color:'#14532d',minWidth:110,fontWeight:900}}>🔒 Sàn HV</th>
                         <th rowSpan={2} style={{background:'#ecfeff',color:'#0891b2',minWidth:100}}>Giá nhập mới</th>
                         <th rowSpan={2} style={{background:'#fef9c3',color:'#854d0e',minWidth:110}}>% Tái TK @ Sàn</th>
@@ -1145,9 +1153,9 @@ const App=()=>{
                         <th rowSpan={2} style={{background:'#faf5ff',color:'#581c87',minWidth:90}}>vs Sàn</th>
                       </tr>
                       <tr>
-                        <th style={{background:'#dbeafe',color:'#1e3a8a',fontSize:'.63rem',minWidth:100}}>👥 Cốt lõi ({inputs.marginCore}%)</th>
-                        <th style={{background:'#ede9fe',color:'#5b21b6',fontSize:'.63rem',minWidth:100}}>💛 Thân thiết ({inputs.marginLoyal}%)</th>
-                        <th style={{background:'#ffedd5',color:'#9a3412',fontSize:'.63rem',minWidth:100}}>🆕 KH Mới ({inputs.marginNew}%)</th>
+                        <th style={{background:'#dbeafe',color:'#1e3a8a',fontSize:'.63rem',minWidth:100}}>👥 Cốt lõi (+{inputs.marginCore}%)</th>
+                        <th style={{background:'#ede9fe',color:'#5b21b6',fontSize:'.63rem',minWidth:100}}>💛 Thân thiết (+{inputs.marginLoyal}%)</th>
+                        <th style={{background:'#ffedd5',color:'#9a3412',fontSize:'.63rem',minWidth:100}}>🆕 KH lẻ (+{inputs.marginNew}%)</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1167,12 +1175,9 @@ const App=()=>{
                             <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.82rem'}}>{fv(r.costBasisPhysical)}</div>
                             <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>đ/kg</div>
                           </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
-                            <div className="mono" style={{fontWeight:700,color:'#0d9488',fontSize:'.78rem'}}>{fv(r.holdingCostPerKg)}</div>
-                          </td>
                           <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
                             <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{fv(r.floorAbsolute)}</div>
-                            {r.isFloorCappedByMin&&<div style={{fontSize:'.57rem',color:'#065f46',fontWeight:700}}>▲ sàn -2%</div>}
+                            {r.isFloorCappedByMin&&<div style={{fontSize:'.57rem',color:'#065f46',fontWeight:700}}>▲ sàn NM×98%</div>}
                           </td>
                           <td style={{textAlign:'right',paddingRight:8,background:'#ecfeff'}}>
                             {r.newImportPriceVND?(<><div className="mono" style={{fontWeight:800,color:'#0891b2',fontSize:'.82rem'}}>{fv(r.newImportPriceVND)}</div><div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>{r.updatedImportMatch?.priceFC}$ × {r.updatedImportMatch?.importCoef}</div></>):<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
@@ -1213,7 +1218,7 @@ const App=()=>{
                           <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:6,padding:'8px 10px'}}>
                             <div style={{fontSize:'.62rem',color:'#065f46',fontWeight:800,marginBottom:3}}>📊 Giá vốn blend</div>
                             <div className="mono" style={{fontSize:'.95rem',fontWeight:900,color:'#15803d'}}>{fv(r.costBasisPhysical)}</div>
-                            <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600,marginTop:1}}>+ {fv(r.holdingCostPerKg)} CP giữ hàng</div>
+                            <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600,marginTop:1}}>đ/kg (kho + đường)</div>
                           </div>
                           <div style={{background:r.newImportPriceVND?'#ecfeff':'#f8fafc',border:`1px solid ${r.newImportPriceVND?'#a5f3fc':'#e2e8f0'}`,borderRadius:6,padding:'8px 10px'}}>
                             <div style={{fontSize:'.62rem',color:r.newImportPriceVND?'#0891b2':'#64748b',fontWeight:800,marginBottom:3}}>🔄 Giá nhập mới</div>
@@ -1225,7 +1230,7 @@ const App=()=>{
                             <div>
                               <div style={{fontSize:'.62rem',color:'#065f46',fontWeight:900,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:3}}>🔒 GIÁ SÀN HÒA VỐN</div>
                               <div className="mono" style={{fontSize:'1.3rem',fontWeight:900,color:'#15803d'}}>{fv(r.floorAbsolute)} <span style={{fontSize:'.65rem',fontWeight:700,color:'#065f46'}}>đ/kg</span></div>
-                              {r.isFloorCappedByMin&&<div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:700,marginTop:2}}>▲ Áp sàn -2%: {fv(r.floorMinimum)} (QLKD% thấp)</div>}
+                              {r.isFloorCappedByMin&&<div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:700,marginTop:2}}>▲ Áp sàn NM×98%: {fv(r.floorMinimum)}</div>}
                             </div>
                             <div style={{textAlign:'right'}}>
                               <div style={{fontSize:'.62rem',color:'#065f46',fontWeight:700,marginBottom:4}}>% Tái TK @ Sàn</div>
@@ -1237,11 +1242,11 @@ const App=()=>{
                           {[
                             {cls:'price-tier-core',lbl:'👥 Cốt lõi',margin:inputs.marginCore,price:r.priceCore,pct:r.restockAtCore,c:'#1d4ed8'},
                             {cls:'price-tier-loyal',lbl:'💛 Thân thiết',margin:inputs.marginLoyal,price:r.priceLoyal,pct:r.restockAtLoyal,c:'#7c3aed'},
-                            {cls:'price-tier-new',lbl:'🆕 KH Mới',margin:inputs.marginNew,price:r.priceNew,pct:r.restockAtNew,c:'#ea580c'},
+                            {cls:'price-tier-new',lbl:'🆕 KH lẻ',margin:inputs.marginNew,price:r.priceNew,pct:r.restockAtNew,c:'#ea580c'},
                           ].map((t,j)=>(
                             <div key={j} className={t.cls} style={{borderRadius:6,padding:'8px 9px'}}>
                               <div style={{fontSize:'.6rem',color:t.c,fontWeight:900,marginBottom:2}}>{t.lbl}</div>
-                              <div style={{fontSize:'.58rem',color:t.c,fontWeight:700,marginBottom:4}}>min {t.margin}%</div>
+                              <div style={{fontSize:'.58rem',color:t.c,fontWeight:700,marginBottom:4}}>+{t.margin}% vs sàn</div>
                               <div className="mono" style={{fontSize:'.88rem',fontWeight:900,color:t.c}}>{fv(t.price)}</div>
                               <div style={{marginTop:4}}><RestockBadge pct={t.pct} compact/></div>
                             </div>
