@@ -257,11 +257,10 @@
                     <div style={{marginBottom: '20px'}}>
                         <h3 style={{borderBottom: '1px solid #ccc', paddingBottom: '5px', color: '#444'}}>III. ĐÁNH GIÁ VỐN & RỦI RO</h3>
                         
-                        {/* Đổi từ flex sang table để đảm bảo in ấn không bị vỡ bố cục trên mọi máy in */}
                         <table style={{width: '100%', borderCollapse: 'collapse'}}>
                             <tbody>
                                 <tr>
-                                    <td style={{width: '50%', border: '1px solid #cbd5e1', padding: '10px', verticalAlign: 'top', borderRadius: '4px'}}>
+                                    <td style={{width: '100%', border: '1px solid #cbd5e1', padding: '10px', verticalAlign: 'top', borderRadius: '4px'}}>
                                         <div style={{fontSize: '10pt', fontWeight: 'bold', color: '#475569'}}>THAY ĐỔI VỐN HIỆN VẬT</div>
                                         <div style={{fontSize: '14pt', fontWeight: 'bold', marginTop: '5px', color: metrics.volumeChangeRatio > 0 ? '#dc2626' : '#2563eb'}}>
                                             {metrics.volumeChangeRatio > 0 ? 'MẤT' : 'THÊM'} {formatPercent(Math.abs(metrics.volumeChangeRatio))} HÀNG
@@ -271,16 +270,6 @@
                                         </div>
                                         <div style={{fontSize: '9pt', marginTop: '5px'}}>
                                             (So với việc dùng tiền thu về để nhập lại hàng mới ngay lập tức)
-                                        </div>
-                                    </td>
-                                    <td style={{width: '2%'}}></td>
-                                    <td style={{width: '48%', border: '1px solid #cbd5e1', padding: '10px', verticalAlign: 'top', borderRadius: '4px'}}>
-                                        <div style={{fontSize: '10pt', fontWeight: 'bold', color: '#475569'}}>CHI PHÍ CHÌM (LÃI VAY ĐÃ MẤT)</div>
-                                        <div style={{fontSize: '14pt', fontWeight: 'bold', marginTop: '5px', color: '#b91c1c'}}>
-                                            -{formatCurrency(metrics.sunkCost)}
-                                        </div>
-                                        <div style={{fontSize: '9pt', marginTop: '5px'}}>
-                                            Do hàng tồn kho {inputs.inventoryAge} tháng.
                                         </div>
                                     </td>
                                 </tr>
