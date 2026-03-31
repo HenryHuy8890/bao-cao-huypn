@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PAKD 7.7 - Thép H&D (Dual Print Mode)</title>
     
+    <!-- Thư viện React -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,6 +17,7 @@
         }
     </script>
 
+    <!-- CSS IN ẤN -->
     <style>
         @media print {
             .no-print { display: none !important; }
@@ -78,7 +80,7 @@
         const Layers = (props) => <IconBase {...props} d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />;
         const Swords = (props) => <IconBase {...props} d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2" />;
         const Wrench = (props) => <IconBase {...props} d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />;
-        
+
         const PakdManualLink = () => (
             <div className="mt-4 space-y-2 no-print">
                 <a href="https://docs.google.com/document/d/1AHCpd9XuVkD0r1KS-c7etbEUnsnVzvIv6C6xN7KTKdI/edit?tab=t.0" target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 px-3 py-2 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition text-slate-600 hover:text-slate-800">
@@ -98,7 +100,7 @@
             const vat = totalRevenue * 0.1;
             const totalWithVAT = totalRevenue + vat;
             const dateObj = new Date(inputs.quoteDate);
-
+            
             return (
                 <div className={`invoice-box print-container ${printMode === 'quotation' ? 'print-mode-active' : ''}`}>
                     <div className="invoice-header">
@@ -117,12 +119,10 @@
                         </div>
                     </div>
                     <div style={{borderBottom: '2px solid #000', marginBottom: '10px'}}></div>
-                    
                     <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '11pt', fontStyle: 'italic'}}>
                         <div>Số: {new Date().getTime().toString().slice(-6)}/{new Date().getFullYear()}.01A/HD.BG</div>
                         <div>Hà Nội, ngày {dateObj.getDate()} tháng {dateObj.getMonth() + 1} năm {dateObj.getFullYear()}</div>
                     </div>
-
                     <div className="invoice-title">BÁO GIÁ KIÊM XÁC NHẬN ĐƠN HÀNG</div>
                     <table style={{width: '100%', marginBottom: '15px', fontSize: '11pt'}}>
                         <tbody>
@@ -132,7 +132,6 @@
                             </tr>
                         </tbody>
                     </table>
-                    
                     <p>Công ty TNHH Thép H&D xin trân trọng gửi tới Quý khách hàng bản báo giá:</p>
                     <table className="invoice-table">
                         <thead><tr><th>TT</th><th>Chủng loại</th><th>Kích thước</th><th>ĐVT</th><th>SL</th><th>Trọng lượng (Kg)</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
@@ -151,14 +150,11 @@
                             <tr style={{fontWeight: 'bold', fontSize: '12pt'}}><td colSpan="7" className="text-right">TỔNG CỘNG:</td><td className="text-right">{new Intl.NumberFormat('vi-VN').format(totalWithVAT)} VNĐ</td></tr>
                         </tbody>
                     </table>
-                    
                     <div style={{marginTop: '10px', fontStyle: 'italic'}}><strong>Bằng chữ:</strong> {inputs.amountInWords}</div>
-                    
                     <div style={{marginTop: '20px', fontSize: '11pt', lineHeight: '1.4'}}>
                         <p><strong>2. Thanh toán:</strong> {inputs.termPayment}</p>
                         <p><strong>3. Hiệu lực:</strong> {inputs.termValidity}</p>
                     </div>
-
                     <div className="footer-sign">
                         <div style={{width: '40%'}}><strong>XÁC NHẬN CỦA KHÁCH HÀNG</strong><br/>(Ký, ghi rõ họ tên)<br/><br/><br/></div>
                         <div style={{width: '40%'}}><strong>CÔNG TY TNHH THÉP H&D</strong><br/>(Ký tên - Đóng dấu)<br/><br/><br/><p>{inputs.senderName}</p></div>
@@ -170,7 +166,7 @@
         // --- MẪU 2: BÁO CÁO PAKD CHO LÃNH ĐẠO (REPORT) ---
         const PAKDReportPrint = ({ inputs, metrics, productList, printMode }) => {
             const dateObj = new Date();
-
+            
             // Hàm helper chọn màu text cho report
             const getColor = () => {
                 if (metrics.status === 'GREEN') return '#166534'; // green-800
@@ -256,25 +252,26 @@
                     {/* 3. VỐN & HIỆN VẬT */}
                     <div style={{marginBottom: '20px'}}>
                         <h3 style={{borderBottom: '1px solid #ccc', paddingBottom: '5px', color: '#444'}}>III. ĐÁNH GIÁ VỐN & RỦI RO</h3>
-                        
-                        <table style={{width: '100%', borderCollapse: 'collapse'}}>
-                            <tbody>
-                                <tr>
-                                    <td style={{width: '100%', border: '1px solid #cbd5e1', padding: '10px', verticalAlign: 'top', borderRadius: '4px'}}>
-                                        <div style={{fontSize: '10pt', fontWeight: 'bold', color: '#475569'}}>THAY ĐỔI VỐN HIỆN VẬT</div>
-                                        <div style={{fontSize: '14pt', fontWeight: 'bold', marginTop: '5px', color: metrics.volumeChangeRatio > 0 ? '#dc2626' : '#2563eb'}}>
-                                            {metrics.volumeChangeRatio > 0 ? 'MẤT' : 'THÊM'} {formatPercent(Math.abs(metrics.volumeChangeRatio))} HÀNG
-                                        </div>
-                                        <div style={{fontSize: '11pt', fontWeight: 'bold', marginTop: '5px', color: metrics.volumeChangeRatio > 0 ? '#dc2626' : '#2563eb'}}>
-                                            (Tương đương {metrics.volumeChangeRatio > 0 ? '-' : '+'}{new Intl.NumberFormat('vi-VN').format(Math.round(metrics.totalQuantity * Math.abs(metrics.volumeChangeRatio) / 100))} Kg)
-                                        </div>
-                                        <div style={{fontSize: '9pt', marginTop: '5px'}}>
-                                            (So với việc dùng tiền thu về để nhập lại hàng mới ngay lập tức)
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div style={{display: 'flex', gap: '20px'}}>
+                            <div style={{flex: 1, border: '1px solid #cbd5e1', padding: '10px', borderRadius: '4px'}}>
+                                <div style={{fontSize: '10pt', fontWeight: 'bold', color: '#475569'}}>THAY ĐỔI VỐN HIỆN VẬT</div>
+                                <div style={{fontSize: '14pt', fontWeight: 'bold', marginTop: '5px', color: metrics.volumeChangeRatio > 0 ? '#dc2626' : '#2563eb'}}>
+                                    {metrics.volumeChangeRatio > 0 ? 'MẤT' : 'THÊM'} {formatPercent(Math.abs(metrics.volumeChangeRatio))} HÀNG
+                                </div>
+                                <div style={{fontSize: '9pt', marginTop: '5px'}}>
+                                    (So với việc dùng tiền thu về để nhập lại hàng mới ngay lập tức)
+                                </div>
+                            </div>
+                            <div style={{flex: 1, border: '1px solid #cbd5e1', padding: '10px', borderRadius: '4px'}}>
+                                <div style={{fontSize: '10pt', fontWeight: 'bold', color: '#475569'}}>CHI PHÍ CHÌM (LÃI VAY ĐÃ MẤT)</div>
+                                <div style={{fontSize: '14pt', fontWeight: 'bold', marginTop: '5px', color: '#b91c1c'}}>
+                                    -{formatCurrency(metrics.sunkCost)}
+                                </div>
+                                <div style={{fontSize: '9pt', marginTop: '5px'}}>
+                                    Do hàng tồn kho {inputs.inventoryAge} tháng.
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* 4. KẾT LUẬN */}
@@ -331,9 +328,9 @@
                 sunkCost: 0, sunkCostRatio: 0, volumeChangeRatio: 0,
                 avgSellPrice: 0, avgHistoricalCost: 0, avgReplacementCost: 0, avgCompetitorPrice: 0,
                 status: 'RED', recommendation: '', reason: '', warningLevel: '',
-                competitorStatus: '', totalAdditionalCosts: 0, totalQuantity: 0
+                competitorStatus: '', totalAdditionalCosts: 0
             });
-
+            
             // --- STATE IN ẤN ---
             const [printMode, setPrintMode] = useState(null); // 'quotation' | 'pakd' | null
 
@@ -360,6 +357,7 @@
 
                 const totalAdditionalCosts = (costTransport || 0) + (costProcessing || 0) + (costPackaging || 0);
                 const totalFullCost = totalCogsHistory + totalAdditionalCosts;
+
                 const avgSellPrice = totalQuantity > 0 ? totalRevenue / totalQuantity : 0;
                 const avgHistoricalCost = totalQuantity > 0 ? totalFullCost / totalQuantity : 0; 
                 const avgReplacementCost = totalQuantity > 0 ? totalReplacementCost / totalQuantity : 0;
@@ -371,66 +369,48 @@
                 const riskCost = capitalBase * (riskProvision / 100);
                 const realProfit = accountingProfit - futureFinCost - riskCost;
                 const realMargin = totalRevenue > 0 ? (realProfit / totalRevenue) * 100 : 0;
-                
+
                 const sunkCost = totalCogsHistory * (interestRateYear / 100) * (inventoryAge / 12);
                 const sunkCostRatio = totalCogsHistory > 0 ? (sunkCost / totalCogsHistory) * 100 : 0;
                 const volumeChangeRatio = replacementBase > 0 ? -(volumeLossWeighted / replacementBase) * 100 : 0;
 
-                let competitorStatus = 'SAFE';
-                if (avgCompetitorPrice > 0 && avgSellPrice > avgCompetitorPrice) { competitorStatus = 'WARN'; }
+                let competitorStatus = 'SAFE'; if (avgCompetitorPrice > 0 && avgSellPrice > avgCompetitorPrice) { competitorStatus = 'WARN'; }
 
                 let status = '', recommendation = '', reason = '', warningLevel = '';
-
-                if (volumeChangeRatio > 5) warningLevel = 'CRITICAL'; else if (volumeChangeRatio >= 2) warningLevel = 'WARN';
-                else if (volumeChangeRatio < -2) warningLevel = 'GROWTH'; else warningLevel = 'SAFE';
+                if (volumeChangeRatio > 5) warningLevel = 'CRITICAL'; else if (volumeChangeRatio >= 2) warningLevel = 'WARN'; else if (volumeChangeRatio < -2) warningLevel = 'GROWTH'; else warningLevel = 'SAFE';
 
                 const isStrategicClearance = inventoryAge > 6 || sunkCostRatio > 5;
 
                 if (isStrategicClearance) {
-                    status = 'PURPLE';
-                    recommendation = 'ƯU TIÊN XẢ HÀNG (CẮT LỖ)'; reason = `Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay cao. BẮT BUỘC BÁN.`;
+                    status = 'PURPLE'; recommendation = 'ƯU TIÊN XẢ HÀNG (CẮT LỖ)'; reason = `Tồn kho lâu (${inventoryAge} tháng) hoặc lãi vay cao. BẮT BUỘC BÁN.`;
                 } else {
                     if (totalRevenue < totalCogsHistory && volumeChangeRatio < -2) {
-                        status = 'BLUE';
-                        recommendation = 'CƠ CẤU LẠI VỐN (BLUE)'; reason = `Lỗ kế toán nhưng LÃI QUY MÔ ${formatPercent(Math.abs(volumeChangeRatio))}. Bán để quay vòng vốn.`;
+                        status = 'BLUE'; recommendation = 'CƠ CẤU LẠI VỐN (BLUE)'; reason = `Lỗ kế toán nhưng LÃI QUY MÔ ${formatPercent(Math.abs(volumeChangeRatio))}. Bán để quay vòng vốn.`;
                     } else {
                         let isProfitPass = false;
-                        if (customerRank === 'VIP' || customerRank === 'MEDIUM') { if (realMargin > 1.0) isProfitPass = true;
-                        } else { if (realMargin > 3.0) isProfitPass = true; }
+                        if (customerRank === 'VIP' || customerRank === 'MEDIUM') { if (realMargin > 1.0) isProfitPass = true; } else { if (realMargin > 3.0) isProfitPass = true; }
 
                         if (isProfitPass) {
-                            if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL';
-                                recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)'; reason = `Lãi đạt nhưng Hụt vốn lớn (${formatPercent(volumeChangeRatio)}).`;
-                            } 
-                            else if (warningLevel === 'WARN') { status = 'YELLOW_CAPITAL';
-                                recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (VÀNG)'; reason = `Lãi đạt nhưng Mất hàng ${formatPercent(volumeChangeRatio)}.`;
-                            } 
-                            else { status = 'GREEN';
-                                recommendation = 'DUYỆT NGAY (XANH LÁ)'; reason = `Lãi đạt & Bảo toàn vốn an toàn.`;
-                            }
+                            if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL'; recommendation = 'DỪNG LẠI (HỤT VỐN > 5%)'; reason = `Lãi đạt nhưng Hụt vốn lớn (${formatPercent(volumeChangeRatio)}).`; } 
+                            else if (warningLevel === 'WARN') { status = 'YELLOW_CAPITAL'; recommendation = 'DUYỆT CÓ ĐIỀU KIỆN (VÀNG)'; reason = `Lãi đạt nhưng Mất hàng ${formatPercent(volumeChangeRatio)}.`; } 
+                            else { status = 'GREEN'; recommendation = 'DUYỆT NGAY (XANH LÁ)'; reason = `Lãi đạt & Bảo toàn vốn an toàn.`; }
                         } else {
                             if (realMargin >= 0 && (customerRank === 'VIP' || customerRank === 'MEDIUM')) {
-                                if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL'; recommendation = 'DỪNG LẠI (RỦI RO KÉP)';
-                                reason = `Lãi quá mỏng & Mất vốn lớn.`; } 
-                                else { status = 'YELLOW_APPROVE';
-                                recommendation = 'CÂN NHẮC (LÃI MỎNG)'; reason = `Lãi thấp (${formatPercent(realMargin)}) nhưng là khách VIP.`;
-                                }
+                                if (warningLevel === 'CRITICAL') { status = 'RED_CAPITAL'; recommendation = 'DỪNG LẠI (RỦI RO KÉP)'; reason = `Lãi quá mỏng & Mất vốn lớn.`; } 
+                                else { status = 'YELLOW_APPROVE'; recommendation = 'CÂN NHẮC (LÃI MỎNG)'; reason = `Lãi thấp (${formatPercent(realMargin)}) nhưng là khách VIP.`; }
                             } else {
-                                status = 'RED_STOP';
-                                recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)'; reason = `Lãi thực (${formatPercent(realMargin)}) không đạt kỳ vọng.`;
+                                status = 'RED_STOP'; recommendation = 'TỪ CHỐI (LỖ/BIÊN THẤP)'; reason = `Lãi thực (${formatPercent(realMargin)}) không đạt kỳ vọng.`;
                             }
                         }
                     }
                 }
-                setMetrics({ revenue: totalRevenue, accountingProfit, realProfit, realMargin, sunkCost, sunkCostRatio, volumeChangeRatio, avgSellPrice, avgHistoricalCost, avgReplacementCost, avgCompetitorPrice, status, recommendation, reason, warningLevel, competitorStatus, totalAdditionalCosts, totalQuantity });
+                setMetrics({ revenue: totalRevenue, accountingProfit, realProfit, realMargin, sunkCost, sunkCostRatio, volumeChangeRatio, avgSellPrice, avgHistoricalCost, avgReplacementCost, avgCompetitorPrice, status, recommendation, reason, warningLevel, competitorStatus, totalAdditionalCosts });
             }, [inputs, products]);
 
             useEffect(() => { const total = Math.round(metrics.revenue * 1.1); if (total > 0 && inputs.amountInWords === '') { setInputs(prev => ({...prev, amountInWords: `(Gợi ý: ${formatCurrency(total)} - Viết lại bằng chữ tại đây)`})) } }, [metrics.revenue]);
             
             const handleCurrencyInputChange = (e) => { const { name, value } = e.target; setInputs(prev => ({ ...prev, [name]: parseVNCurrency(value) })); };
-            const handleInputChange = (e) => { const { name, value } = e.target;
-                const numericFields = ['inventoryAge', 'interestRateYear', 'riskProvision', 'paymentDays']; setInputs(prev => ({ ...prev, [name]: numericFields.includes(name) ? (value === '' ? 0 : parseFloat(value)) : value }));
-            };
+            const handleInputChange = (e) => { const { name, value } = e.target; const numericFields = ['inventoryAge', 'interestRateYear', 'riskProvision', 'paymentDays']; setInputs(prev => ({ ...prev, [name]: numericFields.includes(name) ? (value === '' ? 0 : parseFloat(value)) : value })); };
 
             // --- HÀM IN ẤN MỚI ---
             const handlePrintPAKD = () => { setPrintMode('pakd'); setTimeout(() => window.print(), 200); };
@@ -443,13 +423,8 @@
                 return () => window.removeEventListener("afterprint", handleAfterPrint);
             }, []);
 
-            const getStatusStyle = (status) => { switch (status) { case 'GREEN': return 'bg-green-50 border-green-500 text-green-800';
-            case 'BLUE': return 'bg-blue-50 border-blue-500 text-blue-800'; case 'YELLOW_CAPITAL': case 'YELLOW_APPROVE': return 'bg-yellow-50 border-yellow-500 text-yellow-800';
-            case 'PURPLE': return 'bg-purple-100 border-purple-600 text-purple-900 animate-pulse-slow'; default: return 'bg-red-50 border-red-500 text-red-800'; } };
-            
-            const getIcon = (status) => { if (status === 'GREEN') return <CheckCircle className="w-12 h-12 text-green-600" />;
-            if (status === 'BLUE') return <Layers className="w-12 h-12 text-blue-600" />; if (status.includes('YELLOW')) return <Award className="w-12 h-12 text-yellow-600" />;
-            if (status === 'PURPLE') return <Siren className="w-12 h-12 text-purple-600 animate-bounce" />; return <XCircle className="w-12 h-12 text-red-600" />; };
+            const getStatusStyle = (status) => { switch (status) { case 'GREEN': return 'bg-green-50 border-green-500 text-green-800'; case 'BLUE': return 'bg-blue-50 border-blue-500 text-blue-800'; case 'YELLOW_CAPITAL': case 'YELLOW_APPROVE': return 'bg-yellow-50 border-yellow-500 text-yellow-800'; case 'PURPLE': return 'bg-purple-100 border-purple-600 text-purple-900 animate-pulse-slow'; default: return 'bg-red-50 border-red-500 text-red-800'; } };
+            const getIcon = (status) => { if (status === 'GREEN') return <CheckCircle className="w-12 h-12 text-green-600" />; if (status === 'BLUE') return <Layers className="w-12 h-12 text-blue-600" />; if (status.includes('YELLOW')) return <Award className="w-12 h-12 text-yellow-600" />; if (status === 'PURPLE') return <Siren className="w-12 h-12 text-purple-600 animate-bounce" />; return <XCircle className="w-12 h-12 text-red-600" />; };
 
             return (
                 <div>
