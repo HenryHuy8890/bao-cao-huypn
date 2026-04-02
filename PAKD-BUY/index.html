@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAKD BUY 4.9 (Merged) – H&D Aluminum Strategy</title>
+<title>PAKD BUY 5.0 – H&D Aluminum Strategy</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -18,7 +18,6 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#0f172a;height:100v
 ::-webkit-scrollbar-track{background:#f1f5f9;}
 ::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px;}
 ::-webkit-scrollbar-thumb:hover{background:#64748b;}
-
 .inp{width:100%;background:#ffffff;border:1px solid #94a3b8;color:#0f172a;border-radius:4px;padding:5px 8px;font-size:.82rem;font-weight:600;transition:all .15s;}
 .inp:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.2);}
 .inp::placeholder{color:#64748b;font-weight:500;}
@@ -26,12 +25,10 @@ body{font-family:'Inter',sans-serif;background:#f8fafc;color:#0f172a;height:100v
 .inp-sm{padding:5px 7px;font-size:.80rem;}
 select.inp option{background:#ffffff;}
 .inp[readonly]{background:#e2e8f0;color:#334155;cursor:not-allowed;}
-
 .lbl{display:block;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#1e293b;margin-bottom:3px;}
 .card{background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:13px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
 .card-inset{background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:10px;}
 .sh{font-size:.71rem;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:7px;margin-bottom:11px;display:flex;align-items:center;gap:6px;}
-
 .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:.73rem;font-weight:800;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
 .tg{background:#dcfce7;color:#14532d;border:1px solid #86efac;}
 .ty{background:#fef9c3;color:#713f12;border:1px solid #fde047;}
@@ -42,7 +39,6 @@ select.inp option{background:#ffffff;}
 .to{background:#ffedd5;color:#9a3412;border:1px solid #fdba74;}
 .tc{background:#ccfbf1;color:#115e59;border:1px solid #5eead4;}
 .tn{background:#fef08a;color:#854d0e;border:1px solid #facc15;}
-
 .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:5px;font-size:.78rem;font-weight:800;cursor:pointer;border:none;transition:all .15s;font-family:'Inter',sans-serif;}
 .btn-ghost{background:#ffffff;border:1px solid #64748b;color:#1d4ed8;}
 .btn-ghost:hover{background:#f1f5f9;border-color:#1e3a8a;color:#1e3a8a;}
@@ -54,77 +50,49 @@ select.inp option{background:#ffffff;}
 .btn-danger:hover{color:#dc2626;background:#fee2e2;}
 .btn-success{background:#16a34a;border:1px solid #14532d;color:#ffffff;}
 .btn-success:hover{background:#15803d;color:#fff;}
-.btn-export{background:#ffffff;border:1px solid #64748b;color:#1e293b;}
-.btn-export:hover{background:#e2e8f0;color:#0f172a;}
-.btn-orange{background:#ea580c;border:1px solid #9a3412;color:#ffffff;}
-.btn-orange:hover{background:#c2410c;color:#fff;}
 .btn-purple{background:#7c3aed;border:1px solid #581c87;color:#ffffff;}
 .btn-purple:hover{background:#6d28d9;color:#fff;}
 .btn-teal{background:#0d9488;border:1px solid #0f766e;color:#ffffff;}
 .btn-teal:hover{background:#0f766e;color:#fff;}
-
 .tbl{width:100%;border-collapse:collapse;font-size:.82rem;}
 .tbl th{background:#e2e8f0;color:#0f172a;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;padding:7px 8px;text-align:center;border-bottom:2px solid #cbd5e1;white-space:nowrap;}
-.tbl td{padding:4px 5px;border-bottom:1px solid #cbd5e1;vertical-align:middle;font-weight:500;}
+.tbl td{padding:5px 6px;border-bottom:1px solid #e2e8f0;vertical-align:middle;font-weight:500;}
 .tbl tbody tr:hover td{background:#f1f5f9;}
-.tbl tfoot td{border-top:2px solid #94a3b8;background:#f8fafc;padding:7px 9px;font-weight:800;color:#0f172a;}
+.tbl tfoot td{border-top:2px solid #94a3b8;background:#f1f5f9;padding:7px 9px;font-weight:800;color:#0f172a;}
 .tbl .inp{background:#ffffff;border-color:#cbd5e1;}
-
 .kpi{padding:11px 13px;background:#ffffff;border:2px solid #cbd5e1;border-radius:7px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
 .kpi-l{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#334155;margin-bottom:4px;}
 .kpi-v{font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:900;line-height:1.15;color:#0f172a;}
 .kpi-s{font-size:.7rem;color:#475569;margin-top:3px;font-weight:600;}
-
 .nav-tab{padding:6px 13px;font-size:.77rem;font-weight:800;cursor:pointer;border-radius:5px;border:1px solid transparent;color:#475569;transition:all .15s;background:transparent;}
 .nav-tab.on{background:#ffffff;border-color:#cbd5e1;color:#1d4ed8;box-shadow:0 1px 2px rgba(0,0,0,0.1);}
 .nav-tab:not(.on):hover{color:#0f172a;background:#e2e8f0;}
-
 .status-btn{flex:1;padding:4px 8px;font-size:.72rem;font-weight:800;border-radius:4px;cursor:pointer;transition:all .15s;border:1px solid transparent;font-family:'Inter',sans-serif;}
 .status-btn.s-stock{background:#dcfce7;border-color:#86efac;color:#14532d;}
 .status-btn.s-transit{background:#fef9c3;border-color:#fde047;color:#854d0e;}
 .status-btn.s-coated{background:#ccfbf1;border-color:#5eead4;color:#0f766e;}
 .status-btn.s-plain{background:#fef08a;border-color:#facc15;color:#854d0e;}
 .status-btn.off{background:#f1f5f9;border-color:#94a3b8;color:#334155;}
-
 .sku-card{background:#ffffff;border:1px solid #cbd5e1;border-radius:7px;padding:11px 13px;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
 .sku-card:hover{border-color:#94a3b8;box-shadow:0 4px 6px rgba(0,0,0,0.1);}
 .sku-card.warn{border-color:#fca5a5;background:#fff5f5;}
-.sku-card.ok{border-color:#86efac;}
 .sku-card.alert-low{border-color:#fdba74;background:#fff7ed;}
 .sku-card.alert-over{border-color:#d8b4fe;background:#faf5ff;}
-
 .floor-card{background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;padding:13px;box-shadow:0 1px 4px rgba(0,0,0,0.08);transition:all .15s;}
 .floor-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.12);border-color:#94a3b8;}
-.floor-card.has-loss{border-color:#fca5a5;border-left:4px solid #dc2626;}
-.floor-card.has-warn{border-color:#fdba74;border-left:4px solid #d97706;}
-.floor-card.has-ok{border-color:#86efac;border-left:4px solid #16a34a;}
-
-.restock-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.7rem;font-weight:800;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
-.restock-pos-hi{background:#dcfce7;color:#14532d;border:1px solid #86efac;}
-.restock-pos-lo{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;}
-.restock-warn{background:#fef9c3;color:#854d0e;border:1px solid #fde047;}
-.restock-neg{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
-.restock-heavy{background:#fef2f2;color:#7f1d1d;border:1px solid #ef4444;}
-
-.price-tier-core{background:#eff6ff;border:1px solid #bfdbfe;}
-.price-tier-loyal{background:#faf5ff;border:1px solid #e9d5ff;}
-.price-tier-new{background:#fff7ed;border:1px solid #fed7aa;}
-.price-tier-cash{background:#f0fdf4;border:1px solid #bbf7d0;}
-
 .chart-box{background:#ffffff;border:1px solid #cbd5e1;border-radius:7px;padding:11px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
 .div-line{border-top:1px solid #cbd5e1;margin:8px 0;}
-
 .spinner{width:18px;height:18px;border:3px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .stock-bar{height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden;border:1px solid #cbd5e1;}
 .stock-bar-fill{height:100%;border-radius:2px;transition:width .3s;}
 @keyframes pulse-warn{0%,100%{opacity:1}50%{opacity:.6}}
 .pulse{animation:pulse-warn 1.5s infinite;}
-
-.chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:800;cursor:pointer;border:1px solid transparent;transition:all .15s;white-space:nowrap;}
-.chip.on{background:#eff6ff;border-color:#93c5fd;color:#1e3a8a;}
-.chip.off{background:#ffffff;border-color:#94a3b8;color:#334155;}
-.chip:hover:not(.on){border-color:#60a5fa;color:#1d4ed8;background:#f8fafc;}
+/* toggle pill */
+.toggle-group{display:flex;gap:0;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;background:#f8fafc;}
+.toggle-btn{padding:4px 11px;font-size:.72rem;font-weight:800;cursor:pointer;border:none;background:transparent;color:#475569;transition:all .12s;}
+.toggle-btn.active{background:#2563eb;color:#fff;}
+.mgmt-view-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:800;background:#fef9c3;color:#854d0e;border:1px solid #fde047;}
 
 .print-container{display:none;}
 @media print{
@@ -136,7 +104,6 @@ select.inp option{background:#ffffff;}
   .print-subtitle{text-align:center;font-size:11pt;font-style:italic;margin-bottom:20px;}
   .print-section{margin-bottom:20px;}
   .print-section-title{font-size:12pt;font-weight:bold;border-bottom:1.5px solid #000;padding-bottom:4px;margin-bottom:10px;text-transform:uppercase;}
-  .print-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   .print-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
   .print-box{border:1px solid #000;padding:10px;border-radius:4px;}
   .print-box-title{font-size:10pt;font-weight:bold;color:#555;text-transform:uppercase;margin-bottom:5px;}
@@ -144,12 +111,8 @@ select.inp option{background:#ffffff;}
   .print-table-a4{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:10px;}
   .print-table-a4 th,.print-table-a4 td{border:1px solid #000;padding:6px;text-align:center;}
   .print-table-a4 th{background-color:#f0f0f0 !important;-webkit-print-color-adjust:exact;font-weight:bold;}
-  .print-table-a4 td.left{text-align:left;}
-  .print-table-a4 td.right{text-align:right;}
   .print-table-a4 tfoot td{font-weight:bold;background-color:#f9f9f9 !important;-webkit-print-color-adjust:exact;}
-  .text-green{color:#166534 !important;}
-  .text-red{color:#991b1b !important;}
-  .text-blue{color:#1d4ed8 !important;}
+  .text-green{color:#166534 !important;}.text-red{color:#991b1b !important;}.text-blue{color:#1d4ed8 !important;}
 }
 </style>
 </head>
@@ -178,7 +141,6 @@ const GSHEET_LIMITS="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujY
 const GSHEET_UPDATED_IMPORT="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1371908903";
 
 const skuKey=r=>`${r.alloy}|${r.temper}|${r.thickness}|${r.width}|${r.length}|${r.coating||'KP'}`;
-// FIX #4: đổi × thành x trong skuLabel để tìm kiếm dễ gõ hơn
 const skuLabel=r=>`${r.alloy} ${r.temper}  ${r.thickness}x${r.width}x${r.length} [${coatingShort(r.coating||'KP')}]`;
 
 const uid=()=>Date.now()+Math.random();
@@ -226,13 +188,40 @@ const groupBySku=rows=>{
   return Object.values(map);
 };
 
+// ─────────────────────────────────────────────────────────────
+// FLOOR PRICE LOGIC v5.0
+// Giá sàn = GV_blend + GV_blend × (finCostPct + opsCostPct)
+// finCostPct phụ thuộc chế độ công nợ:
+//   - 'none':   0  (không công nợ, bỏ chi phí tài chính)
+//   - 'fixed':  finRate  (mặc định 1.5%)
+//   - 'credit': lendingRate/100 × creditDays/365  (tính theo ngày thực tế)
+// ─────────────────────────────────────────────────────────────
+const calcFloorForSku=(costBasisPhysical, inputs)=>{
+  const {finCostPct:finFixed, opsCostPct, creditMode, lendingRate, customCreditDays}=inputs;
+  let finCostRate=0;
+  if(creditMode==='fixed') finCostRate=(finFixed||0)/100;
+  else if(creditMode==='credit') finCostRate=(lendingRate||0)/100*(customCreditDays||0)/365;
+  // else 'none' => 0
+  const totalCostRate=finCostRate+(opsCostPct||0)/100;
+  const floorPrice=costBasisPhysical*(1+totalCostRate);
+  return{floorPrice,finCostRate,totalCostRate};
+};
+
 const findUpdatedImportPrice=(sku,updatedPrices,exchangeRate)=>{
   if(!updatedPrices||updatedPrices.length===0) return null;
   const thick=parseFloat(sku.thickness)||0;
   const match=updatedPrices.find(p=>p.alloy===sku.alloy&&p.temper===sku.temper&&thick>=parseFloat(p.minThick||0)&&thick<=parseFloat(p.maxThick||999));
   if(!match) return null;
   const priceVNDperKg=(parseFloat(match.priceFC)||0)/1000*(exchangeRate||1)*(parseFloat(match.importCoef)||1);
-  return{priceFC:parseFloat(match.priceFC)||0,importCoef:parseFloat(match.importCoef)||1,priceVNDperKg,note:match.note||'',updateDate:match.updateDate||match.updatedate||''};
+  return{
+    priceFC:parseFloat(match.priceFC)||0,
+    importCoef:parseFloat(match.importCoef)||1,
+    priceVNDperKg,
+    note:match.note||'',
+    updateDate:match.updateDate||match.updatedate||'',
+    competitorPrice:parseFloat(match.competitorprice||match.competitorPrice||0)||0,
+    competitorFloorPrice:parseFloat(match.competitorfloorprice||match.competitorFloorPrice||0)||0,
+  };
 };
 
 const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
@@ -241,30 +230,16 @@ const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
   const totalQty=allRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const qtyStock=skuGroup.inStock.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const qtyTransit=skuGroup.inTransit.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
-
-  const holdingCostPerKg=costBasisPhysical*(inputs.lendingRate/100)*(inputs.customerCreditDays/365);
   const newImportPriceVND=updatedImportMatch?updatedImportMatch.priceVNDperKg:null;
 
-  const floorMinimumBase=newImportPriceVND&&newImportPriceVND>0?newImportPriceVND:costBasisPhysical;
-  const floorMinimum=floorMinimumBase*0.98;
+  const {floorPrice,finCostRate,totalCostRate}=calcFloorForSku(costBasisPhysical,inputs);
 
-  const riskFactor=(inputs.businessRiskPercent||0)/100;
-  const floorByMargin=riskFactor<1?(costBasisPhysical+holdingCostPerKg)/(1-riskFactor):costBasisPhysical+holdingCostPerKg;
-  const floorAbsolute=Math.max(floorByMargin,floorMinimum);
-
-  const calcRestockPct=(sellPrice)=>newImportPriceVND&&newImportPriceVND>0?((sellPrice-newImportPriceVND)/newImportPriceVND)*100:null;
   const addCore=(inputs.marginCore||0)/100;
   const addLoyal=(inputs.marginLoyal||1)/100;
   const addNew=(inputs.marginNew||2)/100;
-  const priceCore=floorAbsolute*(1+addCore);
-  const priceLoyal=floorAbsolute*(1+addLoyal);
-  const priceNew=floorAbsolute*(1+addNew);
-
-  // FIX #5: KH tiền tươi = giá sàn KHÔNG tính credit days
-  // Tính lại floor không có holdingCostPerKg (không có cost cho credit days)
-  const floorByMarginCash=riskFactor<1?(costBasisPhysical)/(1-riskFactor):costBasisPhysical;
-  const floorAbsoluteCash=Math.max(floorByMarginCash,floorMinimum);
-  const priceCash=floorAbsoluteCash*(1+addCore);
+  const priceCore=floorPrice*(1+addCore);
+  const priceLoyal=floorPrice*(1+addLoyal);
+  const priceNew=floorPrice*(1+addNew);
 
   return{
     alloy:skuGroup.alloy,temper:skuGroup.temper,
@@ -272,25 +247,59 @@ const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
     length:skuGroup.length,coating:skuGroup.coating,
     skuKey:skuGroup.key,skuLabel:skuGroup.label,
     costBasisPhysical,totalQty,qtyStock,qtyTransit,
-    floorByMargin,floorMinimum,floorMinimumBase,floorAbsolute,
-    isFloorCappedByMin:floorAbsolute===floorMinimum&&floorMinimum>floorByMargin,
+    floorAbsolute:floorPrice,finCostRate,totalCostRate,
     newImportPriceVND,updatedImportMatch,
-    priceCore,priceLoyal,priceNew,priceCash,
-    restockAtFloor:calcRestockPct(floorAbsolute),
-    restockAtCore:calcRestockPct(priceCore),
-    restockAtLoyal:calcRestockPct(priceLoyal),
-    restockAtNew:calcRestockPct(priceNew),
+    priceCore,priceLoyal,priceNew,
+    competitorPrice:updatedImportMatch?.competitorPrice||0,
+    competitorFloorPrice:updatedImportMatch?.competitorFloorPrice||0,
   };
 };
 
-const RestockBadge=({pct,compact=false})=>{
-  if(pct==null) return <span style={{color:'#94a3b8',fontSize:'.68rem',fontWeight:600}}>—</span>;
-  const cls=pct>=3?'restock-pos-hi':pct>=0?'restock-pos-lo':pct>=-3?'restock-warn':pct>=-10?'restock-neg':'restock-heavy';
-  const ico=pct>=0?'▲':'▼';
-  const label=compact?fpct(pct,1):`${ico} ${fpct(pct,2)} tái TK`;
-  return <span className={`restock-badge ${cls}`}>{label}</span>;
+// ─────────────────────────────────────────────────────────────
+// MANAGEMENT VIEW: gom nhóm SKU theo luồng giá nhập
+// Mỗi luồng định nghĩa bởi alloy + temper(opt) + minThick + maxThick
+// ─────────────────────────────────────────────────────────────
+const DEFAULT_MGMT_GROUPS=[
+  {id:'g1',label:'A1050 H14 0.2–0.49mm',alloy:'A1050',temper:'',minThick:0.2,maxThick:0.49},
+  {id:'g2',label:'A1050 H14 0.5–0.99mm',alloy:'A1050',temper:'',minThick:0.5,maxThick:0.99},
+  {id:'g3',label:'A1050 H14 1.0–6.0mm', alloy:'A1050',temper:'',minThick:1.0,maxThick:6.0},
+  {id:'g4',label:'A3003 H14 1.0–5.0mm', alloy:'A3003',temper:'H14',minThick:1.0,maxThick:5.0},
+  {id:'g5',label:'A3003 H16 1.0–5.0mm', alloy:'A3003',temper:'H16',minThick:1.0,maxThick:5.0},
+  {id:'g6',label:'A5052 (tất cả)',        alloy:'A5052',temper:'',minThick:0,maxThick:99},
+];
+
+const calcMgmtGroups=(floorPriceData,groups)=>{
+  return groups.map(g=>{
+    const matching=floorPriceData.filter(r=>{
+      if(r.alloy!==g.alloy) return false;
+      if(g.temper&&r.temper!==g.temper) return false;
+      const t=parseFloat(r.thickness)||0;
+      return t>=g.minThick&&t<=g.maxThick;
+    });
+    if(matching.length===0) return{...g,skus:0,totalQty:0,avgCost:0,avgFloor:0,avgCore:0,avgLoyal:0,avgNew:0,avgCompPrice:0,avgCompFloor:0};
+    const totalQty=matching.reduce((s,r)=>s+r.totalQty,0);
+    const wa=(field)=>{
+      const tot=matching.reduce((s,r)=>s+r.totalQty*(r[field]||0),0);
+      return totalQty>0?tot/totalQty:0;
+    };
+    return{
+      ...g,
+      skus:matching.length,
+      totalQty,
+      avgCost:wa('costBasisPhysical'),
+      avgFloor:wa('floorAbsolute'),
+      avgCore:wa('priceCore'),
+      avgLoyal:wa('priceLoyal'),
+      avgNew:wa('priceNew'),
+      avgCompPrice:wa('competitorPrice'),
+      avgCompFloor:wa('competitorFloorPrice'),
+    };
+  });
 };
 
+// ─────────────────────────────────────────────────────────────
+// OTHER CALCS (unchanged from 4.9)
+// ─────────────────────────────────────────────────────────────
 const calcInvoice=(products,exRate)=>{const usd=products.reduce((s,p)=>s+(p.qtyKg/1000)*p.priceFC,0);return{invoiceUSD:usd,invoiceVND:usd*exRate};};
 const calcLanded=(invoiceVND,totalKg,inp)=>{
   const mgmt=invoiceVND*(inp.managementFee/100),tax=invoiceVND*(inp.importTax/100);
@@ -298,14 +307,12 @@ const calcLanded=(invoiceVND,totalKg,inp)=>{
   const total=invoiceVND+mgmt+tax+freight+proc;
   return{mgmt,tax,freight,proc,landedVND:total,landedPerKg:totalKg>0?total/totalKg:0};
 };
-
 const calcFinance=(invoiceVND,land,totalKg,inp)=>{
   const days=inp.leadTime+inp.holdingTime;let fin=0;
   if(inp.paymentMethod==='TT') fin=(invoiceVND+land.tax+land.freight)*(inp.capitalCostPercent/100)*(days/365);
   else fin=invoiceVND*(inp.lcOpenFee/100)+invoiceVND*(inp.lcInterest/100)*(inp.lcDays/365)+(invoiceVND*inp.lcMargin/100+land.tax+land.freight)*(inp.capitalCostPercent/100)*(days/365);
   return{finVND:fin,finPerKg:totalKg>0?fin/totalKg:0};
 };
-
 const calcProductBreakdown=(products,land,fin,totalKg,inp)=>products.map(p=>{
   const ratio=totalKg>0?p.qtyKg/totalKg:0;
   const invVND=(p.qtyKg/1000)*p.priceFC*inp.exchangeRate;
@@ -315,7 +322,6 @@ const calcProductBreakdown=(products,land,fin,totalKg,inp)=>products.map(p=>{
   const physPerKg=p.qtyKg>0?landedRow/p.qtyKg:0;
   return{...p,invVND,landedRow,finRow,physPerKg,econPerKg:physPerKg+(p.qtyKg>0?finRow/p.qtyKg:0)};
 });
-
 const findSellPrice=(purchaseRow,sellingPrices)=>{
   const{alloy,temper,thickness,width,length,coating}=purchaseRow;const coat=coating||'KP';
   const full=sellingPrices.find(s=>s.alloy===alloy&&s.temper===temper&&(s.thickness||'')===(thickness||'')&&(s.width||'')===(width||'')&&(s.length||'')===(length||'')&&(s.coating||'KP')===coat);
@@ -324,7 +330,6 @@ const findSellPrice=(purchaseRow,sellingPrices)=>{
   if(byATC) return{price:byATC.sellCost||byATC.price||0,label:'fallback',comment:byATC.comment||''};
   return null;
 };
-
 const calcSkuBlend=(inventory,purchaseRows,sellingPrices,inputs,minStockMap,maxStockMap)=>{
   const skuGroups=groupBySku(inventory);
   return purchaseRows.map(p=>{
@@ -354,9 +359,7 @@ const calcSkuBlend=(inventory,purchaseRows,sellingPrices,inputs,minStockMap,maxS
     return{...p,skuKey:k,skuLbl:skuLabel(p),avgCurrent,avgStock,avgTransit,qtyStock,qtyTransit,qtyExisting,avgAfter,qtyAfter,breakEven,custFin,sellPrice,hasSellPrice,realProfitPerKg,grossProfitVND,isRisk,minStock,maxStock,available,stockRatio,stockStatus};
   });
 };
-
 const calcInventoryValue=(inventoryRows)=>inventoryRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0),0);
-
 const calcAlloySummary=(inventory,finPerKg,inputs,purchaseRows)=>{
   const alloyMap={};
   inventory.forEach(r=>{
@@ -392,7 +395,6 @@ const calcAlloySummary=(inventory,finPerKg,inputs,purchaseRows)=>{
   const globalBreakEven=globalAvgAfter*(1+(inputs.businessRiskPercent||0)/100)+(finPerKg||0);
   return{alloyStats,globalKg,globalCostValue,globalAvg,globalAvgAfter,globalBreakEven,globalAfterKg,globalAfterValue,globalCoatedKg,globalPlainKg,globalCoatedCostValue,globalPlainCostValue};
 };
-
 const calcLimitsWarnings=(limitsData,inventory)=>{
   const globalCostValue=calcInventoryValue(inventory);
   const totalKg=inventory.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
@@ -409,11 +411,12 @@ const calcLimitsWarnings=(limitsData,inventory)=>{
   return{lim,globalCostValue,totalKg,actualAP,apLimit,totalUsed,totalCreditMin,totalCreditMax,inventoryMinKg,inventoryMaxKg,warnOverKg,warnUnderKg,warnOverAP,warnUnderCredit,warnOverCredit,totalAlerts:[warnOverKg,warnUnderKg,warnOverAP,warnUnderCredit,warnOverCredit].filter(Boolean).length};
 };
 
+// ─── DEFAULT DATA ─────────────────────────────────────────────
 const defInventory=[
   {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',status:'IN_STOCK',qtyKg:2986,avgCost:92820},
   {id:2,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',status:'IN_TRANSIT',qtyKg:10000,avgCost:101466},
-  {id:3,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',status:'IN_STOCK',qtyKg:0,avgCost:0},
-  {id:4,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',status:'IN_STOCK',qtyKg:0,avgCost:0},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',status:'IN_STOCK',qtyKg:5000,avgCost:95000},
+  {id:4,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',status:'IN_STOCK',qtyKg:3000,avgCost:90000},
 ];
 const defMinStock=[
   {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',minStockKg:31000,maxStockKg:50000},
@@ -429,14 +432,13 @@ const defLimits=[{id:1,totalCreditMin:5000000000,totalCreditMax:15000000000,inve
 const defProducts=[
   {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',qtyKg:12000,priceFC:3870},
   {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',qtyKg:5000,priceFC:3870},
-  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',qtyKg:8000,priceFC:3870},
 ];
 const defUpdatedImport=[
-  {id:1,updateDate:'30/03/2026',alloy:'A1050',temper:'H14',minThick:0.2,maxThick:0.49,priceFC:3940,note:'CIF HPH',importCoef:1.015},
-  {id:2,updateDate:'30/03/2026',alloy:'A1050',temper:'H14',minThick:0.5,maxThick:0.99,priceFC:3925,note:'CIF HPH',importCoef:1.015},
-  {id:3,updateDate:'30/03/2026',alloy:'A1050',temper:'H14',minThick:1.0,maxThick:6.0, priceFC:3910,note:'CIF HPH',importCoef:1.015},
-  {id:4,updateDate:'30/03/2026',alloy:'A3003',temper:'H14',minThick:1.0,maxThick:3.0, priceFC:3980,note:'CIF HPH',importCoef:1.015},
-  {id:5,updateDate:'30/03/2026',alloy:'A5052',temper:'H32',minThick:1.0,maxThick:99.0,priceFC:4090,note:'CIF HPH',importCoef:1.015},
+  {id:1,updateDate:'30/03/2026',alloy:'A1050',temper:'H14',minThick:0.2,maxThick:0.49,priceFC:3940,note:'CIF HPH',importCoef:1.015,competitorPrice:103000,competitorFloorPrice:100500},
+  {id:2,updateDate:'30/03/2026',alloy:'A1050',temper:'H14',minThick:0.5,maxThick:0.99,priceFC:3925,note:'CIF HPH',importCoef:1.015,competitorPrice:102500,competitorFloorPrice:100000},
+  {id:3,updateDate:'30/03/2026',alloy:'A1050',temper:'H14',minThick:1.0,maxThick:6.0, priceFC:3910,note:'CIF HPH',importCoef:1.015,competitorPrice:102000,competitorFloorPrice:99500},
+  {id:4,updateDate:'30/03/2026',alloy:'A3003',temper:'H14',minThick:1.0,maxThick:3.0, priceFC:3980,note:'CIF HPH',importCoef:1.015,competitorPrice:105000,competitorFloorPrice:102000},
+  {id:5,updateDate:'30/03/2026',alloy:'A5052',temper:'H32',minThick:1.0,maxThick:99.0,priceFC:4090,note:'CIF HPH',importCoef:1.015,competitorPrice:109000,competitorFloorPrice:106000},
 ];
 const defInputs={
   supplierName:'Yuwon Steel',creator:'Nguyễn Văn A',
@@ -447,22 +449,28 @@ const defInputs={
   freightTotal:45000000,importTax:0,processingCost:0,
   businessRiskPercent:1.5,customerCreditDays:30,lendingRate:7.8,
   marginCore:0,marginLoyal:1,marginNew:2,
+  // FLOOR PRICE PARAMS v5.0
+  finCostPct:1.5,       // Chi phí tài chính công nợ %
+  opsCostPct:4.5,       // Chi phí hoạt động kinh doanh %
+  creditMode:'fixed',   // 'none' | 'fixed' | 'credit'
+  customCreditDays:30,  // số ngày khi creditMode='credit'
 };
+
+// ─── ICONS ────────────────────────────────────────────────────
 const Ic={
   Plus:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>,
   X:()=><svg style={{width:12,height:12}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>,
   Ship:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>,
-  Chart:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>,
   Save:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>,
   Tag:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>,
   Print:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>,
   Refresh:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>,
-  Download:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>,
   Alert:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>,
   Database:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582 4-8 4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>,
   Money:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   Filter:()=><svg style={{width:13,height:13}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>,
-  Floor:()=><svg style={{width:15,height:15}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 17l9-9 4 4 5-5M3 21h18"/></svg>,
+  Users:()=><svg style={{width:14,height:14}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>,
+  List:()=><svg style={{width:14,height:14}} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>,
 };
 
 const FilterBar=({filter,setFilter,alloys,showStatus=false,showCoating=true,showStockAlert=false,showOverAlert=false,total,filtered})=>{
@@ -507,7 +515,6 @@ const FilterBar=({filter,setFilter,alloys,showStatus=false,showCoating=true,show
   );
 };
 
-// FIX #4: đổi ký tự × thành x trong SkuSel
 const SkuSel=({row,onChange,showCoating=true})=>{
   const S=(f,v)=>onChange({...row,[f]:v});
   return(
@@ -525,29 +532,11 @@ const SkuSel=({row,onChange,showCoating=true})=>{
   );
 };
 
-const StockBar=({available,minStock,maxStock,showDelta=true})=>{
-  if(!minStock) return <span style={{fontSize:'.65rem',color:'#475569',fontWeight:600}}>—</span>;
-  const ratio=Math.min(available/minStock,2.5);const pctW=Math.min((ratio/2.5)*100,100);
-  const isOver=maxStock!==null&&maxStock>0&&available>maxStock;
-  const color=isOver?'#7c3aed':ratio<0.8?'#dc2626':ratio<1?'#d97706':ratio>2?'#4f46e5':'#16a34a';
-  const delta=available-minStock;
-  return(
-    <div style={{minWidth:90}}>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',color:'#334155',marginBottom:2,fontWeight:600}}><span className="mono">{fv(available)} kg</span><span style={{color,fontWeight:800}}>{isOver?'▲ QUÁ MAX':Math.round(ratio*100)+'%'}</span></div>
-      <div className="stock-bar"><div className="stock-bar-fill" style={{width:`${pctW}%`,background:color}}/></div>
-      <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',marginTop:2,fontWeight:600}}>
-        <span style={{color:'#475569'}}>min {fv(minStock)}{maxStock?` / max ${fv(maxStock)}`:''} kg</span>
-        {showDelta&&<span style={{color,fontWeight:800}}>{delta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(delta))} kg</span>}
-      </div>
-    </div>
-  );
-};
-
 const LimitBar=({actual,limit,label,unit='đ'})=>{
   if(!limit||limit<=0) return(
     <div>
       <div style={{fontSize:'.65rem',color:'#94a3b8',fontWeight:600,marginBottom:4}}>{label}</div>
-      <div style={{fontSize:'.62rem',color:'#94a3b8',fontWeight:600,fontStyle:'italic'}}>Chưa có dữ liệu – Nhấn Sync Hạn mức</div>
+      <div style={{fontSize:'.62rem',color:'#94a3b8',fontWeight:600,fontStyle:'italic'}}>Chưa có dữ liệu</div>
     </div>
   );
   const pct=Math.round(actual/limit*100);
@@ -569,6 +558,48 @@ const LimitBar=({actual,limit,label,unit='đ'})=>{
   );
 };
 
+// ─── CREDIT MODE SELECTOR ─────────────────────────────────────
+const CreditModeSelector=({inputs,setInp})=>{
+  const modes=[
+    {v:'none',  l:'Không CN', desc:'Bỏ CP tài chính'},
+    {v:'fixed', l:'CN cố định',desc:`${inputs.finCostPct}%/năm`},
+    {v:'credit',l:'CN theo ngày',desc:`${inputs.customCreditDays} ngày`},
+  ];
+  return(
+    <div style={{background:'#f0f9ff',border:'1px solid #bae6fd',borderRadius:6,padding:'9px 11px',marginBottom:8}}>
+      <div style={{fontSize:'.63rem',color:'#0369a1',fontWeight:900,marginBottom:7}}>💳 Chế độ Công nợ KH</div>
+      <div style={{display:'flex',gap:4,marginBottom:8}}>
+        {modes.map(m=>(
+          <button key={m.v} onClick={()=>setInp('creditMode',m.v)}
+            style={{flex:1,padding:'5px 4px',fontSize:'.65rem',fontWeight:800,borderRadius:5,cursor:'pointer',border:`1.5px solid ${inputs.creditMode===m.v?'#0284c7':'#cbd5e1'}`,background:inputs.creditMode===m.v?'#0284c7':'#fff',color:inputs.creditMode===m.v?'#fff':'#475569',transition:'all .12s'}}>
+            <div>{m.l}</div>
+            <div style={{fontSize:'.57rem',opacity:.85,marginTop:1}}>{m.desc}</div>
+          </button>
+        ))}
+      </div>
+      {inputs.creditMode==='fixed'&&(
+        <div>
+          <label className="lbl" style={{color:'#0369a1',fontSize:'.6rem'}}>CP Tài chính CN %/năm</label>
+          <input type="number" step=".1" className="inp inp-xs mono" style={{color:'#0369a1',fontWeight:700}} value={inputs.finCostPct} onChange={e=>setInp('finCostPct',parseFloat(e.target.value)||0)}/>
+        </div>
+      )}
+      {inputs.creditMode==='credit'&&(
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5}}>
+          <div>
+            <label className="lbl" style={{color:'#0369a1',fontSize:'.6rem'}}>Lãi suất %/năm</label>
+            <input type="number" step=".1" className="inp inp-xs mono" style={{color:'#0369a1',fontWeight:700}} value={inputs.lendingRate} onChange={e=>setInp('lendingRate',parseFloat(e.target.value)||0)}/>
+          </div>
+          <div>
+            <label className="lbl" style={{color:'#0369a1',fontSize:'.6rem'}}>Số ngày CN</label>
+            <input type="number" className="inp inp-xs mono" style={{color:'#0369a1',fontWeight:700}} value={inputs.customCreditDays} onChange={e=>setInp('customCreditDays',parseInt(e.target.value)||0)}/>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── APP ──────────────────────────────────────────────────────
 const App=()=>{
   const [tab,setTab]=useState('main');
   const [inputs,setInputs]=useState(defInputs);
@@ -582,10 +613,10 @@ const App=()=>{
   const [invFilter,setInvFilter]=useState({status:'ALL',alloy:'ALL',coating:'ALL',stockAlert:'ALL',search:''});
   const [msFilter,setMsFilter]=useState({alloy:'ALL',coating:'ALL',stockAlert:'ALL',search:''});
   const [spFilter,setSpFilter]=useState({alloy:'ALL',coating:'ALL',search:''});
-  // FIX #2: thêm thickMin, thickMax vào fpFilter
   const [fpFilter,setFpFilter]=useState({alloy:'ALL',coating:'ALL',search:'',thickMin:'',thickMax:''});
+  const [fpView,setFpView]=useState('detail'); // 'detail' | 'mgmt'
+  const [mgmtGroups,setMgmtGroups]=useState(DEFAULT_MGMT_GROUPS);
   const [dbStatus,setDbStatus]=useState({loading:false,error:null,lastSync:null,source:'local'});
-  const [fpViewMode,setFpViewMode]=useState('table');
   const chartRef=useRef(null);const chartInst=useRef(null);
   const setInp=useCallback((f,v)=>setInputs(p=>({...p,[f]:v})),[]);
 
@@ -614,21 +645,22 @@ const App=()=>{
           if(rows.length>0) setMinStockRows(rows);
         }
         if(type==='lim'){
-          const rows=data.filter(r=>Object.values(r).some(v=>v!=='')).map((r,i)=>({
-            id:uid()+i,
-            totalCreditMin:parseFloat(r.totalcreditmin||r['total credit min']||r['totalcreditmin(vnd)']||0),
-            totalCreditMax:parseFloat(r.totalcreditmax||r['total credit max']||r['totalcreditmax(vnd)']||0),
-            inventoryMinVND:parseFloat(r.inventoryminvnd||r['inventory min vnd']||r['inventorymin(vnd)']||0),
-            inventoryMaxVND:parseFloat(r.inventorymaxvnd||r['inventory max vnd']||r['inventorymax(vnd)']||0),
-            inventoryMinKg:parseFloat(r.inventoryminkg||r['inventory min kg']||r['inventorymin(kg)']||0),
-            inventoryMaxKg:parseFloat(r.inventorymaxkg||r['inventory max kg']||r['inventorymax(kg)']||0),
-            accountsPayableLimit:parseFloat(r.accountspayablelimit||r['accounts payable limit']||r['accountspayable']||0),
-            actualAccountsPayable:parseFloat(r.actualaccountspayable||r['actual accounts payable']||r['actualap']||0),
-          }));
+          const rows=data.filter(r=>Object.values(r).some(v=>v!=='')).map((r,i)=>({id:uid()+i,totalCreditMin:parseFloat(r.totalcreditmin||0),totalCreditMax:parseFloat(r.totalcreditmax||0),inventoryMinVND:parseFloat(r.inventoryminvnd||0),inventoryMaxVND:parseFloat(r.inventorymaxvnd||0),inventoryMinKg:parseFloat(r.inventoryminkg||0),inventoryMaxKg:parseFloat(r.inventorymaxkg||0),accountsPayableLimit:parseFloat(r.accountspayablelimit||0),actualAccountsPayable:parseFloat(r.actualaccountspayable||0)}));
           if(rows.length>0) setLimitsData(rows);
         }
         if(type==='uip'){
-          const rows=data.filter(r=>r.alloy).map((r,i)=>({id:uid()+i,updateDate:r.updatedate||r.update_date||r['update date']||'',alloy:(r.alloy||'').trim(),temper:(r.temper||'').trim(),minThick:parseFloat(r.minthick||r['min thick']||0),maxThick:parseFloat(r.maxthick||r['max thick']||99),priceFC:parseFloat(r.pricefc||r['price fc']||0),note:r.note||'',importCoef:parseFloat(r.importcoef||r['import coef']||1.0)})).filter(r=>r.alloy&&r.priceFC>0);
+          const rows=data.filter(r=>r.alloy).map((r,i)=>({
+            id:uid()+i,
+            updateDate:r.updatedate||r.update_date||r['update date']||'',
+            alloy:(r.alloy||'').trim(),temper:(r.temper||'').trim(),
+            minThick:parseFloat(r.minthick||r['min thick']||0),
+            maxThick:parseFloat(r.maxthick||r['max thick']||99),
+            priceFC:parseFloat(r.pricefc||r['price fc']||0),
+            note:r.note||'',
+            importCoef:parseFloat(r.importcoef||r['import coef']||1.0),
+            competitorPrice:parseFloat(r.competitorprice||r['competitor price']||r.CompetitorPrice||0)||0,
+            competitorFloorPrice:parseFloat(r.competitorfloorprice||r['competitor floor price']||r.CompetitorFloorPrice||0)||0,
+          })).filter(r=>r.alloy&&r.priceFC>0);
           if(rows.length>0) setUpdatedImportPrices(rows);
         }
       });
@@ -657,10 +689,9 @@ const App=()=>{
     const totalGrossProfit=blendsWithPrice.reduce((s,b)=>s+b.grossProfitVND,0);
     const totalQtyPriced=blendsWithPrice.reduce((s,b)=>s+b.qtyKg,0);
     const avgProfitPerKg=totalQtyPriced>0?totalGrossProfit/totalQtyPriced:null;
-    const profitMargin=inv.invoiceVND>0?totalGrossProfit/inv.invoiceVND*100:null;
     const allPriced=blends.every(b=>b.hasSellPrice);
     const rec=!hasRisk?(totalGrossProfit>0?{txt:'✓ NÊN MUA – CÓ LÃI',cls:'tg'}:{txt:'HÒA VỐN – CÂN NHẮC',cls:'tb'}):{txt:'⚠ RỦI RO – XEM LẠI',cls:'tr'};
-    return{totalKg,...inv,...land,...fin,rows,blends,globalAvgBefore,globalAvgAfter,globalBreakEven,hasRisk,hasLowStock,rec,totalContainer,containerOk,totalGrossProfit,totalQtyPriced,avgProfitPerKg,profitMargin,allPriced};
+    return{totalKg,...inv,...land,...fin,rows,blends,globalAvgBefore,globalAvgAfter,globalBreakEven,hasRisk,hasLowStock,rec,totalContainer,containerOk,totalGrossProfit,totalQtyPriced,avgProfitPerKg,allPriced};
   },[inputs,products,inventory,sellingPrices,minStockMap,maxStockMap]);
 
   const reportData=useMemo(()=>calcAlloySummary(inventory,result?result.finPerKg:0,inputs,result?result.rows:[]),[inventory,result,inputs]);
@@ -670,12 +701,10 @@ const App=()=>{
     const skuGroups=groupBySku(inventory);
     return skuGroups.map(grp=>{
       const updMatch=findUpdatedImportPrice(grp,updatedImportPrices,inputs.exchangeRate);
-      const fp=calcFloorPricePerSku(grp,updMatch,inputs);
-      return{...fp};
+      return calcFloorPricePerSku(grp,updMatch,inputs);
     }).filter(r=>r.totalQty>0||r.costBasisPhysical>0);
   },[inventory,updatedImportPrices,inputs]);
 
-  // FIX #2: lọc thêm theo dày min/max
   const filteredFp=useMemo(()=>floorPriceData.filter(r=>{
     if(fpFilter.alloy!=='ALL'&&r.alloy!==fpFilter.alloy) return false;
     if(fpFilter.coating!=='ALL'&&(r.coating||'KP')!==fpFilter.coating) return false;
@@ -684,6 +713,15 @@ const App=()=>{
     if(fpFilter.thickMax!==''){const mx=parseFloat(fpFilter.thickMax);if(!isNaN(mx)&&parseFloat(r.thickness)>mx) return false;}
     return true;
   }),[floorPriceData,fpFilter]);
+
+  const mgmtData=useMemo(()=>calcMgmtGroups(floorPriceData,mgmtGroups),[floorPriceData,mgmtGroups]);
+
+  const fpFooter=useMemo(()=>{
+    if(filteredFp.length===0) return null;
+    const totalQty=filteredFp.reduce((s,r)=>s+r.totalQty,0);
+    const wa=(field)=>{const tot=filteredFp.reduce((s,r)=>s+r.totalQty*(r[field]||0),0);return totalQty>0?tot/totalQty:0;};
+    return{totalQty,avgCostBasis:wa('costBasisPhysical'),avgFloor:wa('floorAbsolute'),avgCore:wa('priceCore'),avgLoyal:wa('priceLoyal'),avgNew:wa('priceNew')};
+  },[filteredFp]);
 
   useEffect(()=>{
     if(!result||!chartRef.current) return;
@@ -718,48 +756,40 @@ const App=()=>{
   const uniqueFpAlloys=[...new Set(floorPriceData.map(r=>r.alloy))];
   const uniqueMsAlloys=[...new Set(minStockRows.map(r=>r.alloy))];
 
-  const filteredInventory=useMemo(()=>{
-    return inventory.filter(r=>{
-      if(invFilter.status!=='ALL'&&r.status!==invFilter.status) return false;
-      if(invFilter.alloy!=='ALL'&&r.alloy!==invFilter.alloy) return false;
-      if(invFilter.coating!=='ALL'&&(r.coating||'KP')!==invFilter.coating) return false;
-      if(invFilter.search){const s=invFilter.search.toLowerCase();if(!skuLabel(r).toLowerCase().includes(s)) return false;}
-      if(invFilter.stockAlert!=='ALL'){
-        const k=skuKey(r),ms=minStockMap[k]||0,mx=maxStockMap[k]||null;
-        const grpQty=inventory.filter(x=>skuKey(x)===k).reduce((s,x)=>s+(parseFloat(x.qtyKg)||0),0);
-        const ratio=ms>0?grpQty/ms:null;
-        const isOver=mx!==null&&grpQty>mx;
-        if(invFilter.stockAlert==='LOW'&&!(ratio!==null&&ratio<0.8&&!isOver)) return false;
-        if(invFilter.stockAlert==='NEAR'&&!(ratio!==null&&ratio>=0.8&&ratio<1&&!isOver)) return false;
-        if(invFilter.stockAlert==='OK'&&!(ratio===null||ratio>=1&&!isOver)) return false;
-        if(invFilter.stockAlert==='EXCESS'&&!(ratio!==null&&ratio>2&&!isOver)) return false;
-        if(invFilter.stockAlert==='OVER'&&!isOver) return false;
-      }
-      return true;
-    });
-  },[inventory,invFilter,minStockMap,maxStockMap]);
+  const filteredInventory=useMemo(()=>inventory.filter(r=>{
+    if(invFilter.status!=='ALL'&&r.status!==invFilter.status) return false;
+    if(invFilter.alloy!=='ALL'&&r.alloy!==invFilter.alloy) return false;
+    if(invFilter.coating!=='ALL'&&(r.coating||'KP')!==invFilter.coating) return false;
+    if(invFilter.search){const s=invFilter.search.toLowerCase();if(!skuLabel(r).toLowerCase().includes(s)) return false;}
+    if(invFilter.stockAlert!=='ALL'){
+      const k=skuKey(r),ms=minStockMap[k]||0,mx=maxStockMap[k]||null;
+      const grpQty=inventory.filter(x=>skuKey(x)===k).reduce((s,x)=>s+(parseFloat(x.qtyKg)||0),0);
+      const ratio=ms>0?grpQty/ms:null;const isOver=mx!==null&&grpQty>mx;
+      if(invFilter.stockAlert==='LOW'&&!(ratio!==null&&ratio<0.8&&!isOver)) return false;
+      if(invFilter.stockAlert==='NEAR'&&!(ratio!==null&&ratio>=0.8&&ratio<1&&!isOver)) return false;
+      if(invFilter.stockAlert==='OK'&&!(ratio===null||ratio>=1&&!isOver)) return false;
+      if(invFilter.stockAlert==='EXCESS'&&!(ratio!==null&&ratio>2&&!isOver)) return false;
+      if(invFilter.stockAlert==='OVER'&&!isOver) return false;
+    }
+    return true;
+  }),[inventory,invFilter,minStockMap,maxStockMap]);
 
-  const filteredMs=useMemo(()=>{
-    return minStockRows.filter(r=>{
-      if(msFilter.alloy!=='ALL'&&r.alloy!==msFilter.alloy) return false;
-      if(msFilter.coating!=='ALL'&&(r.coating||'KP')!==msFilter.coating) return false;
-      if(msFilter.search){const s=msFilter.search.toLowerCase();if(!skuLabel(r).toLowerCase().includes(s)) return false;}
-      if(msFilter.stockAlert!=='ALL'){
-        const k=skuKey(r);
-        const grp=groupBySku(inventory).find(g=>g.key===k);
-        const curQty=grp?[...grp.inStock,...grp.inTransit].reduce((s,x)=>s+(parseFloat(x.qtyKg)||0),0):0;
-        const ratio=r.minStockKg>0?curQty/r.minStockKg:null;
-        const mx=r.maxStockKg||null;
-        const isOver=mx!==null&&curQty>mx;
-        if(msFilter.stockAlert==='LOW'&&!(ratio!==null&&ratio<0.8&&!isOver)) return false;
-        if(msFilter.stockAlert==='NEAR'&&!(ratio!==null&&ratio>=0.8&&ratio<1&&!isOver)) return false;
-        if(msFilter.stockAlert==='OK'&&!(ratio===null||(ratio>=1&&!isOver))) return false;
-        if(msFilter.stockAlert==='EXCESS'&&!(ratio!==null&&ratio>2&&!isOver)) return false;
-        if(msFilter.stockAlert==='OVER'&&!isOver) return false;
-      }
-      return true;
-    });
-  },[minStockRows,msFilter,inventory,minStockMap,maxStockMap]);
+  const filteredMs=useMemo(()=>minStockRows.filter(r=>{
+    if(msFilter.alloy!=='ALL'&&r.alloy!==msFilter.alloy) return false;
+    if(msFilter.coating!=='ALL'&&(r.coating||'KP')!==msFilter.coating) return false;
+    if(msFilter.search){const s=msFilter.search.toLowerCase();if(!skuLabel(r).toLowerCase().includes(s)) return false;}
+    if(msFilter.stockAlert!=='ALL'){
+      const k=skuKey(r);const grp=groupBySku(inventory).find(g=>g.key===k);
+      const curQty=grp?[...grp.inStock,...grp.inTransit].reduce((s,x)=>s+(parseFloat(x.qtyKg)||0),0):0;
+      const ratio=r.minStockKg>0?curQty/r.minStockKg:null;const mx=r.maxStockKg||null;const isOver=mx!==null&&curQty>mx;
+      if(msFilter.stockAlert==='LOW'&&!(ratio!==null&&ratio<0.8&&!isOver)) return false;
+      if(msFilter.stockAlert==='NEAR'&&!(ratio!==null&&ratio>=0.8&&ratio<1&&!isOver)) return false;
+      if(msFilter.stockAlert==='OK'&&!(ratio===null||(ratio>=1&&!isOver))) return false;
+      if(msFilter.stockAlert==='EXCESS'&&!(ratio!==null&&ratio>2&&!isOver)) return false;
+      if(msFilter.stockAlert==='OVER'&&!isOver) return false;
+    }
+    return true;
+  }),[minStockRows,msFilter,inventory]);
 
   const filteredSP=useMemo(()=>sellingPrices.filter(r=>{
     if(spFilter.alloy!=='ALL'&&(r.alloy||'')!==spFilter.alloy) return false;
@@ -768,38 +798,16 @@ const App=()=>{
     return true;
   }),[sellingPrices,spFilter]);
 
-  const bg1='#f8fafc',bg2='#ffffff',bg4='#f1f5f9';
-  const border1='#e2e8f0',border2='#cbd5e1';
-
-  const filtMsTotalKg=filteredMs.reduce((s,r)=>{
-    const k=skuKey(r);
-    const grp=groupBySku(inventory).find(g=>g.key===k);
-    const cur=grp?[...grp.inStock,...grp.inTransit].reduce((ss,x)=>ss+(parseFloat(x.qtyKg)||0),0):0;
-    return s+cur;
-  },0);
+  const filtMsTotalKg=filteredMs.reduce((s,r)=>{const k=skuKey(r);const grp=groupBySku(inventory).find(g=>g.key===k);const cur=grp?[...grp.inStock,...grp.inTransit].reduce((ss,x)=>ss+(parseFloat(x.qtyKg)||0),0):0;return s+cur;},0);
   const filtMsTotalMin=filteredMs.reduce((s,r)=>s+(parseFloat(r.minStockKg)||0),0);
   const filtMsTotalMax=filteredMs.reduce((s,r)=>s+(r.maxStockKg?parseFloat(r.maxStockKg):0),0);
   const filtMsDelta=filtMsTotalKg-filtMsTotalMin;
 
-  // FIX #3: tính tổng/trung bình cho tfoot của bảng Giá Sàn
-  const fpFooter=useMemo(()=>{
-    if(filteredFp.length===0) return null;
-    const totalQty=filteredFp.reduce((s,r)=>s+r.totalQty,0);
-    const wavg=(field)=>{
-      const total=filteredFp.reduce((s,r)=>s+r.totalQty*(r[field]||0),0);
-      return totalQty>0?total/totalQty:0;
-    };
-    return{
-      totalQty,
-      avgCostBasis:wavg('costBasisPhysical'),
-      avgFloor:wavg('floorAbsolute'),
-      avgImport:filteredFp.some(r=>r.newImportPriceVND)?wavg('newImportPriceVND'):null,
-      avgCore:wavg('priceCore'),
-      avgLoyal:wavg('priceLoyal'),
-      avgNew:wavg('priceNew'),
-      avgCash:wavg('priceCash'),
-    };
-  },[filteredFp]);
+  const bg1='#f8fafc',bg2='#ffffff',bg4='#f1f5f9';
+  const border1='#e2e8f0',border2='#cbd5e1';
+
+  // Credit mode label for display
+  const creditModeLabel=inputs.creditMode==='none'?'Không CN':inputs.creditMode==='fixed'?`CN ${inputs.finCostPct}%`:`CN ${inputs.customCreditDays}N`;
 
   return(
     <div style={{height:'100vh',display:'flex',flexDirection:'column',overflow:'hidden'}}>
@@ -809,22 +817,22 @@ const App=()=>{
       <datalist id="width-list">{WIDTHS.map(a=><option key={a} value={a}/>)}</datalist>
       <datalist id="length-list">{LENGTHS.map(a=><option key={a} value={a}/>)}</datalist>
 
-      {/* HEADER */}
+      {/* ═══ HEADER ═══ */}
       <div className="screen-container" style={{background:bg2,borderBottom:`1px solid ${border1}`,padding:'8px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
-          <div style={{background:'linear-gradient(135deg,#2563eb,#7c3aed)',borderRadius:'7px',width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:'15px',color:'#fff',fontFamily:'JetBrains Mono'}}>P</div>
+          <div style={{background:'linear-gradient(135deg,#0d9488,#2563eb)',borderRadius:'7px',width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:'15px',color:'#fff',fontFamily:'JetBrains Mono'}}>P</div>
           <div>
-            <div style={{fontWeight:900,fontSize:'15px',letterSpacing:'-.02em',color:'#0f172a'}}>PAKD BUY <span style={{color:'#2563eb',fontFamily:'JetBrains Mono',fontSize:'12px'}}>4.9</span></div>
-            <div style={{fontSize:'11px',color:'#475569',fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em'}}>Floor Price Merged Edition</div>
+            <div style={{fontWeight:900,fontSize:'15px',letterSpacing:'-.02em',color:'#0f172a'}}>PAKD BUY <span style={{color:'#0d9488',fontFamily:'JetBrains Mono',fontSize:'12px'}}>5.0</span></div>
+            <div style={{fontSize:'11px',color:'#475569',fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em'}}>Floor Price Engine v2</div>
           </div>
           <div style={{width:'1px',height:'24px',background:border1,margin:'0 4px'}}/>
           {[
             {k:'main',l:'📊 Phân tích'},
             {k:'inventory',l:'📦 Tồn kho'},
-            {k:'minstock',l:'📏 Min/Max Stock'},
+            {k:'minstock',l:'📏 Min/Max'},
             {k:'selling',l:'🏷️ Giá bán'},
             {k:'floor',l:'💹 Giá Sàn'},
-            {k:'report',l:limitsWarnings.totalAlerts>0?`📈 Báo cáo ⚠${limitsWarnings.totalAlerts}`:'📈 Báo cáo'},
+            {k:'report',l:limitsWarnings.totalAlerts>0?`📈 BC ⚠${limitsWarnings.totalAlerts}`:'📈 Báo cáo'},
             {k:'scenario',l:'💾 Scenarios'},
           ].map(t=>(
             <button key={t.k} onClick={()=>setTab(t.k)} className={`nav-tab ${tab===t.k?'on':''}`}
@@ -845,13 +853,13 @@ const App=()=>{
           {result&&<span className={`tag ${result.rec.cls}`}>{result.rec.txt}</span>}
           {result&&<span className={`tag ${result.containerOk?'tg':result.totalContainer<24?'tr':'ty'}`}>📦 {result.totalContainer.toFixed(1)}T</span>}
           {result&&result.hasLowStock&&<span className="tag tr pulse"><Ic.Alert/> Thiếu hàng</span>}
-          {limitsWarnings.totalAlerts>0&&<span className="tag tr pulse"><Ic.Alert/> {limitsWarnings.totalAlerts} cảnh báo</span>}
+          {limitsWarnings.totalAlerts>0&&<span className="tag tr pulse"><Ic.Alert/> {limitsWarnings.totalAlerts} CB</span>}
           <button className="btn btn-success btn-sm" onClick={saveScenario}><Ic.Save/> Lưu</button>
           <button className="btn btn-solid btn-sm" onClick={()=>window.print()}><Ic.Print/> In A4</button>
         </div>
       </div>
 
-      {/* BODY */}
+      {/* ═══ BODY ═══ */}
       <div className="screen-container" style={{flex:1,display:'flex',minHeight:0,overflow:'hidden'}}>
 
         {/* ════ TAB MAIN ════ */}
@@ -863,10 +871,7 @@ const App=()=>{
                 <div className="sh"><Ic.Ship/>Thông số nhập khẩu</div>
                 <label className="lbl" style={{color:'#1d4ed8'}}>Tỷ giá USD/VND</label>
                 <input className="inp mono" style={{fontSize:'1.05rem',fontWeight:800,color:'#1d4ed8',textAlign:'right',marginBottom:9}} value={fv(inputs.exchangeRate)} onChange={e=>setInp('exchangeRate',pn(e.target.value))}/>
-                <div style={{marginBottom:7}}>
-                  <label className="lbl" style={{color:'#6d28d9'}}>Hệ số QL %</label>
-                  <input type="number" step=".1" className="inp inp-xs mono" style={{color:'#6d28d9',fontWeight:700}} value={inputs.managementFee} onChange={e=>setInp('managementFee',parseFloat(e.target.value)||0)}/>
-                </div>
+                <div style={{marginBottom:7}}><label className="lbl" style={{color:'#6d28d9'}}>Hệ số QL %</label><input type="number" step=".1" className="inp inp-xs mono" style={{color:'#6d28d9',fontWeight:700}} value={inputs.managementFee} onChange={e=>setInp('managementFee',parseFloat(e.target.value)||0)}/></div>
                 <div style={{display:'flex',gap:'5px',marginBottom:6}}>
                   {['TT','LC'].map(m=><button key={m} className={`status-btn ${inputs.paymentMethod===m?(m==='TT'?'s-stock':'s-transit'):'off'}`} onClick={()=>setInp('paymentMethod',m)}>{m==='TT'?'T/T':'L/C'}</button>)}
                 </div>
@@ -879,50 +884,48 @@ const App=()=>{
                 ):<div><label className="lbl">Lãi suất vốn %/năm</label><input type="number" step=".1" className="inp inp-xs font-semibold" value={inputs.capitalCostPercent} onChange={e=>setInp('capitalCostPercent',parseFloat(e.target.value)||0)}/></div>}
               </div>
 
+              {/* FLOOR PRICE SETTINGS v5.0 */}
               <div className="card" style={{border:'1px solid #5eead4'}}>
-                <div className="sh" style={{color:'#0f766e',borderColor:'#99f6e4'}}><Ic.Tag/><span style={{color:'#0f766e'}}>Chính sách bán & Giá Sàn</span></div>
-                <div style={{background:'#f0fdfa',border:'1px solid #99f6e4',borderRadius:5,padding:'7px 9px',marginBottom:8}}>
-                  <label className="lbl" style={{color:'#b91c1c'}}>QLKD % = % LN Mục tiêu (Giá Sàn)</label>
-                  <input type="number" step=".1" className="inp inp-xs mono" style={{color:'#b91c1c',fontWeight:700}} value={inputs.businessRiskPercent} onChange={e=>setInp('businessRiskPercent',parseFloat(e.target.value)||0)}/>
-                  <div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:600,marginTop:4,lineHeight:1.5}}>
-                    Dùng cho: Break-even (tab Phân tích) <strong>và</strong> Giá sàn hòa vốn (tab 💹)<br/>
-                    Sàn tối thiểu = giá vốn × 98% (không lỗ &gt; 2%)
-                  </div>
+                <div className="sh" style={{color:'#0f766e',borderColor:'#99f6e4'}}><Ic.Tag/><span style={{color:'#0f766e'}}>Chính sách Giá Sàn v5.0</span></div>
+
+                {/* Formula explanation */}
+                <div style={{background:'#f0fdfa',border:'1px solid #99f6e4',borderRadius:5,padding:'7px 9px',marginBottom:8,fontSize:'.6rem',color:'#0f766e',lineHeight:1.7,fontWeight:600}}>
+                  <strong>Sàn = GV × (1 + CPTC + CPHĐKD)</strong><br/>
+                  CPTC = Chi phí tài chính công nợ<br/>
+                  CPHĐKD = Chi phí hoạt động KD
                 </div>
-                <div style={{marginBottom:7}}>
-                  <label className="lbl">Lãi suất giữ hàng %/năm</label>
-                  <input type="number" step=".1" className="inp inp-xs mono" value={inputs.lendingRate} onChange={e=>setInp('lendingRate',parseFloat(e.target.value)||0)}/>
+
+                <div style={{marginBottom:8}}>
+                  <label className="lbl" style={{color:'#b91c1c'}}>CP Hoạt động KD (CPHĐKD) %</label>
+                  <input type="number" step=".1" className="inp inp-xs mono" style={{color:'#b91c1c',fontWeight:700}} value={inputs.opsCostPct} onChange={e=>setInp('opsCostPct',parseFloat(e.target.value)||0)}/>
+                  <div style={{fontSize:'.58rem',color:'#64748b',fontWeight:600,marginTop:3}}>Mặc định 4.5% · Điều chỉnh theo thực tế</div>
                 </div>
-                <div style={{marginBottom:9}}>
-                  <label className="lbl">Ngày KH nợ (credit days)</label>
-                  <input type="number" className="inp inp-xs mono" value={inputs.customerCreditDays} onChange={e=>setInp('customerCreditDays',parseInt(e.target.value)||0)}/>
-                </div>
+
+                <CreditModeSelector inputs={inputs} setInp={setInp}/>
+
                 <div style={{borderTop:`1px solid ${border1}`,paddingTop:8}}>
                   <div style={{fontSize:'.63rem',color:'#0f766e',fontWeight:800,marginBottom:6}}>📊 Margin mục tiêu theo nhóm KH</div>
-                  {[
-                    {f:'marginCore',l:'👥 Cốt lõi +%',c:'#1d4ed8'},
-                    {f:'marginLoyal',l:'💛 Thân thiết +%',c:'#7c3aed'},
-                    {f:'marginNew',l:'🆕 KH lẻ +%',c:'#ea580c'},
-                  ].map(x=>(
+                  {[{f:'marginCore',l:'👥 Cốt lõi +%',c:'#1d4ed8'},{f:'marginLoyal',l:'💛 Thân thiết +%',c:'#7c3aed'},{f:'marginNew',l:'🆕 KH lẻ +%',c:'#ea580c'}].map(x=>(
                     <div key={x.f} style={{marginBottom:6}}>
                       <label className="lbl" style={{color:x.c}}>{x.l}</label>
                       <input type="number" step=".1" className="inp inp-xs mono" style={{color:x.c,fontWeight:700}} value={inputs[x.f]} onChange={e=>setInp(x.f,parseFloat(e.target.value)||0)}/>
                     </div>
                   ))}
-                  <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600,marginTop:4,lineHeight:1.5}}>Giá = Sàn HV × (1 + %).<br/>Cốt lõi=0% → bằng sàn HV</div>
                 </div>
               </div>
+
               {result&&(
                 <div style={{background:bg4,border:`1px solid ${result.containerOk?'#bbf7d0':result.totalContainer<24?'#fca5a5':'#fde047'}`,borderRadius:6,padding:'9px 11px'}}>
-                  <div style={{fontSize:'.65rem',color:'#1e293b',fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:5}}>Container 25–26T</div>
+                  <div style={{fontSize:'.65rem',color:'#1e293b',fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:5}}>Container</div>
                   <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                     <div className="mono" style={{fontSize:'1.4rem',fontWeight:900,color:result.containerOk?'#15803d':result.totalContainer<24?'#b91c1c':'#b45309'}}>{result.totalContainer.toFixed(2)}<span style={{fontSize:'.65rem',color:'#475569',marginLeft:3}}>tấn</span></div>
-                    <span className={`tag ${result.containerOk?'tg':result.totalContainer<24?'tr':'ty'}`}>{result.containerOk?'✓ ĐỦ TẢI':result.totalContainer<24?'THIẾU TẢI':'DƯ TẢI'}</span>
+                    <span className={`tag ${result.containerOk?'tg':result.totalContainer<24?'tr':'ty'}`}>{result.containerOk?'✓ ĐỦ TẢI':result.totalContainer<24?'THIẾU':'DƯ TẢI'}</span>
                   </div>
                   <div style={{marginTop:6}}><div className="stock-bar" style={{height:7}}><div className="stock-bar-fill" style={{width:`${Math.min((result.totalContainer/26.5)*100,100)}%`,background:result.containerOk?'#16a34a':result.totalContainer<24?'#dc2626':'#d97706'}}/></div></div>
                 </div>
               )}
             </div>
+
             {/* CENTER */}
             <div style={{flex:1,minWidth:0,display:'flex',flexDirection:'column',background:bg1,borderRight:`1px solid ${border1}`}}>
               <div style={{padding:'9px 13px',borderBottom:`1px solid ${border1}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0,background:bg2}}>
@@ -991,35 +994,15 @@ const App=()=>{
                             </div>
                           ))}
                         </div>
-                        <div style={{display:'flex',alignItems:'stretch',gap:4,marginBottom:9,background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${border1}`}}>
-                          {[
-                            {l:'BQ Hiện tại',v:b.avgCurrent,q:b.qtyExisting,c:'#475569'},null,
-                            {l:'BQ Sau nhập',v:b.avgAfter,q:b.qtyAfter,c:b.avgAfter>b.avgCurrent?'#dc2626':'#2563eb',bold:true},null,
-                            {l:'Break-even',v:b.breakEven,q:null,c:'#6d28d9'},
-                          ].map((x,j)=>x===null?<div key={j} style={{color:'#94a3b8',fontSize:'1rem',alignSelf:'center',paddingTop:9}}>→</div>:(
-                            <div key={j} style={{flex:1,textAlign:'center'}}>
-                              <div style={{fontSize:'.64rem',color:'#475569',fontWeight:700,marginBottom:3}}>{x.l}</div>
-                              <div className="mono" style={{fontSize:x.bold?'.95rem':'.84rem',fontWeight:x.bold?900:700,color:x.c}}>{fv(x.v)}</div>
-                              {x.q!==null&&<div style={{fontSize:'.63rem',color:'#64748b',fontWeight:600,marginTop:2}}>{fv(x.q)} kg</div>}
-                            </div>
-                          ))}
-                        </div>
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',background:bg4,borderRadius:5,padding:'8px 10px',border:`1px solid ${border1}`}}>
-                          <div>
-                            <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700}}>Giá bán KH</div>
+                          <div><div style={{fontSize:'.63rem',color:'#475569',fontWeight:700}}>Giá bán KH</div>
                             {b.hasSellPrice?<div className="mono" style={{fontSize:'.9rem',fontWeight:800,color:'#15803d'}}>{fv(b.sellPrice)} đ/kg</div>:<div style={{fontSize:'.78rem',color:'#64748b',fontStyle:'italic',fontWeight:600}}>— Tab Giá bán →</div>}
                           </div>
-                          <div style={{textAlign:'center'}}>
-                            <div style={{fontSize:'.6rem',color:'#475569',fontWeight:700}}>Lãi/kg</div>
-                            <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:!b.hasSellPrice?'#64748b':b.realProfitPerKg>=0?'#15803d':'#b91c1c'}}>
-                              {b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}
-                            </div>
+                          <div style={{textAlign:'center'}}><div style={{fontSize:'.6rem',color:'#475569',fontWeight:700}}>Lãi/kg</div>
+                            <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:!b.hasSellPrice?'#64748b':b.realProfitPerKg>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}</div>
                           </div>
-                          <div style={{textAlign:'right'}}>
-                            <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700}}>Tổng lãi lô</div>
-                            <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:!b.hasSellPrice?'#64748b':b.grossProfitVND>=0?'#15803d':'#b91c1c'}}>
-                              {b.hasSellPrice?(b.grossProfitVND>=0?'+':'')+fv(b.grossProfitVND)+'đ':'—'}
-                            </div>
+                          <div style={{textAlign:'right'}}><div style={{fontSize:'.63rem',color:'#475569',fontWeight:700}}>Tổng lãi lô</div>
+                            <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:!b.hasSellPrice?'#64748b':b.grossProfitVND>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(b.grossProfitVND>=0?'+':'')+fv(b.grossProfitVND)+'đ':'—'}</div>
                           </div>
                         </div>
                       </div>
@@ -1030,7 +1013,7 @@ const App=()=>{
               {result&&(
                 <div style={{padding:'6px 13px 9px',borderTop:`1px solid ${border1}`,flexShrink:0,background:bg2}}>
                   <div style={{display:'flex',gap:'5px',justifyContent:'center'}}>
-                    {[{l:'Invoice',v:result.invoiceVND,c:'#334155'},{l:`QL ${inputs.managementFee}%`,v:result.mgmt,c:'#6d28d9'},{l:'CP tài chính',v:result.finVND,c:'#b91c1c'}].map((x,i)=>(
+                    {[{l:'Invoice',v:result.invoiceVND,c:'#334155'},{l:`QL ${inputs.managementFee}%`,v:result.mgmt,c:'#6d28d9'},{l:'CP TC',v:result.finVND,c:'#b91c1c'}].map((x,i)=>(
                       <div key={i} style={{background:bg1,border:`1px solid ${border1}`,borderRadius:4,padding:'4px 12px',textAlign:'center'}}>
                         <div className="mono" style={{fontSize:'.76rem',fontWeight:800,color:x.c}}>{fv(x.v)}</div>
                         <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700,marginTop:2}}>{x.l}</div>
@@ -1040,6 +1023,7 @@ const App=()=>{
                 </div>
               )}
             </div>
+
             {/* RIGHT KPI */}
             <div style={{width:'248px',flexShrink:0,background:bg2,overflowY:'auto',padding:'10px',display:'flex',flexDirection:'column',gap:'9px'}}>
               {result?(
@@ -1050,7 +1034,7 @@ const App=()=>{
                       <>
                         <div className="mono" style={{fontSize:'1.5rem',fontWeight:900,color:result.totalGrossProfit>=0?'#15803d':'#b91c1c',lineHeight:1.1}}>{result.totalGrossProfit>=0?'+':''}{fv(result.totalGrossProfit)}</div>
                         <div style={{fontSize:'.72rem',color:'#475569',fontWeight:600,marginTop:3}}>đồng · toàn bộ lô mua</div>
-                        <div style={{display:'flex',gap:6,justifyContent:'center',marginTop:8,flexWrap:'wrap'}}>
+                        <div style={{display:'flex',gap:6,justifyContent:'center',marginTop:8}}>
                           <div style={{textAlign:'center',background:'#fff',border:'1px solid #cbd5e1',borderRadius:5,padding:'5px 9px'}}>
                             <div style={{fontSize:'.58rem',color:'#475569',fontWeight:700}}>BQ lãi/kg</div>
                             <div className="mono" style={{fontSize:'.82rem',fontWeight:800,color:result.avgProfitPerKg>=0?'#15803d':'#b91c1c'}}>{result.avgProfitPerKg>=0?'+':''}{fv(result.avgProfitPerKg)}đ</div>
@@ -1060,17 +1044,12 @@ const App=()=>{
                     ):<div style={{padding:'8px 0'}}><div style={{fontSize:'.8rem',color:'#b45309',fontWeight:800}}>Chưa đủ giá bán</div><button className="btn btn-ghost btn-sm" onClick={()=>setTab('selling')} style={{marginTop:8,width:'100%',justifyContent:'center'}}><Ic.Tag/> Tab Giá bán →</button></div>}
                   </div>
                   <div className="kpi" style={{borderColor:'#93c5fd'}}>
-                    <div className="kpi-l" style={{color:'#1d4ed8'}}>BQ Sau Nhập (toàn kho)</div>
+                    <div className="kpi-l" style={{color:'#1d4ed8'}}>BQ Sau Nhập</div>
                     <div className="kpi-v" style={{color:'#2563eb'}}>{fv(result.globalAvgAfter)}</div>
                     <div style={{display:'flex',alignItems:'center',gap:6,marginTop:4}}>
                       <span className="kpi-s">đ/kg</span>
                       <span className={`tag ${result.globalAvgAfter>result.globalAvgBefore?'tr':'tg'} mono`} style={{fontSize:'.66rem'}}>{result.globalAvgAfter>result.globalAvgBefore?'▲':'▼'} {fv(Math.abs(result.globalAvgAfter-result.globalAvgBefore))}</span>
                     </div>
-                  </div>
-                  <div className="kpi" style={{borderColor:'#d8b4fe'}}>
-                    <div className="kpi-l" style={{color:'#6d28d9'}}>Break-even Toàn kho</div>
-                    <div className="kpi-v" style={{color:'#7c3aed',fontSize:'1.05rem'}}>{fv(result.globalBreakEven)}</div>
-                    <div className="kpi-s">WA break-even các SKU</div>
                   </div>
                   <div className="chart-box" style={{height:180}}>
                     <div style={{fontSize:'.66rem',color:'#334155',fontWeight:800,textTransform:'uppercase',marginBottom:4}}>Giá vốn vs Giá bán KH</div>
@@ -1101,33 +1080,26 @@ const App=()=>{
                   {filteredInventory.map((r,i)=>{
                     const k=skuKey(r),ms=minStockMap[k]||0;
                     const grpQty=inventory.filter(x=>skuKey(x)===k).reduce((s,x)=>s+(parseFloat(x.qtyKg)||0),0);
-                    const ratio=ms>0?grpQty/ms:null;
-                    const delta=ms>0?grpQty-ms:null;
+                    const ratio=ms>0?grpQty/ms:null;const delta=ms>0?grpQty-ms:null;
                     const rowBg=ratio!==null&&ratio<0.8?'#fef2f2':ratio!==null&&ratio<1?'#fffbeb':'';
                     return(
-                    <tr key={r.id} style={{background:rowBg}}>
-                      <td style={{textAlign:'center',color:'#64748b',fontSize:'.75rem',fontWeight:700}} className="mono">{i+1}</td>
-                      <td style={{paddingLeft:5,minWidth:380}}><SkuSel row={r} onChange={patch=>setInv(r.id,patch)} showCoating={false}/></td>
-                      <td style={{textAlign:'center',width:80}}>
-                        <button onClick={()=>setInv(r.id,{coating:r.coating==='1E'?'KP':'1E'})} className={`status-btn ${r.coating==='1E'?'s-coated':'s-plain'} off`} style={{padding:'2px 7px',fontSize:'.65rem',width:'100%'}}>{r.coating==='1E'?'🎨 PE':'⬜ NOPE'}</button>
-                      </td>
-                      <td style={{width:160,textAlign:'center'}}>
-                        <div style={{display:'flex',gap:4,justifyContent:'center'}}>
-                          <button className={`status-btn ${r.status==='IN_STOCK'?'s-stock':'off'}`} style={{padding:'3px 6px',fontSize:'.65rem'}} onClick={()=>setInv(r.id,{status:'IN_STOCK'})}>🟢 Kho</button>
-                          <button className={`status-btn ${r.status==='IN_TRANSIT'?'s-transit':'off'}`} style={{padding:'3px 6px',fontSize:'.65rem'}} onClick={()=>setInv(r.id,{status:'IN_TRANSIT'})}>🟡 Đường</button>
-                        </div>
-                      </td>
-                      <td style={{width:100}}><input className="inp inp-xs mono" style={{textAlign:'right',color:'#15803d',fontWeight:700}} value={fv(r.qtyKg)} onChange={e=>setInv(r.id,{qtyKg:pn(e.target.value)})}/></td>
-                      <td style={{width:110}}><input className="inp inp-xs mono" style={{textAlign:'right',fontWeight:600}} value={fv(r.avgCost)} onChange={e=>setInv(r.id,{avgCost:pn(e.target.value)})}/></td>
-                      <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#2563eb',fontSize:'.78rem',fontWeight:700}}>{fv((parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0))}</td>
-                      <td style={{textAlign:'center',width:80}}>
-                        {ms>0?(<div><div style={{fontSize:'.65rem',color:ratio<0.8?'#dc2626':ratio<1?'#d97706':ratio>2?'#6d28d9':'#16a34a',fontWeight:800}}>{Math.round((ratio||0)*100)}%</div><div style={{fontSize:'.58rem',color:'#475569',fontWeight:600}}>{fv(ms)}kg</div></div>):<span style={{color:'#64748b',fontSize:'.65rem'}}>—</span>}
-                      </td>
-                      <td style={{textAlign:'right',paddingRight:9}}>
-                        {delta!=null?(<span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:delta>=0?'#15803d':'#b91c1c'}}>{delta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(delta))} kg</span>):<span style={{color:'#64748b',fontSize:'.65rem'}}>—</span>}
-                      </td>
-                      <td><button className="btn-danger" onClick={()=>delInv(r.id)}><Ic.X/></button></td>
-                    </tr>
+                      <tr key={r.id} style={{background:rowBg}}>
+                        <td style={{textAlign:'center',color:'#64748b',fontSize:'.75rem',fontWeight:700}} className="mono">{i+1}</td>
+                        <td style={{paddingLeft:5,minWidth:380}}><SkuSel row={r} onChange={patch=>setInv(r.id,patch)} showCoating={false}/></td>
+                        <td style={{textAlign:'center',width:80}}><button onClick={()=>setInv(r.id,{coating:r.coating==='1E'?'KP':'1E'})} className={`status-btn ${r.coating==='1E'?'s-coated':'s-plain'} off`} style={{padding:'2px 7px',fontSize:'.65rem',width:'100%'}}>{r.coating==='1E'?'🎨 PE':'⬜ NOPE'}</button></td>
+                        <td style={{width:160,textAlign:'center'}}>
+                          <div style={{display:'flex',gap:4,justifyContent:'center'}}>
+                            <button className={`status-btn ${r.status==='IN_STOCK'?'s-stock':'off'}`} style={{padding:'3px 6px',fontSize:'.65rem'}} onClick={()=>setInv(r.id,{status:'IN_STOCK'})}>🟢 Kho</button>
+                            <button className={`status-btn ${r.status==='IN_TRANSIT'?'s-transit':'off'}`} style={{padding:'3px 6px',fontSize:'.65rem'}} onClick={()=>setInv(r.id,{status:'IN_TRANSIT'})}>🟡 Đường</button>
+                          </div>
+                        </td>
+                        <td style={{width:100}}><input className="inp inp-xs mono" style={{textAlign:'right',color:'#15803d',fontWeight:700}} value={fv(r.qtyKg)} onChange={e=>setInv(r.id,{qtyKg:pn(e.target.value)})}/></td>
+                        <td style={{width:110}}><input className="inp inp-xs mono" style={{textAlign:'right',fontWeight:600}} value={fv(r.avgCost)} onChange={e=>setInv(r.id,{avgCost:pn(e.target.value)})}/></td>
+                        <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#2563eb',fontSize:'.78rem',fontWeight:700}}>{fv((parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0))}</td>
+                        <td style={{textAlign:'center',width:80}}>{ms>0?(<div><div style={{fontSize:'.65rem',color:ratio<0.8?'#dc2626':ratio<1?'#d97706':ratio>2?'#6d28d9':'#16a34a',fontWeight:800}}>{Math.round((ratio||0)*100)}%</div><div style={{fontSize:'.58rem',color:'#475569',fontWeight:600}}>{fv(ms)}kg</div></div>):<span style={{color:'#64748b',fontSize:'.65rem'}}>—</span>}</td>
+                        <td style={{textAlign:'right',paddingRight:9}}>{delta!=null?(<span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:delta>=0?'#15803d':'#b91c1c'}}>{delta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(delta))} kg</span>):<span style={{color:'#64748b',fontSize:'.65rem'}}>—</span>}</td>
+                        <td><button className="btn-danger" onClick={()=>delInv(r.id)}><Ic.X/></button></td>
+                      </tr>
                     );
                   })}
                 </tbody>
@@ -1148,10 +1120,7 @@ const App=()=>{
           <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
             <div style={{maxWidth:'1060px',margin:'0 auto'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-                <div>
-                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📏 Min/Max Stock per SKU + Coating</h2>
-                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>Ô trống maxstockkg = không giới hạn (∞)</p>
-                </div>
+                <div><h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📏 Min/Max Stock per SKU</h2><p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>Ô trống maxstockkg = không giới hạn (∞)</p></div>
                 <div style={{display:'flex',gap:8}}>
                   <button className="btn btn-ghost btn-sm" onClick={()=>syncGoogleSheet('ms')} disabled={dbStatus.loading}>{dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync</button>
                   <button className="btn btn-ghost btn-sm" onClick={addMS}><Ic.Plus/> Thêm SKU</button>
@@ -1162,60 +1131,37 @@ const App=()=>{
                 <thead><tr><th>#</th><th style={{textAlign:'left',paddingLeft:5}}>SKU</th><th>Coating</th><th>Min Stock kg</th><th>Max Stock kg</th><th>Tồn hiện tại kg</th><th>% đạt min</th><th>Thiếu / Dư kg</th><th>Trạng thái</th><th></th></tr></thead>
                 <tbody>
                   {filteredMs.map((r,i)=>{
-                    const k=skuKey(r);
-                    const grp=groupBySku(inventory).find(g=>g.key===k);
+                    const k=skuKey(r);const grp=groupBySku(inventory).find(g=>g.key===k);
                     const curQty=grp?[...grp.inStock,...grp.inTransit].reduce((s,x)=>s+(parseFloat(x.qtyKg)||0),0):0;
-                    const ratio=r.minStockKg>0?curQty/r.minStockKg:null;
-                    const mx=r.maxStockKg;
-                    const isOver=mx!==null&&mx>0&&curQty>mx;
-                    const delta=r.minStockKg>0?curQty-r.minStockKg:null;
+                    const ratio=r.minStockKg>0?curQty/r.minStockKg:null;const mx=r.maxStockKg;
+                    const isOver=mx!==null&&mx>0&&curQty>mx;const delta=r.minStockKg>0?curQty-r.minStockKg:null;
                     const status=isOver?'QUÁ MAX':ratio===null?'—':ratio<0.8?'THIẾU':ratio<1?'GẦN MIN':ratio>2?'DƯ':'OK';
                     const statusColor=isOver?'#6d28d9':ratio===null?'#475569':ratio<0.8?'#dc2626':ratio<1?'#d97706':ratio>2?'#4f46e5':'#16a34a';
                     return(
                       <tr key={r.id} style={{background:isOver?'#faf5ff':ratio!==null&&ratio<0.8?'#fef2f2':ratio!==null&&ratio<1?'#fffbeb':''}}>
                         <td style={{textAlign:'center',color:'#64748b',fontSize:'.75rem',fontWeight:700}} className="mono">{i+1}</td>
                         <td style={{paddingLeft:5,minWidth:380}}><SkuSel row={r} onChange={patch=>setMS(r.id,patch)} showCoating={false}/></td>
-                        <td style={{width:80,textAlign:'center'}}>
-                          <button onClick={()=>setMS(r.id,{coating:r.coating==='1E'?'KP':'1E'})} className={`status-btn ${r.coating==='1E'?'s-coated':'s-plain'} off`} style={{padding:'2px 6px',fontSize:'.65rem',width:'100%'}}>
-                            {r.coating==='1E'?'🎨 PE':'⬜ NOPE'}
-                          </button>
-                        </td>
+                        <td style={{width:80,textAlign:'center'}}><button onClick={()=>setMS(r.id,{coating:r.coating==='1E'?'KP':'1E'})} className={`status-btn ${r.coating==='1E'?'s-coated':'s-plain'} off`} style={{padding:'2px 6px',fontSize:'.65rem',width:'100%'}}>{r.coating==='1E'?'🎨 PE':'⬜ NOPE'}</button></td>
                         <td style={{width:120}}><input className="inp inp-xs mono" style={{textAlign:'right',color:'#7c3aed',fontWeight:800}} value={fv(r.minStockKg)} onChange={e=>setMS(r.id,{minStockKg:pn(e.target.value)})}/></td>
-                        <td style={{width:120}}>
-                          <input className="inp inp-xs mono" style={{textAlign:'right',color:'#6d28d9',fontWeight:800}} value={r.maxStockKg===null||r.maxStockKg===undefined?'':fv(r.maxStockKg)} onChange={e=>{const v=e.target.value.trim();setMS(r.id,{maxStockKg:v===''?null:pn(v)});}} placeholder="∞ không giới hạn"/>
-                        </td>
+                        <td style={{width:120}}><input className="inp inp-xs mono" style={{textAlign:'right',color:'#6d28d9',fontWeight:800}} value={r.maxStockKg===null||r.maxStockKg===undefined?'':fv(r.maxStockKg)} onChange={e=>{const v=e.target.value.trim();setMS(r.id,{maxStockKg:v===''?null:pn(v)});}} placeholder="∞ không giới hạn"/></td>
                         <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#2563eb',fontSize:'.82rem',fontWeight:700}}>{fv(curQty)}</td>
-                        <td style={{textAlign:'center',width:90}}>
-                          {ratio!==null?(<div><div className="stock-bar" style={{height:5,margin:'0 8px 2px'}}><div className="stock-bar-fill" style={{width:`${Math.min((ratio/2.5)*100,100)}%`,background:statusColor}}/></div><span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:statusColor}}>{Math.round(ratio*100)}%</span></div>):<span style={{color:'#64748b'}}>—</span>}
-                        </td>
-                        <td style={{textAlign:'right',paddingRight:9,width:155}}>
-                          {isOver?(<span className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#6d28d9'}}>▲ quá max +{fv(curQty-mx)} kg</span>)
-                           :delta!=null?(<span className="mono" style={{fontSize:'.78rem',fontWeight:800,color:delta>=0?'#15803d':'#b91c1c'}}>{delta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(delta))} kg</span>)
-                           :<span style={{color:'#64748b'}}>—</span>}
-                        </td>
-                        <td style={{textAlign:'center'}}>
-                          <span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:statusColor,padding:'2px 8px',background:isOver?'#f3e8ff':ratio!==null&&ratio<0.8?'#fee2e2':ratio!==null&&ratio<1?'#fef9c3':ratio!==null&&ratio>2?'#e0e7ff':'#dcfce7',borderRadius:4,border:`1px solid ${statusColor}40`}}>{status}</span>
-                        </td>
+                        <td style={{textAlign:'center',width:90}}>{ratio!==null?(<div><div className="stock-bar" style={{height:5,margin:'0 8px 2px'}}><div className="stock-bar-fill" style={{width:`${Math.min((ratio/2.5)*100,100)}%`,background:statusColor}}/></div><span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:statusColor}}>{Math.round(ratio*100)}%</span></div>):<span style={{color:'#64748b'}}>—</span>}</td>
+                        <td style={{textAlign:'right',paddingRight:9,width:155}}>{isOver?(<span className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#6d28d9'}}>▲ quá max +{fv(curQty-mx)} kg</span>):delta!=null?(<span className="mono" style={{fontSize:'.78rem',fontWeight:800,color:delta>=0?'#15803d':'#b91c1c'}}>{delta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(delta))} kg</span>):<span style={{color:'#64748b'}}>—</span>}</td>
+                        <td style={{textAlign:'center'}}><span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:statusColor,padding:'2px 8px',background:isOver?'#f3e8ff':ratio!==null&&ratio<0.8?'#fee2e2':ratio!==null&&ratio<1?'#fef9c3':ratio!==null&&ratio>2?'#e0e7ff':'#dcfce7',borderRadius:4,border:`1px solid ${statusColor}40`}}>{status}</span></td>
                         <td><button className="btn-danger" onClick={()=>delMS(r.id)}><Ic.X/></button></td>
                       </tr>
                     );
                   })}
                 </tbody>
                 <tfoot><tr>
-                  <td colSpan={3} style={{textAlign:'right',paddingRight:9,color:'#1e293b',fontSize:'.7rem'}}>TỔNG ({filteredMs.length} dòng lọc)</td>
+                  <td colSpan={3} style={{textAlign:'right',paddingRight:9,color:'#1e293b',fontSize:'.7rem'}}>TỔNG ({filteredMs.length} dòng)</td>
                   <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#7c3aed'}}>{fv(filtMsTotalMin)} kg min</td>
                   <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#6d28d9'}}>{filtMsTotalMax>0?fv(filtMsTotalMax)+' kg max':'—'}</td>
                   <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#2563eb'}}>{fv(filtMsTotalKg)} kg</td>
-                  <td/>
-                  <td className="mono" style={{textAlign:'right',paddingRight:9,fontWeight:900,color:filtMsDelta>=0?'#15803d':'#b91c1c'}}>{filtMsDelta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(filtMsDelta))} kg</td>
+                  <td/><td className="mono" style={{textAlign:'right',paddingRight:9,fontWeight:900,color:filtMsDelta>=0?'#15803d':'#b91c1c'}}>{filtMsDelta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(filtMsDelta))} kg</td>
                   <td colSpan={2}/>
                 </tr></tfoot>
               </table>
-              <div className="card-inset" style={{marginTop:13}}>
-                <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,lineHeight:1.8}}>
-                  💡 <strong style={{color:'#dc2626'}}>{'<'}80%</strong> THIẾU · <strong style={{color:'#d97706'}}>80–100%</strong> GẦN MIN · <strong style={{color:'#16a34a'}}>100–200%</strong> OK · <strong style={{color:'#4f46e5'}}>{'>'}200%</strong> DƯ · <strong style={{color:'#6d28d9'}}>{'>'} MaxStock</strong> QUÁ MAX
-                </p>
-              </div>
             </div>
           </div>
         )}
@@ -1225,10 +1171,7 @@ const App=()=>{
           <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
             <div style={{maxWidth:'1200px',margin:'0 auto'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:15}}>
-                <div>
-                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>🏷️ Giá Bán Kế Hoạch theo SKU</h2>
-                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>Nhập thủ công · Coating: 1E=PE, KP=NOPE</p>
-                </div>
+                <div><h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>🏷️ Giá Bán Kế Hoạch theo SKU</h2><p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>Nhập thủ công · Coating: 1E=PE, KP=NOPE</p></div>
                 <button className="btn btn-ghost btn-sm" onClick={addSP}><Ic.Plus/> Thêm SKU</button>
               </div>
               <FilterBar filter={spFilter} setFilter={setSpFilter} alloys={uniqueSpAlloys} showStatus={false} showCoating={true} total={sellingPrices.length} filtered={filteredSP.length}/>
@@ -1242,8 +1185,7 @@ const App=()=>{
                   <tbody>
                     {filteredSP.map((sp,i)=>{
                       const fpRow=floorPriceData.find(f=>f.alloy===(sp.alloy||'')&&f.temper===(sp.temper||'')&&(f.thickness||'')===(sp.thickness||'')&&(f.width||'')===(sp.width||'')&&(f.length||'')===(sp.length||'')&&(f.coating||'KP')===(sp.coating||'KP'));
-                      const sc=sp.sellCost||sp.price||0;
-                      const vsFloor=fpRow&&sc>0?sc-fpRow.floorAbsolute:null;
+                      const sc=sp.sellCost||sp.price||0;const vsFloor=fpRow&&sc>0?sc-fpRow.floorAbsolute:null;
                       return(
                         <tr key={sp.id}>
                           <td style={{textAlign:'center',color:'#64748b',fontSize:'.72rem',fontWeight:700,width:32}} className="mono">{i+1}</td>
@@ -1266,12 +1208,7 @@ const App=()=>{
                           <td><input className="inp inp-sm mono" style={{textAlign:'right',color:'#15803d',fontWeight:800}} value={fv(sc)} onChange={e=>setSpR(sp.id,'sellCost',pn(e.target.value))}/></td>
                           <td><input className="inp inp-sm" style={{color:'#1e293b',fontWeight:500}} value={sp.comment||''} onChange={e=>setSpR(sp.id,'comment',e.target.value)} placeholder="HĐ KH / Spot…"/></td>
                           <td style={{textAlign:'center'}}>
-                            {fpRow&&sc>0?(
-                                <div>
-                                <span className={`tag ${vsFloor>=0?'tg':'tr'} mono`} style={{fontSize:'.7rem'}}>{vsFloor>=0?'+':''}{fv(vsFloor)} đ</span>
-                                <div style={{fontSize:'.6rem',color:'#64748b',marginTop:2,fontWeight:600}}>sàn {fv(fpRow.floorAbsolute)}</div>
-                                </div>
-                            ):<span style={{color:'#64748b',fontSize:'.7rem',fontWeight:600}}>—</span>}
+                            {fpRow&&sc>0?(<div><span className={`tag ${vsFloor>=0?'tg':'tr'} mono`} style={{fontSize:'.7rem'}}>{vsFloor>=0?'+':''}{fv(vsFloor)} đ</span><div style={{fontSize:'.6rem',color:'#64748b',marginTop:2,fontWeight:600}}>sàn {fv(fpRow.floorAbsolute)}</div></div>):<span style={{color:'#64748b',fontSize:'.7rem',fontWeight:600}}>—</span>}
                           </td>
                           <td style={{width:34}}><button className="btn-danger" onClick={()=>delSP(sp.id)}><Ic.X/></button></td>
                         </tr>
@@ -1284,239 +1221,272 @@ const App=()=>{
           </div>
         )}
 
-        {/* ════ TAB GIÁ SÀN ════ */}
+        {/* ════ TAB GIÁ SÀN v5.0 ════ */}
         {tab==='floor'&&(
-          <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
+          <div style={{flex:1,padding:'14px 18px',overflowY:'auto',background:bg1}}>
             <div style={{maxWidth:'1600px',margin:'0 auto'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}}>
+
+              {/* HEADER + VIEWS */}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
                 <div>
                   <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a',display:'flex',alignItems:'center',gap:8}}>
-                    <span style={{background:'linear-gradient(135deg,#0d9488,#0891b2)',borderRadius:6,padding:'3px 8px',color:'#fff',fontSize:'.82rem'}}>💹 GIÁ SÀN</span>
-                    Phân tích giá tối thiểu + Tái tồn kho
+                    <span style={{background:'linear-gradient(135deg,#0d9488,#0891b2)',borderRadius:6,padding:'3px 8px',color:'#fff',fontSize:'.82rem'}}>💹 GIÁ SÀN 5.0</span>
+                    Phân tích giá sàn hòa vốn + Đối thủ
                   </h2>
-                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:5,lineHeight:1.6}}>
-                    Giá sàn = max( (GV + CP giữ hàng) ÷ (1 − QLKD%), Giá nhập mới × 98% )<br/>
-                    KH tiền tươi = Sàn không tính Ngày KH nợ · % Tái TK = (Giá bán − Giá nhập mới) ÷ Giá nhập mới × 100
-                  </p>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginTop:5,flexWrap:'wrap'}}>
+                    <div style={{fontSize:'.72rem',color:'#475569',fontWeight:600,background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:4,padding:'2px 8px'}}>
+                      <strong>Sàn = GV × (1 + {inputs.opsCostPct}% CPHĐKD{inputs.creditMode!=='none'?` + ${inputs.creditMode==='fixed'?inputs.finCostPct+'% CPTC':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}% TC (${inputs.customCreditDays}N)`}`:' + 0 CN'})</strong>
+                    </div>
+                    <span className="mgmt-view-badge">{creditModeLabel}</span>
+                  </div>
                 </div>
-                <div style={{display:'flex',gap:8,alignItems:'center'}}>
-                  <div style={{background:'#f0fdfa',border:'1px solid #5eead4',borderRadius:6,padding:'6px 12px',fontSize:'.72rem',fontWeight:700,color:'#0f766e'}}>
+                <div style={{display:'flex',gap:8,alignItems:'center',flexShrink:0}}>
+                  <div style={{background:'#f0fdfa',border:'1px solid #5eead4',borderRadius:6,padding:'5px 10px',fontSize:'.7rem',fontWeight:700,color:'#0f766e'}}>
                     {updatedImportPrices.length} dòng giá nhập
-                    {updatedImportPrices[0]?.updateDate&&<span style={{marginLeft:6}}>· {updatedImportPrices[0].updateDate}</span>}
+                    {updatedImportPrices[0]?.updateDate&&<span style={{marginLeft:5}}>· {updatedImportPrices[0].updateDate}</span>}
                   </div>
-                  <button className="btn btn-teal btn-sm" onClick={()=>syncGoogleSheet('uip')} disabled={dbStatus.loading}>{dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync Giá nhập</button>
-                  <div style={{display:'flex',gap:4,background:'#f1f5f9',borderRadius:5,padding:3,border:'1px solid #e2e8f0'}}>
-                    {[{v:'table',l:'≡ Bảng'},{v:'card',l:'⊞ Card'}].map(m=>(
-                      <button key={m.v} onClick={()=>setFpViewMode(m.v)} style={{padding:'3px 10px',fontSize:'.7rem',fontWeight:800,borderRadius:4,border:'none',cursor:'pointer',background:fpViewMode===m.v?'#ffffff':'transparent',color:fpViewMode===m.v?'#1d4ed8':'#475569',boxShadow:fpViewMode===m.v?'0 1px 2px rgba(0,0,0,0.1)':'none'}}>{m.l}</button>
-                    ))}
+                  <button className="btn btn-teal btn-sm" onClick={()=>syncGoogleSheet('uip')} disabled={dbStatus.loading}>{dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync</button>
+                  {/* VIEW TOGGLE */}
+                  <div className="toggle-group">
+                    <button className={`toggle-btn ${fpView==='detail'?'active':''}`} onClick={()=>setFpView('detail')} title="Chi tiết từng SKU">
+                      <Ic.List/> Chi tiết
+                    </button>
+                    <button className={`toggle-btn ${fpView==='mgmt'?'active':''}`} onClick={()=>setFpView('mgmt')} title="Tổng hợp cho quản lý">
+                      <Ic.Users/> Quản lý
+                    </button>
                   </div>
                 </div>
               </div>
 
-              {/* FIX #2: FilterBar + bộ lọc dày SKU min/max */}
-              <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:11,background:'#f1f5f9',border:'1px solid #e2e8f0',borderRadius:6,padding:'7px 10px'}}>
-                <span style={{fontSize:'.65rem',color:'#475569',fontWeight:800,display:'flex',alignItems:'center',gap:4}}><Ic.Filter/> Lọc:</span>
-                <select className="inp inp-xs" style={{width:'auto',minWidth:100}} value={fpFilter.alloy||'ALL'} onChange={e=>setFpFilter(f=>({...f,alloy:e.target.value}))}>
-                  <option value="ALL">Tất cả mác</option>
-                  {uniqueFpAlloys.map(a=><option key={a} value={a}>{a}</option>)}
-                </select>
-                <select className="inp inp-xs" style={{width:'auto',minWidth:110}} value={fpFilter.coating||'ALL'} onChange={e=>setFpFilter(f=>({...f,coating:e.target.value}))}>
-                  <option value="ALL">Tất cả coating</option>
-                  <option value="1E">🎨 PE (1E)</option>
-                  <option value="KP">⬜ NOPE (KP)</option>
-                </select>
-                {/* Bộ lọc dày */}
-                <div style={{display:'flex',alignItems:'center',gap:4,background:'#fff',border:'1px solid #cbd5e1',borderRadius:4,padding:'2px 6px'}}>
-                  <span style={{fontSize:'.62rem',color:'#475569',fontWeight:800,whiteSpace:'nowrap'}}>Dày mm:</span>
-                  <input className="inp inp-xs mono" style={{width:52,textAlign:'center',color:'#b45309',fontWeight:700,border:'none',padding:'2px 4px'}} placeholder="min" value={fpFilter.thickMin||''} onChange={e=>setFpFilter(f=>({...f,thickMin:e.target.value}))}/>
-                  <span style={{color:'#94a3b8',fontSize:'.7rem',fontWeight:700}}>–</span>
-                  <input className="inp inp-xs mono" style={{width:52,textAlign:'center',color:'#b45309',fontWeight:700,border:'none',padding:'2px 4px'}} placeholder="max" value={fpFilter.thickMax||''} onChange={e=>setFpFilter(f=>({...f,thickMax:e.target.value}))}/>
-                </div>
-                <input className="inp inp-xs" style={{minWidth:140,flex:1}} placeholder="🔍 Tìm kiếm SKU… (gõ x thay vì ×)" value={fpFilter.search||''} onChange={e=>setFpFilter(f=>({...f,search:e.target.value}))}/>
-                {(fpFilter.search||fpFilter.alloy!=='ALL'||fpFilter.coating!=='ALL'||fpFilter.thickMin||fpFilter.thickMax)?(
-                  <button className="btn btn-xs btn-ghost" onClick={()=>setFpFilter({alloy:'ALL',coating:'ALL',search:'',thickMin:'',thickMax:''})}>✕ Xóa lọc</button>
-                ):null}
-                <span style={{fontSize:'.65rem',color:'#64748b',fontWeight:700,whiteSpace:'nowrap'}}>{filteredFp.length}/{floorPriceData.length} dòng</span>
-              </div>
+              {/* ──── VIEW: CHI TIẾT ──── */}
+              {fpView==='detail'&&(
+                <>
+                  {/* FILTER BAR */}
+                  <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:11,background:'#f1f5f9',border:'1px solid #e2e8f0',borderRadius:6,padding:'7px 10px'}}>
+                    <span style={{fontSize:'.65rem',color:'#475569',fontWeight:800,display:'flex',alignItems:'center',gap:4}}><Ic.Filter/> Lọc:</span>
+                    <select className="inp inp-xs" style={{width:'auto',minWidth:100}} value={fpFilter.alloy||'ALL'} onChange={e=>setFpFilter(f=>({...f,alloy:e.target.value}))}>
+                      <option value="ALL">Tất cả mác</option>
+                      {uniqueFpAlloys.map(a=><option key={a} value={a}>{a}</option>)}
+                    </select>
+                    <select className="inp inp-xs" style={{width:'auto',minWidth:110}} value={fpFilter.coating||'ALL'} onChange={e=>setFpFilter(f=>({...f,coating:e.target.value}))}>
+                      <option value="ALL">Tất cả coating</option>
+                      <option value="1E">🎨 PE (1E)</option>
+                      <option value="KP">⬜ NOPE (KP)</option>
+                    </select>
+                    <div style={{display:'flex',alignItems:'center',gap:4,background:'#fff',border:'1px solid #cbd5e1',borderRadius:4,padding:'2px 6px'}}>
+                      <span style={{fontSize:'.62rem',color:'#475569',fontWeight:800,whiteSpace:'nowrap'}}>Dày mm:</span>
+                      <input className="inp inp-xs mono" style={{width:50,textAlign:'center',color:'#b45309',fontWeight:700,border:'none',padding:'2px 4px'}} placeholder="min" value={fpFilter.thickMin||''} onChange={e=>setFpFilter(f=>({...f,thickMin:e.target.value}))}/>
+                      <span style={{color:'#94a3b8',fontSize:'.7rem'}}>–</span>
+                      <input className="inp inp-xs mono" style={{width:50,textAlign:'center',color:'#b45309',fontWeight:700,border:'none',padding:'2px 4px'}} placeholder="max" value={fpFilter.thickMax||''} onChange={e=>setFpFilter(f=>({...f,thickMax:e.target.value}))}/>
+                    </div>
+                    <input className="inp inp-xs" style={{minWidth:140,flex:1}} placeholder="🔍 Tìm kiếm SKU… (gõ x thay ×)" value={fpFilter.search||''} onChange={e=>setFpFilter(f=>({...f,search:e.target.value}))}/>
+                    {(fpFilter.search||fpFilter.alloy!=='ALL'||fpFilter.coating!=='ALL'||fpFilter.thickMin||fpFilter.thickMax)&&(
+                      <button className="btn btn-xs btn-ghost" onClick={()=>setFpFilter({alloy:'ALL',coating:'ALL',search:'',thickMin:'',thickMax:''})}>✕ Xóa lọc</button>
+                    )}
+                    <span style={{fontSize:'.65rem',color:'#64748b',fontWeight:700,whiteSpace:'nowrap'}}>{filteredFp.length}/{floorPriceData.length} dòng</span>
+                  </div>
 
-              {filteredFp.length===0?(
-                <div style={{textAlign:'center',padding:50,color:'#64748b',fontWeight:700}}>Chưa có dữ liệu tồn kho. Vào tab 📦 Tồn kho để nhập hàng.</div>
-              ):fpViewMode==='table'?(
-                <div style={{overflowX:'auto'}}>
-                  <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',minWidth:1100,boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
-                    <thead>
-                      <tr>
-                        <th rowSpan={2} style={{background:'#e2e8f0',width:32}}>#</th>
-                        <th rowSpan={2} style={{textAlign:'left',paddingLeft:8,background:'#e2e8f0',minWidth:200}}>SKU</th>
-                        <th rowSpan={2} style={{background:'#e2e8f0',width:70}}>Coat</th>
-                        <th rowSpan={2} style={{background:'#e2e8f0',width:90}}>Tồn (kg)</th>
-                        <th rowSpan={2} style={{background:'#f0fdf4',color:'#14532d',minWidth:100}}>Giá vốn blend</th>
-                        <th rowSpan={2} style={{background:'#dcfce7',color:'#14532d',minWidth:110,fontWeight:900}}>🔒 Sàn HV</th>
-                        <th rowSpan={2} style={{background:'#ecfeff',color:'#0891b2',minWidth:100}}>Giá nhập mới</th>
-                        <th rowSpan={2} style={{background:'#fef9c3',color:'#854d0e',minWidth:110}}>% Tái TK @ Sàn</th>
-                        {/* FIX #5: thêm KH tiền tươi vào header nhóm */}
-                        <th colSpan={4} style={{background:'#eff6ff',color:'#1e3a8a',borderBottom:'1px solid #bfdbfe'}}>Giá theo nhóm KH</th>
-                      </tr>
-                      <tr>
-                        <th style={{background:'#dbeafe',color:'#1e3a8a',fontSize:'.63rem',minWidth:100}}>👥 Cốt lõi (+{inputs.marginCore}%)</th>
-                        <th style={{background:'#ede9fe',color:'#5b21b6',fontSize:'.63rem',minWidth:100}}>💛 Thân thiết (+{inputs.marginLoyal}%)</th>
-                        <th style={{background:'#ffedd5',color:'#9a3412',fontSize:'.63rem',minWidth:100}}>🆕 KH lẻ (+{inputs.marginNew}%)</th>
-                        {/* FIX #5: thêm cột KH tiền tươi */}
-                        <th style={{background:'#dcfce7',color:'#14532d',fontSize:'.63rem',minWidth:110}}>💵 Tiền tươi (0 credit)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredFp.map((r,i)=>(
-                        <tr key={r.skuKey} style={{background:r.restockAtFloor!=null&&r.restockAtFloor<-5?'#fef2f2':r.restockAtFloor!=null&&r.restockAtFloor<0?'#fffbeb':''}}>
-                          <td style={{textAlign:'center',color:'#64748b',fontSize:'.72rem',fontWeight:700}} className="mono">{i+1}</td>
-                          <td style={{paddingLeft:8}}>
-                            <div style={{fontWeight:800,fontSize:'.82rem',color:'#0f172a'}}>{r.alloy} {r.temper}</div>
-                            {/* FIX #4: dùng x thay × trong hiển thị */}
-                            <div style={{fontSize:'.68rem',color:'#475569',fontFamily:'JetBrains Mono',marginTop:1}}>{r.thickness}x{r.width}x{r.length}</div>
-                          </td>
-                          <td style={{textAlign:'center'}}><span className={`tag ${r.coating==='1E'?'tc':'tn'}`} style={{fontSize:'.63rem'}}>{r.coating==='1E'?'🎨 PE':'⬜ NOPE'}</span></td>
-                          <td style={{textAlign:'right',paddingRight:8}}>
-                            <div className="mono" style={{fontWeight:700,color:'#15803d',fontSize:'.8rem'}}>{fv(r.totalQty)}</div>
-                            <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>🟢{fv(r.qtyStock)} 🟡{fv(r.qtyTransit)}</div>
-                          </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
-                            <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.82rem'}}>{fv(r.costBasisPhysical)}</div>
-                            <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>đ/kg</div>
-                          </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
-                            <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{fv(r.floorAbsolute)}</div>
-                            {r.isFloorCappedByMin&&<div style={{fontSize:'.57rem',color:'#065f46',fontWeight:700}}>▲ sàn NM×98%</div>}
-                          </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#ecfeff'}}>
-                            {r.newImportPriceVND?(<><div className="mono" style={{fontWeight:800,color:'#0891b2',fontSize:'.82rem'}}>{fv(r.newImportPriceVND)}</div><div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>{r.updatedImportMatch?.priceFC}$ × {r.updatedImportMatch?.importCoef}</div></>):<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
-                          </td>
-                          <td style={{textAlign:'center',background:'#fefce8'}}><RestockBadge pct={r.restockAtFloor}/></td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#eff6ff'}}><div className="mono" style={{fontWeight:800,color:'#1d4ed8',fontSize:'.82rem'}}>{fv(r.priceCore)}</div><RestockBadge pct={r.restockAtCore} compact/></td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#ede9fe'}}><div className="mono" style={{fontWeight:800,color:'#7c3aed',fontSize:'.82rem'}}>{fv(r.priceLoyal)}</div><RestockBadge pct={r.restockAtLoyal} compact/></td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#fff7ed'}}><div className="mono" style={{fontWeight:800,color:'#ea580c',fontSize:'.82rem'}}>{fv(r.priceNew)}</div><RestockBadge pct={r.restockAtNew} compact/></td>
-                          {/* FIX #5: cột KH tiền tươi */}
-                          <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4',borderLeft:'2px solid #86efac'}}>
-                            <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.85rem'}}>{fv(r.priceCash)}</div>
-                            <div style={{fontSize:'.57rem',color:'#065f46',fontWeight:700}}>0 credit days</div>
-                          </td>
+                  {filteredFp.length===0?(
+                    <div style={{textAlign:'center',padding:50,color:'#64748b',fontWeight:700}}>Chưa có dữ liệu tồn kho. Vào tab 📦 để nhập hàng.</div>
+                  ):(
+                    <div style={{overflowX:'auto'}}>
+                      <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',minWidth:1050,boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
+                        <thead>
+                          <tr>
+                            <th rowSpan={2} style={{background:'#e2e8f0',width:32}}>#</th>
+                            <th rowSpan={2} style={{textAlign:'left',paddingLeft:8,background:'#e2e8f0',minWidth:210}}>SKU</th>
+                            <th rowSpan={2} style={{background:'#e2e8f0',width:95}}>Tồn (kg)</th>
+                            <th rowSpan={2} style={{background:'#f0fdf4',color:'#14532d',minWidth:105}}>Giá vốn blend</th>
+                            <th rowSpan={2} style={{background:'#dcfce7',color:'#14532d',minWidth:115,fontWeight:900}}>
+                              🔒 Sàn HV
+                              <div style={{fontSize:'.55rem',fontWeight:600,opacity:.8,marginTop:1}}>{inputs.opsCostPct}%+{inputs.creditMode==='none'?'0':inputs.creditMode==='fixed'?inputs.finCostPct+'%':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}%`}</div>
+                            </th>
+                            <th rowSpan={2} style={{background:'#fef3c7',color:'#92400e',minWidth:105}}>🏭 Đối thủ</th>
+                            <th rowSpan={2} style={{background:'#fde68a',color:'#92400e',minWidth:105}}>🔻 Sàn ĐT</th>
+                            <th colSpan={3} style={{background:'#eff6ff',color:'#1e3a8a',borderBottom:'1px solid #bfdbfe'}}>Giá theo nhóm KH</th>
+                          </tr>
+                          <tr>
+                            <th style={{background:'#dbeafe',color:'#1e3a8a',fontSize:'.63rem',minWidth:105}}>👥 Cốt lõi (+{inputs.marginCore}%)</th>
+                            <th style={{background:'#ede9fe',color:'#5b21b6',fontSize:'.63rem',minWidth:105}}>💛 Thân thiết (+{inputs.marginLoyal}%)</th>
+                            <th style={{background:'#ffedd5',color:'#9a3412',fontSize:'.63rem',minWidth:105}}>🆕 KH lẻ (+{inputs.marginNew}%)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredFp.map((r,i)=>{
+                            const diffComp=r.competitorPrice>0?r.floorAbsolute-r.competitorPrice:null;
+                            const diffCompFloor=r.competitorFloorPrice>0?r.floorAbsolute-r.competitorFloorPrice:null;
+                            return(
+                              <tr key={r.skuKey}>
+                                <td style={{textAlign:'center',color:'#64748b',fontSize:'.72rem',fontWeight:700}} className="mono">{i+1}</td>
+                                <td style={{paddingLeft:8}}>
+                                  <div style={{fontWeight:800,fontSize:'.82rem',color:'#0f172a'}}>{r.alloy} {r.temper}</div>
+                                  <div style={{fontSize:'.68rem',color:'#475569',fontFamily:'JetBrains Mono',marginTop:1}}>{r.thickness}x{r.width}x{r.length}</div>
+                                  <div style={{fontSize:'.6rem',color:r.coating==='1E'?'#0f766e':'#854d0e',fontWeight:700,marginTop:1}}>{r.coating==='1E'?'🎨 PE':'⬜ NOPE'}</div>
+                                </td>
+                                <td style={{textAlign:'right',paddingRight:8}}>
+                                  <div className="mono" style={{fontWeight:700,color:'#15803d',fontSize:'.8rem'}}>{fv(r.totalQty)}</div>
+                                  <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>🟢{fv(r.qtyStock)} 🟡{fv(r.qtyTransit)}</div>
+                                </td>
+                                <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
+                                  <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.82rem'}}>{fv(r.costBasisPhysical)}</div>
+                                  <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>đ/kg</div>
+                                </td>
+                                <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
+                                  <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{fv(r.floorAbsolute)}</div>
+                                  <div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>+{(r.totalCostRate*100).toFixed(2)}% GV</div>
+                                </td>
+                                {/* Giá đối thủ */}
+                                <td style={{textAlign:'right',paddingRight:8,background:'#fffbeb'}}>
+                                  {r.competitorPrice>0?(
+                                    <>
+                                      <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.82rem'}}>{fv(r.competitorPrice)}</div>
+                                      {diffComp!==null&&<div style={{fontSize:'.57rem',fontWeight:700,color:diffComp>0?'#dc2626':'#15803d'}}>{diffComp>0?'▲ '+fv(diffComp)+' cao hơn':'▼ '+fv(Math.abs(diffComp)+' thấp hơn')}</div>}
+                                    </>
+                                  ):<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
+                                </td>
+                                {/* Sàn đối thủ */}
+                                <td style={{textAlign:'right',paddingRight:8,background:'#fef9c3'}}>
+                                  {r.competitorFloorPrice>0?(
+                                    <>
+                                      <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.82rem'}}>{fv(r.competitorFloorPrice)}</div>
+                                      {diffCompFloor!==null&&<div style={{fontSize:'.57rem',fontWeight:700,color:diffCompFloor>0?'#dc2626':'#15803d'}}>{diffCompFloor>0?'▲ '+fv(diffCompFloor):'▼ '+fv(Math.abs(diffCompFloor))}</div>}
+                                    </>
+                                  ):<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
+                                </td>
+                                <td style={{textAlign:'right',paddingRight:8,background:'#eff6ff'}}><div className="mono" style={{fontWeight:800,color:'#1d4ed8',fontSize:'.82rem'}}>{fv(r.priceCore)}</div></td>
+                                <td style={{textAlign:'right',paddingRight:8,background:'#ede9fe'}}><div className="mono" style={{fontWeight:800,color:'#7c3aed',fontSize:'.82rem'}}>{fv(r.priceLoyal)}</div></td>
+                                <td style={{textAlign:'right',paddingRight:8,background:'#fff7ed'}}><div className="mono" style={{fontWeight:800,color:'#ea580c',fontSize:'.82rem'}}>{fv(r.priceNew)}</div></td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                        {fpFooter&&(
+                          <tfoot>
+                            <tr>
+                              <td colSpan={2} style={{textAlign:'right',paddingRight:8,fontSize:'.68rem',color:'#334155',fontWeight:900}}>TỔNG / BQ WA ({filteredFp.length} SKU)</td>
+                              <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
+                                <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.85rem'}}>{fv(fpFooter.totalQty)}</div>
+                                <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>kg</div>
+                              </td>
+                              <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
+                                <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.85rem'}}>{fv(fpFooter.avgCostBasis)}</div>
+                                <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>BQ WA</div>
+                              </td>
+                              <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
+                                <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.88rem'}}>{fv(fpFooter.avgFloor)}</div>
+                                <div style={{fontSize:'.6rem',color:'#065f46',fontWeight:700}}>BQ WA Sàn</div>
+                              </td>
+                              <td style={{background:'#fffbeb'}}/>
+                              <td style={{background:'#fef9c3'}}/>
+                              <td style={{textAlign:'right',paddingRight:8,background:'#eff6ff'}}>
+                                <div className="mono" style={{fontWeight:900,color:'#1d4ed8',fontSize:'.85rem'}}>{fv(fpFooter.avgCore)}</div>
+                                <div style={{fontSize:'.6rem',color:'#1e3a8a',fontWeight:700}}>BQ WA</div>
+                              </td>
+                              <td style={{textAlign:'right',paddingRight:8,background:'#ede9fe'}}>
+                                <div className="mono" style={{fontWeight:900,color:'#7c3aed',fontSize:'.85rem'}}>{fv(fpFooter.avgLoyal)}</div>
+                                <div style={{fontSize:'.6rem',color:'#5b21b6',fontWeight:700}}>BQ WA</div>
+                              </td>
+                              <td style={{textAlign:'right',paddingRight:8,background:'#fff7ed'}}>
+                                <div className="mono" style={{fontWeight:900,color:'#ea580c',fontSize:'.85rem'}}>{fv(fpFooter.avgNew)}</div>
+                                <div style={{fontSize:'.6rem',color:'#9a3412',fontWeight:700}}>BQ WA</div>
+                              </td>
+                            </tr>
+                          </tfoot>
+                        )}
+                      </table>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ──── VIEW: QUẢN LÝ ──── */}
+              {fpView==='mgmt'&&(
+                <>
+                  <div style={{background:'#fef9c3',border:'1px solid #fde047',borderRadius:7,padding:'9px 13px',marginBottom:13,display:'flex',alignItems:'center',gap:8}}>
+                    <Ic.Users/>
+                    <div style={{fontSize:'.75rem',color:'#713f12',fontWeight:700}}>
+                      <strong>Chế độ Quản lý</strong> — Hiển thị giá sàn trung bình WA theo nhóm luồng hàng. Mỗi dòng gom tất cả SKU đáp ứng điều kiện Alloy + Temper + khoảng dày.
+                    </div>
+                  </div>
+                  <div style={{overflowX:'auto'}}>
+                    <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
+                      <thead>
+                        <tr>
+                          <th style={{textAlign:'left',paddingLeft:8,minWidth:200}}>Nhóm hàng</th>
+                          <th style={{width:60}}>SKUs</th>
+                          <th style={{minWidth:100}}>Tồn (kg)</th>
+                          <th style={{background:'#f0fdf4',color:'#14532d',minWidth:110}}>BQ Giá vốn</th>
+                          <th style={{background:'#dcfce7',color:'#14532d',minWidth:120,fontWeight:900}}>🔒 BQ Sàn HV</th>
+                          <th style={{background:'#fef3c7',color:'#92400e',minWidth:110}}>🏭 BQ Đối thủ</th>
+                          <th style={{background:'#fde68a',color:'#92400e',minWidth:110}}>🔻 BQ Sàn ĐT</th>
+                          <th style={{background:'#dbeafe',color:'#1e3a8a',minWidth:110}}>👥 BQ Cốt lõi</th>
+                          <th style={{background:'#ede9fe',color:'#5b21b6',minWidth:110}}>💛 BQ Thân thiết</th>
+                          <th style={{background:'#ffedd5',color:'#9a3412',minWidth:110}}>🆕 BQ KH lẻ</th>
                         </tr>
-                      ))}
-                    </tbody>
-                    {/* FIX #3: tfoot tổng hợp */}
-                    {fpFooter&&(
+                      </thead>
+                      <tbody>
+                        {mgmtData.map((g,i)=>(
+                          <tr key={g.id} style={{background:i%2===0?'#ffffff':'#f8fafc'}}>
+                            <td style={{paddingLeft:8}}>
+                              <div style={{fontWeight:900,fontSize:'.84rem',color:'#0f172a'}}>{g.label}</div>
+                              <div style={{fontSize:'.62rem',color:'#475569',fontWeight:600,marginTop:2}}>
+                                {g.alloy}{g.temper?` ${g.temper}`:''} · {g.minThick}–{g.maxThick} mm
+                              </div>
+                            </td>
+                            <td style={{textAlign:'center'}}>
+                              <span className="tag tb" style={{fontSize:'.68rem'}}>{g.skus}</span>
+                            </td>
+                            <td style={{textAlign:'right',paddingRight:8}}>
+                              <div className="mono" style={{fontWeight:700,color:'#15803d'}}>{fv(g.totalQty)}</div>
+                              <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>kg</div>
+                            </td>
+                            <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
+                              <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.88rem'}}>{g.skus>0?fv(g.avgCost):'—'}</div>
+                            </td>
+                            <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
+                              <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{g.skus>0?fv(g.avgFloor):'—'}</div>
+                            </td>
+                            <td style={{textAlign:'right',paddingRight:8,background:'#fffbeb'}}>
+                              <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.88rem'}}>{g.avgCompPrice>0?fv(g.avgCompPrice):'—'}</div>
+                              {g.avgCompPrice>0&&g.skus>0&&(
+                                <div style={{fontSize:'.57rem',fontWeight:700,color:g.avgFloor>g.avgCompPrice?'#dc2626':'#15803d'}}>
+                                  {g.avgFloor>g.avgCompPrice?`▲ ${fv(g.avgFloor-g.avgCompPrice)} cao hơn`:`▼ ${fv(g.avgCompPrice-g.avgFloor)} thấp hơn`}
+                                </div>
+                              )}
+                            </td>
+                            <td style={{textAlign:'right',paddingRight:8,background:'#fef9c3'}}>
+                              <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.88rem'}}>{g.avgCompFloor>0?fv(g.avgCompFloor):'—'}</div>
+                              {g.avgCompFloor>0&&g.skus>0&&(
+                                <div style={{fontSize:'.57rem',fontWeight:700,color:g.avgFloor>g.avgCompFloor?'#dc2626':'#15803d'}}>
+                                  {g.avgFloor>g.avgCompFloor?`▲ ${fv(g.avgFloor-g.avgCompFloor)} cao hơn`:`▼ ${fv(g.avgCompFloor-g.avgFloor)} thấp hơn`}
+                                </div>
+                              )}
+                            </td>
+                            <td style={{textAlign:'right',paddingRight:8,background:'#eff6ff'}}><div className="mono" style={{fontWeight:800,color:'#1d4ed8',fontSize:'.88rem'}}>{g.skus>0?fv(g.avgCore):'—'}</div></td>
+                            <td style={{textAlign:'right',paddingRight:8,background:'#ede9fe'}}><div className="mono" style={{fontWeight:800,color:'#7c3aed',fontSize:'.88rem'}}>{g.skus>0?fv(g.avgLoyal):'—'}</div></td>
+                            <td style={{textAlign:'right',paddingRight:8,background:'#fff7ed'}}><div className="mono" style={{fontWeight:800,color:'#ea580c',fontSize:'.88rem'}}>{g.skus>0?fv(g.avgNew):'—'}</div></td>
+                          </tr>
+                        ))}
+                      </tbody>
                       <tfoot>
                         <tr>
-                          <td colSpan={3} style={{textAlign:'right',paddingRight:8,fontSize:'.68rem',color:'#334155',fontWeight:900,background:'#f1f5f9'}}>
-                            TỔNG / BQ ({filteredFp.length} SKU)
+                          <td colSpan={2} style={{textAlign:'right',paddingRight:8,fontSize:'.68rem',color:'#334155',fontWeight:900}}>
+                            TỔNG ({mgmtData.filter(g=>g.skus>0).length} nhóm có dữ liệu)
                           </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
-                            <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.85rem'}}>{fv(fpFooter.totalQty)}</div>
-                            <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>kg tổng cộng</div>
+                          <td style={{textAlign:'right',paddingRight:8}}>
+                            <div className="mono" style={{fontWeight:900,color:'#15803d'}}>{fv(mgmtData.reduce((s,g)=>s+g.totalQty,0))}</div>
                           </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
-                            <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.85rem'}}>{fv(fpFooter.avgCostBasis)}</div>
-                            <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>BQ WA đ/kg</div>
-                          </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
-                            <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.88rem'}}>{fv(fpFooter.avgFloor)}</div>
-                            <div style={{fontSize:'.6rem',color:'#065f46',fontWeight:700}}>BQ WA Sàn</div>
-                          </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#ecfeff'}}>
-                            {fpFooter.avgImport?(<><div className="mono" style={{fontWeight:900,color:'#0891b2',fontSize:'.85rem'}}>{fv(fpFooter.avgImport)}</div><div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>BQ WA</div></>):<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
-                          </td>
-                          <td style={{background:'#fefce8'}}/>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#eff6ff'}}>
-                            <div className="mono" style={{fontWeight:900,color:'#1d4ed8',fontSize:'.85rem'}}>{fv(fpFooter.avgCore)}</div>
-                            <div style={{fontSize:'.6rem',color:'#1e3a8a',fontWeight:700}}>BQ WA</div>
-                          </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#ede9fe'}}>
-                            <div className="mono" style={{fontWeight:900,color:'#7c3aed',fontSize:'.85rem'}}>{fv(fpFooter.avgLoyal)}</div>
-                            <div style={{fontSize:'.6rem',color:'#5b21b6',fontWeight:700}}>BQ WA</div>
-                          </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#fff7ed'}}>
-                            <div className="mono" style={{fontWeight:900,color:'#ea580c',fontSize:'.85rem'}}>{fv(fpFooter.avgNew)}</div>
-                            <div style={{fontSize:'.6rem',color:'#9a3412',fontWeight:700}}>BQ WA</div>
-                          </td>
-                          <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4',borderLeft:'2px solid #86efac'}}>
-                            <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.85rem'}}>{fv(fpFooter.avgCash)}</div>
-                            <div style={{fontSize:'.6rem',color:'#065f46',fontWeight:700}}>BQ WA</div>
-                          </td>
+                          <td colSpan={7}/>
                         </tr>
                       </tfoot>
-                    )}
-                  </table>
-                </div>
-              ):(
-                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(400px,1fr))',gap:12}}>
-                  {filteredFp.map((r,i)=>{
-                    const cardCls=r.restockAtFloor!=null&&r.restockAtFloor<-5?'has-loss':r.restockAtFloor!=null&&r.restockAtFloor<0?'has-warn':'has-ok';
-                    return(
-                      <div key={r.skuKey} className={`floor-card ${cardCls}`}>
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
-                          <div>
-                            <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
-                              <span style={{fontWeight:900,fontSize:'.95rem',color:'#0f172a'}}>{r.alloy} {r.temper}</span>
-                              <span className={`tag ${r.coating==='1E'?'tc':'tn'}`} style={{fontSize:'.63rem'}}>{r.coating==='1E'?'🎨 PE':'⬜ NOPE'}</span>
-                            </div>
-                            {/* FIX #4: x thay × */}
-                            <div style={{fontSize:'.72rem',color:'#475569',fontFamily:'JetBrains Mono',fontWeight:600}}>{r.thickness}mm x {r.width} x {r.length}</div>
-                          </div>
-                          <div style={{textAlign:'right'}}>
-                            <div className="mono" style={{fontSize:'.82rem',fontWeight:800,color:'#15803d'}}>{fv(r.totalQty)} kg</div>
-                            <div style={{fontSize:'.62rem',color:'#475569',fontWeight:600}}>🟢{fv(r.qtyStock)} · 🟡{fv(r.qtyTransit)}</div>
-                          </div>
-                        </div>
-                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:9}}>
-                          <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:6,padding:'8px 10px'}}>
-                            <div style={{fontSize:'.62rem',color:'#065f46',fontWeight:800,marginBottom:3}}>📊 Giá vốn blend</div>
-                            <div className="mono" style={{fontSize:'.95rem',fontWeight:900,color:'#15803d'}}>{fv(r.costBasisPhysical)}</div>
-                            <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600,marginTop:1}}>đ/kg (kho + đường)</div>
-                          </div>
-                          <div style={{background:r.newImportPriceVND?'#ecfeff':'#f8fafc',border:`1px solid ${r.newImportPriceVND?'#a5f3fc':'#e2e8f0'}`,borderRadius:6,padding:'8px 10px'}}>
-                            <div style={{fontSize:'.62rem',color:r.newImportPriceVND?'#0891b2':'#64748b',fontWeight:800,marginBottom:3}}>🔄 Giá nhập mới</div>
-                            {r.newImportPriceVND?<div className="mono" style={{fontSize:'.95rem',fontWeight:900,color:'#0891b2'}}>{fv(r.newImportPriceVND)}</div>:<div style={{fontSize:'.78rem',color:'#94a3b8',fontStyle:'italic'}}>Chưa có dữ liệu</div>}
-                          </div>
-                        </div>
-                        <div style={{background:'linear-gradient(135deg,#dcfce7,#d1fae5)',border:'2px solid #86efac',borderRadius:7,padding:'10px 12px',marginBottom:10}}>
-                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                            <div>
-                              <div style={{fontSize:'.62rem',color:'#065f46',fontWeight:900,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:3}}>🔒 GIÁ SÀN HÒA VỐN</div>
-                              <div className="mono" style={{fontSize:'1.3rem',fontWeight:900,color:'#15803d'}}>{fv(r.floorAbsolute)} <span style={{fontSize:'.65rem',fontWeight:700,color:'#065f46'}}>đ/kg</span></div>
-                              {r.isFloorCappedByMin&&<div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:700,marginTop:2}}>▲ Áp sàn NM×98%: {fv(r.floorMinimum)}</div>}
-                            </div>
-                            <div style={{textAlign:'right'}}>
-                              <div style={{fontSize:'.62rem',color:'#065f46',fontWeight:700,marginBottom:4}}>% Tái TK @ Sàn</div>
-                              <RestockBadge pct={r.restockAtFloor}/>
-                            </div>
-                          </div>
-                        </div>
-                        {/* FIX #5: thêm KH tiền tươi vào card view */}
-                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:5,marginBottom:8}}>
-                          {[
-                            {cls:'price-tier-core',lbl:'👥 Cốt lõi',margin:inputs.marginCore,price:r.priceCore,pct:r.restockAtCore,c:'#1d4ed8'},
-                            {cls:'price-tier-loyal',lbl:'💛 Thân thiết',margin:inputs.marginLoyal,price:r.priceLoyal,pct:r.restockAtLoyal,c:'#7c3aed'},
-                            {cls:'price-tier-new',lbl:'🆕 KH lẻ',margin:inputs.marginNew,price:r.priceNew,pct:r.restockAtNew,c:'#ea580c'},
-                            {cls:'price-tier-cash',lbl:'💵 Tiền tươi',margin:null,price:r.priceCash,pct:null,c:'#15803d',note:'0 credit days'},
-                          ].map((t,j)=>(
-                            <div key={j} className={t.cls} style={{borderRadius:6,padding:'7px 8px'}}>
-                              <div style={{fontSize:'.58rem',color:t.c,fontWeight:900,marginBottom:2}}>{t.lbl}</div>
-                              {t.margin!==null?<div style={{fontSize:'.55rem',color:t.c,fontWeight:700,marginBottom:3}}>+{t.margin}% vs sàn</div>:<div style={{fontSize:'.55rem',color:t.c,fontWeight:700,marginBottom:3}}>{t.note}</div>}
-                              <div className="mono" style={{fontSize:'.82rem',fontWeight:900,color:t.c}}>{fv(t.price)}</div>
-                              {t.pct!==null&&<div style={{marginTop:3}}><RestockBadge pct={t.pct} compact/></div>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                    </table>
+                  </div>
+                  <div style={{marginTop:12,background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:7,padding:'10px 14px',fontSize:'.72rem',color:'#475569',fontWeight:600,lineHeight:1.8}}>
+                    💡 BQ WA = trung bình có trọng số theo <strong>Tồn (kg)</strong>. Dữ liệu Đối thủ (CompetitorPrice, CompetitorFloorPrice) lấy từ GSheet cột tương ứng trong tab giá nhập. Nhấn <strong>Sync</strong> để cập nhật.
+                  </div>
+                </>
               )}
-              <div style={{marginTop:16,background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:8,padding:'10px 14px'}}>
-                <div style={{fontSize:'.68rem',fontWeight:900,color:'#1e293b',marginBottom:6}}>📖 % Tái tồn kho · BQ WA = trung bình có trọng số theo Tồn (kg)</div>
-                <div style={{display:'flex',gap:10,flexWrap:'wrap',fontSize:'.68rem',fontWeight:700}}>
-                  {[{cls:'restock-pos-hi',l:'>3%: Lãi tốt'},{cls:'restock-pos-lo',l:'0–3%: Hòa vốn'},{cls:'restock-warn',l:'-3–0%: Lỗ nhẹ'},{cls:'restock-neg',l:'-10–-3%: Lỗ đáng kể'},{cls:'restock-heavy',l:'<-10%: Lỗ nặng'}].map((x,i)=><span key={i} className={`restock-badge ${x.cls}`}>{x.l}</span>)}
-                </div>
-              </div>
+
             </div>
           </div>
         )}
@@ -1526,12 +1496,7 @@ const App=()=>{
           <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
             <div style={{maxWidth:'1200px',margin:'0 auto'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-                <div>
-                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📈 Báo cáo Tồn kho & Hạn mức</h2>
-                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>
-                    Nếu ô Kho tồn (kg) / Credit Max hiện "Chưa có dữ liệu" → nhấn <strong>Sync Hạn mức</strong> để tải từ GSheet gid=1995461192
-                  </p>
-                </div>
+                <div><h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📈 Báo cáo Tồn kho & Hạn mức</h2></div>
                 <div style={{display:'flex',gap:8}}>
                   <button className="btn btn-purple btn-sm" onClick={()=>syncGoogleSheet('lim')} disabled={dbStatus.loading}><Ic.Refresh/> Sync Hạn mức</button>
                   <button className="btn btn-ghost btn-sm" onClick={()=>syncGoogleSheet('all')} disabled={dbStatus.loading}><Ic.Refresh/> Sync All</button>
@@ -1540,13 +1505,7 @@ const App=()=>{
               <div style={{background:'#ffffff',border:'1px solid #bfdbfe',borderRadius:10,padding:'14px 18px',marginBottom:16,boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
                 <div style={{fontSize:'.68rem',color:'#1d4ed8',fontWeight:900,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:10}}>🌐 TOÀN KHO</div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:10,marginBottom:12}}>
-                  {[
-                    {l:'Tổng KL',v:fv(reportData.globalKg)+' kg',c:'#15803d'},
-                    {l:'Vốn TK',v:fv(reportData.globalCostValue)+'đ',c:'#1d4ed8'},
-                    {l:'BQ Hiện tại',v:fv(reportData.globalAvg)+' đ/kg',c:'#334155'},
-                    {l:'BQ Sau nhập',v:fv(reportData.globalAvgAfter)+' đ/kg',c:reportData.globalAvgAfter>reportData.globalAvg?'#dc2626':'#2563eb'},
-                    {l:'Break-even',v:fv(reportData.globalBreakEven)+' đ/kg',c:'#6d28d9'},
-                  ].map((x,i)=>(
+                  {[{l:'Tổng KL',v:fv(reportData.globalKg)+' kg',c:'#15803d'},{l:'Vốn TK',v:fv(reportData.globalCostValue)+'đ',c:'#1d4ed8'},{l:'BQ Hiện tại',v:fv(reportData.globalAvg)+' đ/kg',c:'#334155'},{l:'BQ Sau nhập',v:fv(reportData.globalAvgAfter)+' đ/kg',c:reportData.globalAvgAfter>reportData.globalAvg?'#dc2626':'#2563eb'},{l:'Break-even',v:fv(reportData.globalBreakEven)+' đ/kg',c:'#6d28d9'}].map((x,i)=>(
                     <div key={i} style={{textAlign:'center',background:bg4,borderRadius:6,padding:'9px 8px',border:`1px solid ${border1}`}}>
                       <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700,marginBottom:4}}>{x.l}</div>
                       <div className="mono" style={{fontSize:'.88rem',fontWeight:900,color:x.c,lineHeight:1.2}}>{x.v}</div>
@@ -1554,10 +1513,7 @@ const App=()=>{
                   ))}
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:9,marginBottom:12}}>
-                  {[
-                    {lbl:'⬜ NOPE (KP)',kg:reportData.globalPlainKg,val:reportData.globalPlainCostValue,bg:'#fef08a',br:'#fde047',c:'#854d0e'},
-                    {lbl:'🎨 PE (1E)',kg:reportData.globalCoatedKg,val:reportData.globalCoatedCostValue,bg:'#ccfbf1',br:'#99f6e4',c:'#0f766e'},
-                  ].map((x,i)=>(
+                  {[{lbl:'⬜ NOPE (KP)',kg:reportData.globalPlainKg,val:reportData.globalPlainCostValue,bg:'#fef08a',br:'#fde047',c:'#854d0e'},{lbl:'🎨 PE (1E)',kg:reportData.globalCoatedKg,val:reportData.globalCoatedCostValue,bg:'#ccfbf1',br:'#99f6e4',c:'#0f766e'}].map((x,i)=>(
                     <div key={i} style={{background:x.bg,border:`1px solid ${x.br}`,borderRadius:6,padding:'8px 11px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                       <div><div style={{fontSize:'.65rem',color:x.c,fontWeight:800,marginBottom:3}}>{x.lbl}</div><div className="mono" style={{fontSize:'.88rem',fontWeight:800,color:x.c}}>{fv(x.kg)} kg</div></div>
                       <div style={{textAlign:'right'}}><div style={{fontSize:'.6rem',color:x.c,fontWeight:700}}>Vốn</div><div className="mono" style={{fontSize:'.78rem',color:x.c,fontWeight:800}}>{fv(x.val)}đ</div></div>
@@ -1566,35 +1522,24 @@ const App=()=>{
                 </div>
                 <div style={{borderTop:`1px solid ${border1}`,paddingTop:11}}>
                   <div style={{fontSize:'.63rem',color:'#1e293b',fontWeight:900,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:8,display:'flex',alignItems:'center',gap:5}}>
-                    <Ic.Alert/> Hạn mức
-                    {limitsWarnings.totalAlerts>0&&<span className="tag tr" style={{fontSize:'.6rem',marginLeft:4}}>{limitsWarnings.totalAlerts} vi phạm</span>}
-                    <span style={{fontSize:'.6rem',color:'#64748b',fontWeight:600,textTransform:'none',marginLeft:4}}>· GSheet gid=1995461192</span>
+                    <Ic.Alert/> Hạn mức {limitsWarnings.totalAlerts>0&&<span className="tag tr" style={{fontSize:'.6rem',marginLeft:4}}>{limitsWarnings.totalAlerts} vi phạm</span>}
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
-                    <div style={{background:limitsWarnings.warnOverKg?'#fef2f2':bg4,border:`1px solid ${limitsWarnings.warnOverKg?'#fca5a5':border2}`,borderRadius:6,padding:'9px 10px'}}>
-                      <div style={{fontSize:'.62rem',fontWeight:900,color:limitsWarnings.warnOverKg?'#dc2626':'#334155',marginBottom:6}}>{limitsWarnings.warnOverKg&&'⚠ '}📦 Kho tồn (kg)</div>
-                      <LimitBar actual={limitsWarnings.totalKg} limit={limitsWarnings.inventoryMaxKg} label={`MaxKg: ${fv(limitsWarnings.inventoryMaxKg)}`} unit=" kg"/>
-                      {limitsWarnings.inventoryMinKg>0&&(<div style={{marginTop:6,fontSize:'.62rem',color:limitsWarnings.warnUnderKg?'#b45309':'#15803d',fontWeight:700}}>MinKg: {fv(limitsWarnings.inventoryMinKg)} · {limitsWarnings.warnUnderKg?`▼ Thiếu ${fv(limitsWarnings.inventoryMinKg-limitsWarnings.totalKg)} kg`:`✓ Đạt`}</div>)}
-                      <div style={{marginTop:6,display:'grid',gridTemplateColumns:'1fr 1fr',gap:4}}>
-                        <div><label className="lbl" style={{fontSize:'.53rem'}}>Max Kg</label><input className="inp inp-xs mono" style={{fontSize:'.72rem'}} value={fv(limitsWarnings.inventoryMaxKg)} onChange={e=>setLimField('inventoryMaxKg',e.target.value)}/></div>
-                        <div><label className="lbl" style={{fontSize:'.53rem'}}>Min Kg</label><input className="inp inp-xs mono" style={{fontSize:'.72rem'}} value={fv(limitsWarnings.inventoryMinKg)} onChange={e=>setLimField('inventoryMinKg',e.target.value)}/></div>
+                    {[
+                      {bg:limitsWarnings.warnOverKg,label:'📦 Kho tồn (kg)',actual:limitsWarnings.totalKg,limit:limitsWarnings.inventoryMaxKg,unit:' kg',extra:limitsWarnings.inventoryMinKg>0?`MinKg: ${fv(limitsWarnings.inventoryMinKg)} · ${limitsWarnings.warnUnderKg?`▼ Thiếu ${fv(limitsWarnings.inventoryMinKg-limitsWarnings.totalKg)} kg`:'✓ Đạt'}`:null,lbl:`MaxKg: ${fv(limitsWarnings.inventoryMaxKg)}`,f1:'inventoryMaxKg',f2:'inventoryMinKg',v1:limitsWarnings.inventoryMaxKg,v2:limitsWarnings.inventoryMinKg,l1:'Max Kg',l2:'Min Kg'},
+                      {bg:limitsWarnings.warnOverAP,label:'🏦 Công nợ (AP)',actual:limitsWarnings.actualAP,limit:limitsWarnings.apLimit,unit:'đ',extra:null,lbl:`APLimit: ${fv(limitsWarnings.apLimit)}đ`,f1:'accountsPayableLimit',f2:'actualAccountsPayable',v1:limitsWarnings.apLimit,v2:limitsWarnings.actualAP,l1:'AP Limit',l2:'CN thực tế'},
+                      {bg:limitsWarnings.warnOverCredit,label:'💳 Credit Max',actual:limitsWarnings.totalUsed,limit:limitsWarnings.totalCreditMax,unit:'đ',extra:limitsWarnings.totalCreditMin>0?`Min: ${fv(limitsWarnings.totalCreditMin)}đ · ${limitsWarnings.warnUnderCredit?'▼ Dưới min':'✓ OK'}`:null,lbl:`Max: ${fv(limitsWarnings.totalCreditMax)}đ`,f1:'totalCreditMax',f2:'totalCreditMin',v1:limitsWarnings.totalCreditMax,v2:limitsWarnings.totalCreditMin,l1:'Credit Max',l2:'Credit Min'},
+                    ].map((box,bi)=>(
+                      <div key={bi} style={{background:box.bg?'#fef2f2':bg4,border:`1px solid ${box.bg?'#fca5a5':border2}`,borderRadius:6,padding:'9px 10px'}}>
+                        <div style={{fontSize:'.62rem',fontWeight:900,color:box.bg?'#dc2626':'#334155',marginBottom:6}}>{box.bg&&'⚠ '}{box.label}</div>
+                        <LimitBar actual={box.actual} limit={box.limit} label={box.lbl} unit={box.unit}/>
+                        {box.extra&&<div style={{marginTop:6,fontSize:'.62rem',fontWeight:700,color:'#475569'}}>{box.extra}</div>}
+                        <div style={{marginTop:6,display:'grid',gridTemplateColumns:'1fr 1fr',gap:4}}>
+                          <div><label className="lbl" style={{fontSize:'.53rem'}}>{box.l1}</label><input className="inp inp-xs mono" style={{fontSize:'.72rem'}} value={fv(box.v1)} onChange={e=>setLimField(box.f1,e.target.value)}/></div>
+                          <div><label className="lbl" style={{fontSize:'.53rem'}}>{box.l2}</label><input className="inp inp-xs mono" style={{fontSize:'.72rem'}} value={fv(box.v2)} onChange={e=>setLimField(box.f2,e.target.value)}/></div>
+                        </div>
                       </div>
-                    </div>
-                    <div style={{background:limitsWarnings.warnOverAP?'#fef2f2':bg4,border:`1px solid ${limitsWarnings.warnOverAP?'#fca5a5':border2}`,borderRadius:6,padding:'9px 10px'}}>
-                      <div style={{fontSize:'.62rem',fontWeight:900,color:limitsWarnings.warnOverAP?'#dc2626':'#334155',marginBottom:6}}>{limitsWarnings.warnOverAP&&'⚠ '}🏦 Công nợ (AP)</div>
-                      <LimitBar actual={limitsWarnings.actualAP} limit={limitsWarnings.apLimit} label={`APLimit: ${fv(limitsWarnings.apLimit)}đ`}/>
-                      <div style={{marginTop:5}}><label className="lbl" style={{fontSize:'.55rem'}}>CN thực tế</label><input className="inp inp-xs mono" style={{color:'#b45309',fontWeight:800}} value={fv(limitsWarnings.actualAP)} onChange={e=>setLimField('actualAccountsPayable',e.target.value)}/></div>
-                      <div style={{marginTop:4}}><label className="lbl" style={{fontSize:'.55rem'}}>AP Limit</label><input className="inp inp-xs mono" style={{fontWeight:700}} value={fv(limitsWarnings.apLimit)} onChange={e=>setLimField('accountsPayableLimit',e.target.value)}/></div>
-                    </div>
-                    <div style={{background:limitsWarnings.warnOverCredit?'#fef2f2':bg4,border:`1px solid ${limitsWarnings.warnOverCredit?'#fca5a5':border2}`,borderRadius:6,padding:'9px 10px'}}>
-                      <div style={{fontSize:'.62rem',fontWeight:900,color:limitsWarnings.warnOverCredit?'#dc2626':'#334155',marginBottom:6}}>{limitsWarnings.warnOverCredit&&'⚠ '}💳 Credit Max (Vốn+CN)</div>
-                      <LimitBar actual={limitsWarnings.totalUsed} limit={limitsWarnings.totalCreditMax} label={`Max: ${fv(limitsWarnings.totalCreditMax)}đ`}/>
-                      {limitsWarnings.totalCreditMin>0&&(<div style={{marginTop:5,fontSize:'.62rem',color:limitsWarnings.warnUnderCredit?'#b45309':'#15803d',fontWeight:700}}>Min: {fv(limitsWarnings.totalCreditMin)}đ · {limitsWarnings.warnUnderCredit?`▼ Dưới min`:`✓ OK`}</div>)}
-                      <div style={{marginTop:4,display:'grid',gridTemplateColumns:'1fr 1fr',gap:4}}>
-                        <div><label className="lbl" style={{fontSize:'.53rem'}}>Credit Max</label><input className="inp inp-xs mono" style={{fontSize:'.72rem'}} value={fv(limitsWarnings.totalCreditMax)} onChange={e=>setLimField('totalCreditMax',e.target.value)}/></div>
-                        <div><label className="lbl" style={{fontSize:'.53rem'}}>Credit Min</label><input className="inp inp-xs mono" style={{fontSize:'.72rem'}} value={fv(limitsWarnings.totalCreditMin)} onChange={e=>setLimField('totalCreditMin',e.target.value)}/></div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1604,12 +1549,7 @@ const App=()=>{
                   <div key={i} style={{background:bg2,border:`1px solid ${border2}`,borderRadius:8,padding:'13px',boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
                     <div style={{fontWeight:900,fontSize:'1rem',color:'#0f172a',marginBottom:10}}>{g.alloy}</div>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:9}}>
-                      {[
-                        {l:'KL tồn kho',v:fv(g.totalKg)+' kg',c:'#15803d'},
-                        {l:'Vốn TK',v:fv(g.totalCostValue)+'đ',c:'#1d4ed8'},
-                        {l:'BQ Hiện tại',v:fv(g.avgBefore)+' đ/kg',c:'#334155'},
-                        {l:'BQ Sau nhập',v:fv(g.avgAfter)+' đ/kg',c:g.avgAfter>g.avgBefore?'#dc2626':'#2563eb'},
-                      ].map((x,j)=>(
+                      {[{l:'KL tồn kho',v:fv(g.totalKg)+' kg',c:'#15803d'},{l:'Vốn TK',v:fv(g.totalCostValue)+'đ',c:'#1d4ed8'},{l:'BQ Hiện tại',v:fv(g.avgBefore)+' đ/kg',c:'#334155'},{l:'BQ Sau nhập',v:fv(g.avgAfter)+' đ/kg',c:g.avgAfter>g.avgBefore?'#dc2626':'#2563eb'}].map((x,j)=>(
                         <div key={j} style={{background:bg4,borderRadius:5,padding:'7px 9px',border:`1px solid ${border1}`}}>
                           <div style={{fontSize:'.6rem',color:'#475569',fontWeight:700,marginBottom:2}}>{x.l}</div>
                           <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:x.c}}>{x.v}</div>
@@ -1617,14 +1557,8 @@ const App=()=>{
                       ))}
                     </div>
                     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5,marginBottom:8}}>
-                      <div style={{background:'#fef08a',border:'1px solid #fde047',borderRadius:5,padding:'6px 8px'}}>
-                        <div style={{fontSize:'.6rem',color:'#854d0e',fontWeight:800}}>⬜ NOPE</div>
-                        <div className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#a16207'}}>{fv(g.plainKg)} kg · {fv(g.plainCostValue)}đ</div>
-                      </div>
-                      <div style={{background:'#ccfbf1',border:'1px solid #99f6e4',borderRadius:5,padding:'6px 8px'}}>
-                        <div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:800}}>🎨 PE</div>
-                        <div className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#0f766e'}}>{fv(g.coatedKg)} kg · {fv(g.coatedCostValue)}đ</div>
-                      </div>
+                      <div style={{background:'#fef08a',border:'1px solid #fde047',borderRadius:5,padding:'6px 8px'}}><div style={{fontSize:'.6rem',color:'#854d0e',fontWeight:800}}>⬜ NOPE</div><div className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#a16207'}}>{fv(g.plainKg)} kg · {fv(g.plainCostValue)}đ</div></div>
+                      <div style={{background:'#ccfbf1',border:'1px solid #99f6e4',borderRadius:5,padding:'6px 8px'}}><div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:800}}>🎨 PE</div><div className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#0f766e'}}>{fv(g.coatedKg)} kg · {fv(g.coatedCostValue)}đ</div></div>
                     </div>
                     <div style={{background:bg4,borderRadius:5,padding:'7px 9px',textAlign:'center',border:`1px solid ${border1}`}}>
                       <div style={{fontSize:'.6rem',color:'#475569',fontWeight:700,marginBottom:2}}>Break-even</div>
@@ -1681,64 +1615,32 @@ const App=()=>{
         )}
       </div>
 
-      {/* PRINT TEMPLATE */}
+      {/* PRINT */}
       {result&&(
         <div className="print-container">
-          <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD 4.9)</div>
-          <div className="print-subtitle">Ngày in: {new Date().toLocaleDateString('vi-VN')} | Đơn vị tính: VNĐ & Kg</div>
+          <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD 5.0)</div>
+          <div className="print-subtitle">Ngày in: {new Date().toLocaleDateString('vi-VN')} | Đơn vị: VNĐ & Kg</div>
           <div className="print-section">
-            <div className="print-section-title">I. Thông số chung</div>
+            <div className="print-section-title">I. Thông số</div>
             <div className="print-grid-4">
               <div className="print-box"><div className="print-box-title">Tỷ giá USD</div><div className="print-box-value">{fv(inputs.exchangeRate)}</div></div>
+              <div className="print-box"><div className="print-box-title">CPHĐKD / Chế độ CN</div><div className="print-box-value">{inputs.opsCostPct}% / {creditModeLabel}</div></div>
               <div className="print-box"><div className="print-box-title">Thanh toán</div><div className="print-box-value text-blue">{inputs.paymentMethod}</div></div>
-              <div className="print-box"><div className="print-box-title">Phí QL / QLKD</div><div className="print-box-value">{inputs.managementFee}% / {inputs.businessRiskPercent}%</div></div>
               <div className="print-box"><div className="print-box-title">Tổng khối lượng</div><div className="print-box-value text-green">{fv(result.totalKg)} kg</div></div>
             </div>
           </div>
           <div className="print-section">
-            <div className="print-section-title">II. Chi tiết phân tích lô mua (SKU)</div>
+            <div className="print-section-title">II. Phân tích SKU lô mua</div>
             <table className="print-table-a4">
-              <thead><tr><th>Mác - Cứng</th><th>Quy cách & Phủ</th><th>KL Mua (kg)</th><th>Đơn giá (USD)</th><th>Giá về (đ/kg)</th><th>Break-even</th><th>Giá Bán KH</th><th>Lãi (đ/kg)</th></tr></thead>
-              <tbody>
-                {result.blends.map((b,i)=>(
-                  <tr key={i}>
-                    <td>{b.alloy} {b.temper}</td>
-                    <td>{b.thickness}x{b.width}x{b.length} [{b.coating==='1E'?'PE':'NOPE'}]</td>
-                    <td>{fv(b.qtyKg)}</td>
-                    <td>{fv(b.priceFC)}</td>
-                    <td>{fv(b.physPerKg)}</td>
-                    <td className="text-red">{fv(b.breakEven)}</td>
-                    <td className="text-green">{b.hasSellPrice?fv(b.sellPrice):'—'}</td>
-                    <td className={b.realProfitPerKg>=0?'text-green':'text-red'}>{b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}</td>
-                  </tr>
-                ))}
-              </tbody>
+              <thead><tr><th>Mác-Cứng</th><th>Quy cách</th><th>KL (kg)</th><th>USD/Tấn</th><th>Về kho (đ/kg)</th><th>Break-even</th><th>Giá bán</th><th>Lãi (đ/kg)</th></tr></thead>
+              <tbody>{result.blends.map((b,i)=>(<tr key={i}><td>{b.alloy} {b.temper}</td><td>{b.thickness}x{b.width}x{b.length} [{b.coating==='1E'?'PE':'NOPE'}]</td><td>{fv(b.qtyKg)}</td><td>{fv(b.priceFC)}</td><td>{fv(b.physPerKg)}</td><td className="text-red">{fv(b.breakEven)}</td><td className="text-green">{b.hasSellPrice?fv(b.sellPrice):'—'}</td><td className={b.realProfitPerKg>=0?'text-green':'text-red'}>{b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}</td></tr>))}</tbody>
             </table>
           </div>
           <div className="print-section" style={{pageBreakInside:'avoid'}}>
-            <div className="print-section-title">III. Đề xuất Giá Sàn & Giá theo tệp Khách Hàng</div>
+            <div className="print-section-title">III. Giá Sàn theo nhóm quản lý</div>
             <table className="print-table-a4">
-              <thead>
-                <tr>
-                  <th>SKU</th><th>Phủ</th><th>Giá vốn Blend</th><th>Sàn HV</th>
-                  <th>Cốt lõi (+{inputs.marginCore}%)</th><th>Thân thiết (+{inputs.marginLoyal}%)</th>
-                  <th>KH lẻ (+{inputs.marginNew}%)</th><th>Tiền tươi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {floorPriceData.slice(0,15).map((r,i)=>(
-                  <tr key={i}>
-                    <td style={{textAlign:'left'}}>{r.alloy} {r.temper} {r.thickness}x{r.width}x{r.length}</td>
-                    <td>{r.coating==='1E'?'PE':'NOPE'}</td>
-                    <td>{fv(r.costBasisPhysical)}</td>
-                    <td style={{fontWeight:'bold'}}>{fv(r.floorAbsolute)}</td>
-                    <td className="text-blue">{fv(r.priceCore)}</td>
-                    <td style={{color:'#5b21b6'}}>{fv(r.priceLoyal)}</td>
-                    <td style={{color:'#9a3412'}}>{fv(r.priceNew)}</td>
-                    <td className="text-green">{fv(r.priceCash)}</td>
-                  </tr>
-                ))}
-              </tbody>
+              <thead><tr><th>Nhóm hàng</th><th>SKUs</th><th>Tồn (kg)</th><th>BQ GV</th><th>BQ Sàn HV</th><th>BQ ĐT</th><th>Cốt lõi</th><th>Thân thiết</th><th>KH lẻ</th></tr></thead>
+              <tbody>{mgmtData.filter(g=>g.skus>0).map((g,i)=>(<tr key={i}><td style={{textAlign:'left'}}>{g.label}</td><td>{g.skus}</td><td>{fv(g.totalQty)}</td><td>{fv(g.avgCost)}</td><td style={{fontWeight:'bold'}}>{fv(g.avgFloor)}</td><td>{g.avgCompPrice>0?fv(g.avgCompPrice):'—'}</td><td className="text-blue">{fv(g.avgCore)}</td><td>{fv(g.avgLoyal)}</td><td>{fv(g.avgNew)}</td></tr>))}</tbody>
             </table>
           </div>
           <div style={{display:'flex',justifyContent:'space-around',marginTop:'40px',textAlign:'center',pageBreakInside:'avoid'}}>
