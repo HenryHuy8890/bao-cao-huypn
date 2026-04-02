@@ -224,12 +224,29 @@ const findUpdatedImportPrice=(sku,updatedPrices,exchangeRate)=>{
   };
 };
 
+const TRANSIT_STORAGE_COST_PCT=0.02; // 2% chi phí lưu kho khi hàng đi đường nhập vào kho
+
 const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
-  const allRows=[...skuGroup.inStock,...skuGroup.inTransit];
-  const costBasisPhysical=weightedAvg(allRows.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
-  const totalQty=allRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
-  const qtyStock=skuGroup.inStock.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
-  const qtyTransit=skuGroup.inTransit.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+  // Giá vốn hàng trong kho (IN_STOCK) – dùng nguyên
+  const stockRows=skuGroup.inStock;
+  const transitRows=skuGroup.inTransit;
+  const qtyStock=stockRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+  const qtyTransit=transitRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+  const totalQty=qtyStock+qtyTransit;
+
+  // Giá vốn bình quân hàng trong kho
+  const avgCostStock=weightedAvg(stockRows.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
+
+  // Giá vốn hàng đi đường: cộng thêm 2% chi phí lưu kho khi nhập kho
+  const avgCostTransitRaw=weightedAvg(transitRows.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
+  const avgCostTransitAdjusted=avgCostTransitRaw*(1+TRANSIT_STORAGE_COST_PCT);
+
+  // Giá vốn blend = WA của (hàng kho + hàng đi đường đã cộng 2%)
+  let costBasisPhysical=0;
+  if(totalQty>0){
+    costBasisPhysical=(qtyStock*avgCostStock+qtyTransit*avgCostTransitAdjusted)/totalQty;
+  }
+
   const newImportPriceVND=updatedImportMatch?updatedImportMatch.priceVNDperKg:null;
 
   const {floorPrice,finCostRate,totalCostRate}=calcFloorForSku(costBasisPhysical,inputs);
@@ -246,7 +263,11 @@ const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
     thickness:skuGroup.thickness,width:skuGroup.width,
     length:skuGroup.length,coating:skuGroup.coating,
     skuKey:skuGroup.key,skuLabel:skuGroup.label,
-    costBasisPhysical,totalQty,qtyStock,qtyTransit,
+    costBasisPhysical,         // GV blend sau điều chỉnh
+    avgCostStock,              // GV bình quân hàng trong kho (chưa điều chỉnh)
+    avgCostTransitRaw,         // GV bình quân hàng đi đường (chưa điều chỉnh)
+    avgCostTransitAdjusted,    // GV hàng đi đường sau +2% lưu kho
+    totalQty,qtyStock,qtyTransit,
     floorAbsolute:floorPrice,finCostRate,totalCostRate,
     newImportPriceVND,updatedImportMatch,
     priceCore,priceLoyal,priceNew,
@@ -913,8 +934,10 @@ const App=()=>{
                 <div className="sh" style={{color:'#0f766e',borderColor:'#99f6e4'}}><Ic.Tag/><span style={{color:'#0f766e'}}>Chính sách Giá Sàn v5.0</span></div>
 
                 {/* Formula explanation */}
-                <div style={{background:'#f0fdfa',border:'1px solid #99f6e4',borderRadius:5,padding:'7px 9px',marginBottom:8,fontSize:'.6rem',color:'#0f766e',lineHeight:1.7,fontWeight:600}}>
-                  <strong>Sàn = GV × (1 + CPTC + CPHĐKD)</strong><br/>
+                <div style={{background:'#f0fdfa',border:'1px solid #99f6e4',borderRadius:5,padding:'7px 9px',marginBottom:8,fontSize:'.6rem',color:'#0f766e',lineHeight:1.8,fontWeight:600}}>
+                  <strong>Sàn = GV_blend × (1 + CPTC + CPHĐKD)</strong><br/>
+                  <span style={{color:'#b45309'}}>🚛 GV_blend = WA(GV_kho + GV_đường×1.02)</span><br/>
+                  Hàng đi đường +2% CP lưu kho khi nhập kho<br/>
                   CPTC = Chi phí tài chính công nợ<br/>
                   CPHĐKD = Chi phí hoạt động KD
                 </div>
@@ -1259,8 +1282,9 @@ const App=()=>{
                   </h2>
                   <div style={{display:'flex',alignItems:'center',gap:8,marginTop:5,flexWrap:'wrap'}}>
                     <div style={{fontSize:'.72rem',color:'#475569',fontWeight:600,background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:4,padding:'2px 8px'}}>
-                      <strong>Sàn = GV × (1 + {inputs.opsCostPct}% CPHĐKD{inputs.creditMode!=='none'?` + ${inputs.creditMode==='fixed'?inputs.finCostPct+'% CPTC':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}% TC (${inputs.customCreditDays}N)`}`:' + 0 CN'})</strong>
+                      <strong>Sàn = GV_blend × (1 + {inputs.opsCostPct}% CPHĐKD{inputs.creditMode!=='none'?` + ${inputs.creditMode==='fixed'?inputs.finCostPct+'% CPTC':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}% TC (${inputs.customCreditDays}N)`}`:' + 0 CN'})</strong>
                     </div>
+                    <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:20,fontSize:'.68rem',fontWeight:800,background:'#fff7ed',color:'#9a3412',border:'1px solid #fdba74'}}>🚛 GV đường +2% lưu kho</span>
                     <span className="mgmt-view-badge">{creditModeLabel}</span>
                   </div>
                 </div>
@@ -1353,7 +1377,10 @@ const App=()=>{
                                 </td>
                                 <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
                                   <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.82rem'}}>{fv(r.costBasisPhysical)}</div>
-                                  <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>đ/kg</div>
+                                  <div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>blend đ/kg</div>
+                                  {r.qtyTransit>0&&r.avgCostTransitRaw>0&&(
+                                    <div style={{fontSize:'.55rem',color:'#b45309',fontWeight:700,marginTop:1}}>🚛 {fv(r.avgCostTransitRaw)}→{fv(r.avgCostTransitAdjusted)}</div>
+                                  )}
                                 </td>
                                 <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
                                   <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{fv(r.floorAbsolute)}</div>
