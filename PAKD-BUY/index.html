@@ -189,19 +189,15 @@ const groupBySku=rows=>{
 };
 
 // ─────────────────────────────────────────────────────────────
-// FLOOR PRICE LOGIC v5.0
-// Giá sàn = GV_blend + GV_blend × (finCostPct + opsCostPct)
-// finCostPct phụ thuộc chế độ công nợ:
-//   - 'none':   0  (không công nợ, bỏ chi phí tài chính)
-//   - 'fixed':  finRate  (mặc định 1.5%)
-//   - 'credit': lendingRate/100 × creditDays/365  (tính theo ngày thực tế)
+// FLOOR PRICE LOGIC v5.2
+// Chi phí lưu kho 2% áp dụng cho CẢ hàng trong kho VÀ hàng đi đường
+// GV_blend = WA( GV_kho×1.02 + GV_đường×1.02 ) = WA_tất_cả × 1.02
 // ─────────────────────────────────────────────────────────────
 const calcFloorForSku=(costBasisPhysical, inputs)=>{
   const {finCostPct:finFixed, opsCostPct, creditMode, lendingRate, customCreditDays}=inputs;
   let finCostRate=0;
   if(creditMode==='fixed') finCostRate=(finFixed||0)/100;
   else if(creditMode==='credit') finCostRate=(lendingRate||0)/100*(customCreditDays||0)/365;
-  // else 'none' => 0
   const totalCostRate=finCostRate+(opsCostPct||0)/100;
   const floorPrice=costBasisPhysical*(1+totalCostRate);
   return{floorPrice,finCostRate,totalCostRate};
@@ -224,27 +220,29 @@ const findUpdatedImportPrice=(sku,updatedPrices,exchangeRate)=>{
   };
 };
 
-const TRANSIT_STORAGE_COST_PCT=0.02; // 2% chi phí lưu kho khi hàng đi đường nhập vào kho
+// CHI PHÍ LƯU KHO 2% áp dụng cho CẢ hàng kho VÀ hàng đi đường
+const STORAGE_COST_PCT=0.02;
 
 const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
-  // Giá vốn hàng trong kho (IN_STOCK) – dùng nguyên
   const stockRows=skuGroup.inStock;
   const transitRows=skuGroup.inTransit;
   const qtyStock=stockRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const qtyTransit=transitRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const totalQty=qtyStock+qtyTransit;
 
-  // Giá vốn bình quân hàng trong kho
-  const avgCostStock=weightedAvg(stockRows.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
-
-  // Giá vốn hàng đi đường: cộng thêm 2% chi phí lưu kho khi nhập kho
+  // Giá vốn bình quân hàng trong kho (chưa điều chỉnh)
+  const avgCostStockRaw=weightedAvg(stockRows.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
+  // Giá vốn bình quân hàng đi đường (chưa điều chỉnh)
   const avgCostTransitRaw=weightedAvg(transitRows.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
-  const avgCostTransitAdjusted=avgCostTransitRaw*(1+TRANSIT_STORAGE_COST_PCT);
 
-  // Giá vốn blend = WA của (hàng kho + hàng đi đường đã cộng 2%)
+  // CẢ HAI đều cộng thêm 2% chi phí lưu kho
+  const avgCostStockAdjusted=avgCostStockRaw*(1+STORAGE_COST_PCT);
+  const avgCostTransitAdjusted=avgCostTransitRaw*(1+STORAGE_COST_PCT);
+
+  // Giá vốn blend = WA của (hàng kho đã +2% + hàng đi đường đã +2%)
   let costBasisPhysical=0;
   if(totalQty>0){
-    costBasisPhysical=(qtyStock*avgCostStock+qtyTransit*avgCostTransitAdjusted)/totalQty;
+    costBasisPhysical=(qtyStock*avgCostStockAdjusted+qtyTransit*avgCostTransitAdjusted)/totalQty;
   }
 
   const newImportPriceVND=updatedImportMatch?updatedImportMatch.priceVNDperKg:null;
@@ -263,10 +261,11 @@ const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
     thickness:skuGroup.thickness,width:skuGroup.width,
     length:skuGroup.length,coating:skuGroup.coating,
     skuKey:skuGroup.key,skuLabel:skuGroup.label,
-    costBasisPhysical,         // GV blend sau điều chỉnh
-    avgCostStock,              // GV bình quân hàng trong kho (chưa điều chỉnh)
-    avgCostTransitRaw,         // GV bình quân hàng đi đường (chưa điều chỉnh)
-    avgCostTransitAdjusted,    // GV hàng đi đường sau +2% lưu kho
+    costBasisPhysical,
+    avgCostStockRaw,
+    avgCostTransitRaw,
+    avgCostStockAdjusted,
+    avgCostTransitAdjusted,
     totalQty,qtyStock,qtyTransit,
     floorAbsolute:floorPrice,finCostRate,totalCostRate,
     newImportPriceVND,updatedImportMatch,
@@ -277,8 +276,7 @@ const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
 };
 
 // ─────────────────────────────────────────────────────────────
-// MANAGEMENT VIEW: gom nhóm SKU theo luồng giá nhập
-// Mỗi luồng định nghĩa bởi alloy + temper(opt) + minThick + maxThick
+// MANAGEMENT VIEW
 // ─────────────────────────────────────────────────────────────
 const DEFAULT_MGMT_GROUPS=[
   {id:'g1',label:'A1050 H14 0.2–0.49mm',alloy:'A1050',temper:'',minThick:0.2,maxThick:0.49},
@@ -320,7 +318,7 @@ const calcMgmtGroups=(floorPriceData,groups)=>{
 };
 
 // ─────────────────────────────────────────────────────────────
-// OTHER CALCS (unchanged from 4.9)
+// OTHER CALCS (unchanged)
 // ─────────────────────────────────────────────────────────────
 const calcInvoice=(products,exRate)=>{const usd=products.reduce((s,p)=>s+(p.qtyKg/1000)*p.priceFC,0);return{invoiceUSD:usd,invoiceVND:usd*exRate};};
 const calcLanded=(invoiceVND,totalKg,inp)=>{
@@ -471,11 +469,10 @@ const defInputs={
   freightTotal:45000000,importTax:0,processingCost:0,
   businessRiskPercent:1.5,customerCreditDays:30,lendingRate:7.8,
   marginCore:0,marginLoyal:1,marginNew:2,
-  // FLOOR PRICE PARAMS v5.0
-  finCostPct:1.5,       // Chi phí tài chính công nợ %
-  opsCostPct:4.5,       // Chi phí hoạt động kinh doanh %
-  creditMode:'fixed',   // 'none' | 'fixed' | 'credit'
-  customCreditDays:30,  // số ngày khi creditMode='credit'
+  finCostPct:1.5,
+  opsCostPct:4.5,
+  creditMode:'fixed',
+  customCreditDays:30,
 };
 
 // ─── ICONS ────────────────────────────────────────────────────
@@ -580,7 +577,6 @@ const LimitBar=({actual,limit,label,unit='đ'})=>{
   );
 };
 
-// ─── CREDIT MODE SELECTOR ─────────────────────────────────────
 const CreditModeSelector=({inputs,setInp})=>{
   const modes=[
     {v:'none',  l:'Không CN', desc:'Bỏ CP tài chính'},
@@ -636,9 +632,9 @@ const App=()=>{
   const [msFilter,setMsFilter]=useState({alloy:'ALL',coating:'ALL',stockAlert:'ALL',search:''});
   const [spFilter,setSpFilter]=useState({alloy:'ALL',coating:'ALL',search:''});
   const [fpFilter,setFpFilter]=useState({alloy:'ALL',coating:'ALL',search:'',thickMin:'',thickMax:''});
-  const [fpView,setFpView]=useState('detail'); // 'detail' | 'mgmt'
+  const [fpView,setFpView]=useState('detail');
   const [mgmtGroups,setMgmtGroups]=useState(DEFAULT_MGMT_GROUPS);
-  const [mgmtFloorOverride,setMgmtFloorOverride]=useState({}); // {groupId: manualFloor}
+  const [mgmtFloorOverride,setMgmtFloorOverride]=useState({});
   const [dbStatus,setDbStatus]=useState({loading:false,error:null,lastSync:null,source:'local'});
   const chartRef=useRef(null);const chartInst=useRef(null);
   const setInp=useCallback((f,v)=>setInputs(p=>({...p,[f]:v})),[]);
@@ -752,7 +748,7 @@ const App=()=>{
     const base=calcMgmtGroups(floorPriceData,mgmtGroups);
     return base.map(g=>{
       const ov=mgmtFloorOverride[g.id];
-      const publishedFloor=ov!=null&&ov>0?ov:null; // null = not set
+      const publishedFloor=ov!=null&&ov>0?ov:null;
       const baseFloor=publishedFloor||g.avgFloor;
       const corePrice=baseFloor*(1+(inputs.marginCore||0)/100);
       const loyalPrice=baseFloor*(1+(inputs.marginLoyal||1)/100);
@@ -851,8 +847,13 @@ const App=()=>{
   const bg1='#f8fafc',bg2='#ffffff',bg4='#f1f5f9';
   const border1='#e2e8f0',border2='#cbd5e1';
 
-  // Credit mode label for display
   const creditModeLabel=inputs.creditMode==='none'?'Không CN':inputs.creditMode==='fixed'?`CN ${inputs.finCostPct}%`:`CN ${inputs.customCreditDays}N`;
+
+  // Helper: tính % so với BQ Giá vốn
+  const pctVsGV=(price, gv)=>{
+    if(!gv||gv<=0||!price) return null;
+    return ((price-gv)/gv*100);
+  };
 
   return(
     <div style={{height:'100vh',display:'flex',flexDirection:'column',overflow:'hidden'}}>
@@ -929,15 +930,14 @@ const App=()=>{
                 ):<div><label className="lbl">Lãi suất vốn %/năm</label><input type="number" step=".1" className="inp inp-xs font-semibold" value={inputs.capitalCostPercent} onChange={e=>setInp('capitalCostPercent',parseFloat(e.target.value)||0)}/></div>}
               </div>
 
-              {/* FLOOR PRICE SETTINGS v5.0 */}
+              {/* FLOOR PRICE SETTINGS v5.2 */}
               <div className="card" style={{border:'1px solid #5eead4'}}>
                 <div className="sh" style={{color:'#0f766e',borderColor:'#99f6e4'}}><Ic.Tag/><span style={{color:'#0f766e'}}>Chính sách Giá Sàn v5.2</span></div>
 
-                {/* Formula explanation */}
                 <div style={{background:'#f0fdfa',border:'1px solid #99f6e4',borderRadius:5,padding:'7px 9px',marginBottom:8,fontSize:'.6rem',color:'#0f766e',lineHeight:1.8,fontWeight:600}}>
                   <strong>Sàn = GV_blend × (1 + CPTC + CPHĐKD)</strong><br/>
-                  <span style={{color:'#b45309'}}>🚛 GV_blend = WA(GV_kho + GV_đường×1.02)</span><br/>
-                  Hàng đi đường +2% CP lưu kho khi nhập kho<br/>
+                  <span style={{color:'#b45309'}}>📦 GV_blend = WA(GV_kho×1.02 + GV_đường×1.02)</span><br/>
+                  <span style={{color:'#7c3aed'}}>Cả kho VÀ đường đều +2% CP lưu kho</span><br/>
                   CPTC = Chi phí tài chính công nợ<br/>
                   CPHĐKD = Chi phí hoạt động KD
                 </div>
@@ -1268,7 +1268,7 @@ const App=()=>{
           </div>
         )}
 
-        {/* ════ TAB GIÁ SÀN v5.0 ════ */}
+        {/* ════ TAB GIÁ SÀN v5.2 ════ */}
         {tab==='floor'&&(
           <div style={{flex:1,padding:'14px 18px',overflowY:'auto',background:bg1}}>
             <div style={{maxWidth:'1600px',margin:'0 auto'}}>
@@ -1284,7 +1284,7 @@ const App=()=>{
                     <div style={{fontSize:'.72rem',color:'#475569',fontWeight:600,background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:4,padding:'2px 8px'}}>
                       <strong>Sàn = GV_blend × (1 + {inputs.opsCostPct}% CPHĐKD{inputs.creditMode!=='none'?` + ${inputs.creditMode==='fixed'?inputs.finCostPct+'% CPTC':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}% TC (${inputs.customCreditDays}N)`}`:' + 0 CN'})</strong>
                     </div>
-                    <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:20,fontSize:'.68rem',fontWeight:800,background:'#fff7ed',color:'#9a3412',border:'1px solid #fdba74'}}>🚛 GV đường +2% lưu kho</span>
+                    <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:20,fontSize:'.68rem',fontWeight:800,background:'#f3e8ff',color:'#6d28d9',border:'1px solid #d8b4fe'}}>📦 Cả kho + đường đều +2% lưu kho</span>
                     <span className="mgmt-view-badge">{creditModeLabel}</span>
                   </div>
                 </div>
@@ -1294,7 +1294,6 @@ const App=()=>{
                     {updatedImportPrices[0]?.updateDate&&<span style={{marginLeft:5}}>· {updatedImportPrices[0].updateDate}</span>}
                   </div>
                   <button className="btn btn-teal btn-sm" onClick={()=>syncGoogleSheet('uip')} disabled={dbStatus.loading}>{dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync</button>
-                  {/* VIEW TOGGLE */}
                   <div className="toggle-group">
                     <button className={`toggle-btn ${fpView==='detail'?'active':''}`} onClick={()=>setFpView('detail')} title="Chi tiết từng SKU">
                       <Ic.List/> Chi tiết
@@ -1309,7 +1308,6 @@ const App=()=>{
               {/* ──── VIEW: CHI TIẾT ──── */}
               {fpView==='detail'&&(
                 <>
-                  {/* FILTER BAR */}
                   <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:11,background:'#f1f5f9',border:'1px solid #e2e8f0',borderRadius:6,padding:'7px 10px'}}>
                     <span style={{fontSize:'.65rem',color:'#475569',fontWeight:800,display:'flex',alignItems:'center',gap:4}}><Ic.Filter/> Lọc:</span>
                     <select className="inp inp-xs" style={{width:'auto',minWidth:100}} value={fpFilter.alloy||'ALL'} onChange={e=>setFpFilter(f=>({...f,alloy:e.target.value}))}>
@@ -1377,16 +1375,18 @@ const App=()=>{
                                 </td>
                                 <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
                                   <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.82rem'}}>{fv(r.costBasisPhysical)}</div>
-                                  <div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>blend đ/kg</div>
-                                  {r.qtyTransit>0&&r.avgCostTransitRaw>0&&(
-                                    <div style={{fontSize:'.55rem',color:'#b45309',fontWeight:700,marginTop:1}}>🚛 {fv(r.avgCostTransitRaw)}→{fv(r.avgCostTransitAdjusted)}</div>
+                                  <div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>blend đ/kg (+2% lưu kho)</div>
+                                  {(r.qtyStock>0||r.qtyTransit>0)&&(
+                                    <div style={{fontSize:'.55rem',color:'#7c3aed',fontWeight:700,marginTop:1}}>
+                                      {r.qtyStock>0&&`🟢 ${fv(r.avgCostStockRaw)}→${fv(r.avgCostStockAdjusted)} `}
+                                      {r.qtyTransit>0&&`🟡 ${fv(r.avgCostTransitRaw)}→${fv(r.avgCostTransitAdjusted)}`}
+                                    </div>
                                   )}
                                 </td>
                                 <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
                                   <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{fv(r.floorAbsolute)}</div>
                                   <div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>+{(r.totalCostRate*100).toFixed(2)}% GV</div>
                                 </td>
-                                {/* Giá đối thủ */}
                                 <td style={{textAlign:'right',paddingRight:8,background:'#fffbeb'}}>
                                   {r.competitorPrice>0?(
                                     <>
@@ -1395,7 +1395,6 @@ const App=()=>{
                                     </>
                                   ):<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
                                 </td>
-                                {/* Sàn đối thủ */}
                                 <td style={{textAlign:'right',paddingRight:8,background:'#fef9c3'}}>
                                   {r.competitorFloorPrice>0?(
                                     <>
@@ -1456,7 +1455,7 @@ const App=()=>{
                   <div style={{background:'#fef9c3',border:'1px solid #fde047',borderRadius:7,padding:'9px 13px',marginBottom:13,display:'flex',alignItems:'center',gap:8}}>
                     <Ic.Users/>
                     <div style={{fontSize:'.75rem',color:'#713f12',fontWeight:700}}>
-                      <strong>Chế độ Quản lý</strong> — Hiển thị giá sàn trung bình WA theo nhóm luồng hàng. Nhập <em>Giá sàn ban hành</em> để làm cơ sở tính giá KH; để trống = tính theo Điểm sinh lãi tự động.
+                      <strong>Chế độ Quản lý</strong> — GV blend đã cộng +2% lưu kho cho cả hàng trong kho lẫn hàng đi đường. <em>Điểm sinh lời</em> = Sàn tự động. <em>Sàn ban hành</em> = nhập tay, hiển thị % so với BQ GV, dùng làm cơ sở tính giá KH.
                     </div>
                   </div>
                   <div style={{overflowX:'auto'}}>
@@ -1466,19 +1465,29 @@ const App=()=>{
                           <th style={{textAlign:'left',paddingLeft:8,minWidth:200}}>Nhóm hàng</th>
                           <th style={{width:60}}>SKUs</th>
                           <th style={{minWidth:100}}>Tồn (kg)</th>
-                          <th style={{background:'#f0fdf4',color:'#14532d',minWidth:110}}>BQ Giá vốn</th>
-                          <th style={{background:'#e0f2fe',color:'#075985',minWidth:115}}>💰 Giá nhập HT</th>
-                          <th style={{background:'#dcfce7',color:'#14532d',minWidth:120,fontWeight:900}}>📍 Điểm sinh lãi</th>
-                          <th style={{background:'#fef08a',color:'#713f12',minWidth:125,fontWeight:900}}>✏️ Sàn ban hành<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>nhập tay</div></th>
-                          <th style={{background:'#dbeafe',color:'#1e3a8a',minWidth:110}}>👥 BQ Cốt lõi</th>
-                          <th style={{background:'#ede9fe',color:'#5b21b6',minWidth:110}}>💛 BQ Thân thiết</th>
-                          <th style={{background:'#ffedd5',color:'#9a3412',minWidth:110}}>🆕 BQ KH lẻ</th>
+                          <th style={{background:'#f0fdf4',color:'#14532d',minWidth:110}}>BQ Giá vốn<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>(+2% lưu kho)</div></th>
+                          {/* ĐỔI THỨ TỰ: Điểm sinh lời trước, Giá nhập HT sau */}
+                          <th style={{background:'#dcfce7',color:'#14532d',minWidth:125,fontWeight:900}}>📍 Điểm sinh lời<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>tự động</div></th>
+                          <th style={{background:'#e0f2fe',color:'#075985',minWidth:115}}>💰 Giá nhập HT<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>từ GSheet</div></th>
+                          <th style={{background:'#fef08a',color:'#713f12',minWidth:145,fontWeight:900}}>✏️ Sàn ban hành<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>nhập tay · % vs GV</div></th>
+                          <th style={{background:'#dbeafe',color:'#1e3a8a',minWidth:115}}>👥 BQ Cốt lõi<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>% vs GV</div></th>
+                          <th style={{background:'#ede9fe',color:'#5b21b6',minWidth:115}}>💛 BQ Thân thiết<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>% vs GV</div></th>
+                          <th style={{background:'#ffedd5',color:'#9a3412',minWidth:115}}>🆕 BQ KH lẻ<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>% vs GV</div></th>
                           <th style={{background:'#fef3c7',color:'#92400e',minWidth:110}}>🏭 BQ Đối thủ</th>
                           <th style={{background:'#fde68a',color:'#92400e',minWidth:110}}>🔻 BQ Sàn ĐT</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {mgmtData.map((g,i)=>(
+                        {mgmtData.map((g,i)=>{
+                          // Tính % so với BQ Giá vốn
+                          const gv=g.avgCost; // BQ Giá vốn (đã +2%)
+                          const pctFloor=pctVsGV(g.publishedFloor||g.avgFloor, gv);
+                          const pctCore=pctVsGV(g.corePrice, gv);
+                          const pctLoyal=pctVsGV(g.loyalPrice, gv);
+                          const pctNew=pctVsGV(g.newPrice, gv);
+                          const pctPublished=g.publishedFloor?pctVsGV(g.publishedFloor, gv):null;
+
+                          return(
                           <tr key={g.id} style={{background:i%2===0?'#ffffff':'#f8fafc'}}>
                             <td style={{paddingLeft:8}}>
                               <div style={{fontWeight:900,fontSize:'.84rem',color:'#0f172a'}}>{g.label}</div>
@@ -1493,39 +1502,74 @@ const App=()=>{
                               <div className="mono" style={{fontWeight:700,color:'#15803d'}}>{fv(g.totalQty)}</div>
                               <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>kg</div>
                             </td>
+                            {/* BQ Giá vốn */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
-                              <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.88rem'}}>{g.skus>0?fv(g.avgCost):'—'}</div>
+                              <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.88rem'}}>{g.skus>0?fv(gv):'—'}</div>
+                              <div style={{fontSize:'.55rem',color:'#475569',fontWeight:600}}>đ/kg blend</div>
                             </td>
+                            {/* 📍 Điểm sinh lời (tự động) */}
+                            <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
+                              <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{g.skus>0?fv(g.avgFloor):'—'}</div>
+                              {g.skus>0&&pctFloor!=null&&(
+                                <div style={{fontSize:'.57rem',color:pctFloor>=0?'#15803d':'#dc2626',fontWeight:800}}>
+                                  {pctFloor>=0?'+':''}{pctFloor.toFixed(2)}% GV
+                                </div>
+                              )}
+                            </td>
+                            {/* 💰 Giá nhập HT */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#e0f2fe'}}>
                               <div className="mono" style={{fontWeight:800,color:'#0369a1',fontSize:'.88rem'}}>{g.avgNewImportPrice>0?fv(g.avgNewImportPrice):'—'}</div>
                               {g.avgNewImportPrice>0&&<div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>đ/kg</div>}
                             </td>
-                            <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
-                              <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{g.skus>0?fv(g.avgFloor):'—'}</div>
-                              <div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>tự động</div>
-                            </td>
+                            {/* ✏️ Sàn ban hành – nhập tay + hiển thị % vs GV */}
                             <td style={{textAlign:'center',paddingLeft:4,paddingRight:4,background:'#fefce8'}}>
                               <input
                                 className="inp inp-xs mono"
-                                style={{textAlign:'right',color:'#713f12',fontWeight:900,fontSize:'.85rem',background: g.publishedFloor?'#fef9c3':'#fff',border:`1px solid ${g.publishedFloor?'#fde047':'#94a3b8'}`}}
+                                style={{textAlign:'right',color:'#713f12',fontWeight:900,fontSize:'.85rem',background:g.publishedFloor?'#fef9c3':'#fff',border:`1px solid ${g.publishedFloor?'#fde047':'#94a3b8'}`}}
                                 placeholder="—"
                                 value={mgmtFloorOverride[g.id]!=null?fv(mgmtFloorOverride[g.id]):''}
                                 onChange={e=>{const v=e.target.value.replace(/\./g,'').replace(/,/g,'');const n=parseFloat(v)||0;setMgmtFloorOverride(p=>({...p,[g.id]:n>0?n:null}));}}
                               />
-                              {g.publishedFloor&&<div style={{fontSize:'.54rem',color:'#713f12',fontWeight:700,marginTop:2}}>✓ ban hành</div>}
+                              {g.publishedFloor&&pctPublished!=null&&(
+                                <div style={{fontSize:'.57rem',color:pctPublished>=0?'#15803d':'#dc2626',fontWeight:900,marginTop:2}}>
+                                  {pctPublished>=0?'+':''}{pctPublished.toFixed(2)}% GV ✓
+                                </div>
+                              )}
+                              {!g.publishedFloor&&g.skus>0&&(
+                                <div style={{fontSize:'.52rem',color:'#94a3b8',fontWeight:600,marginTop:1}}>chưa ban hành</div>
+                              )}
                             </td>
+                            {/* 👥 BQ Cốt lõi + % vs GV */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#eff6ff'}}>
                               <div className="mono" style={{fontWeight:800,color:'#1d4ed8',fontSize:'.88rem'}}>{g.skus>0?fv(g.corePrice):'—'}</div>
-                              {g.publishedFloor&&<div style={{fontSize:'.55rem',color:'#1d4ed8',fontWeight:700}}>từ sàn BH</div>}
+                              {g.skus>0&&pctCore!=null&&(
+                                <div style={{fontSize:'.57rem',color:pctCore>=0?'#1d4ed8':'#dc2626',fontWeight:800}}>
+                                  {pctCore>=0?'+':''}{pctCore.toFixed(2)}% GV
+                                </div>
+                              )}
+                              {g.publishedFloor&&<div style={{fontSize:'.52rem',color:'#1d4ed8',fontWeight:700}}>từ sàn BH</div>}
                             </td>
+                            {/* 💛 BQ Thân thiết + % vs GV */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#ede9fe'}}>
                               <div className="mono" style={{fontWeight:800,color:'#7c3aed',fontSize:'.88rem'}}>{g.skus>0?fv(g.loyalPrice):'—'}</div>
-                              {g.publishedFloor&&<div style={{fontSize:'.55rem',color:'#7c3aed',fontWeight:700}}>từ sàn BH</div>}
+                              {g.skus>0&&pctLoyal!=null&&(
+                                <div style={{fontSize:'.57rem',color:pctLoyal>=0?'#7c3aed':'#dc2626',fontWeight:800}}>
+                                  {pctLoyal>=0?'+':''}{pctLoyal.toFixed(2)}% GV
+                                </div>
+                              )}
+                              {g.publishedFloor&&<div style={{fontSize:'.52rem',color:'#7c3aed',fontWeight:700}}>từ sàn BH</div>}
                             </td>
+                            {/* 🆕 BQ KH lẻ + % vs GV */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#fff7ed'}}>
                               <div className="mono" style={{fontWeight:800,color:'#ea580c',fontSize:'.88rem'}}>{g.skus>0?fv(g.newPrice):'—'}</div>
-                              {g.publishedFloor&&<div style={{fontSize:'.55rem',color:'#ea580c',fontWeight:700}}>từ sàn BH</div>}
+                              {g.skus>0&&pctNew!=null&&(
+                                <div style={{fontSize:'.57rem',color:pctNew>=0?'#ea580c':'#dc2626',fontWeight:800}}>
+                                  {pctNew>=0?'+':''}{pctNew.toFixed(2)}% GV
+                                </div>
+                              )}
+                              {g.publishedFloor&&<div style={{fontSize:'.52rem',color:'#ea580c',fontWeight:700}}>từ sàn BH</div>}
                             </td>
+                            {/* Đối thủ */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#fffbeb'}}>
                               <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.88rem'}}>{g.avgCompPrice>0?fv(g.avgCompPrice):'—'}</div>
                               {g.avgCompPrice>0&&g.skus>0&&(
@@ -1543,7 +1587,8 @@ const App=()=>{
                               )}
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </tbody>
                       <tfoot>
                         <tr>
@@ -1559,7 +1604,7 @@ const App=()=>{
                     </table>
                   </div>
                   <div style={{marginTop:12,background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:7,padding:'10px 14px',fontSize:'.72rem',color:'#475569',fontWeight:600,lineHeight:1.8}}>
-                    💡 <strong>Điểm sinh lãi</strong> = giá sàn tự động tính từ GV + CPTC + CPHĐKD. <strong>Sàn ban hành</strong> = nhập tay để làm giá cơ sở chính thức cho tất cả nhóm KH (thay thế điểm sinh lãi khi được nhập). Dữ liệu Đối thủ lấy từ GSheet. Nhấn <strong>Sync</strong> để cập nhật.
+                    💡 <strong>BQ Giá vốn</strong> = GV blend đã +2% lưu kho (cả kho + đường). <strong>📍 Điểm sinh lời</strong> = Sàn HV tự động = GV × (1 + CPHĐKD + CPTC). <strong>✏️ Sàn ban hành</strong> = nhập tay để làm cơ sở chính thức; % hiển thị so với BQ GV. <strong>👥💛🆕 Giá KH</strong> = Sàn BH × (1 + margin%) — % hiển thị so với BQ GV. Nhấn <strong>Sync</strong> để cập nhật dữ liệu đối thủ.
                   </div>
                 </>
               )}
@@ -1721,8 +1766,23 @@ const App=()=>{
           <div className="print-section" style={{pageBreakInside:'avoid'}}>
             <div className="print-section-title">III. Giá Sàn theo nhóm quản lý</div>
             <table className="print-table-a4">
-              <thead><tr><th>Nhóm hàng</th><th>SKUs</th><th>Tồn (kg)</th><th>BQ GV</th><th>BQ Sàn HV</th><th>BQ ĐT</th><th>Cốt lõi</th><th>Thân thiết</th><th>KH lẻ</th></tr></thead>
-              <tbody>{mgmtData.filter(g=>g.skus>0).map((g,i)=>(<tr key={i}><td style={{textAlign:'left'}}>{g.label}</td><td>{g.skus}</td><td>{fv(g.totalQty)}</td><td>{fv(g.avgCost)}</td><td style={{fontWeight:'bold'}}>{fv(g.avgFloor)}</td><td>{g.avgCompPrice>0?fv(g.avgCompPrice):'—'}</td><td className="text-blue">{fv(g.avgCore)}</td><td>{fv(g.avgLoyal)}</td><td>{fv(g.avgNew)}</td></tr>))}</tbody>
+              <thead><tr><th>Nhóm hàng</th><th>SKUs</th><th>Tồn (kg)</th><th>BQ GV</th><th>📍 Điểm sinh lời</th><th>✏️ Sàn BH</th><th>BQ ĐT</th><th>Cốt lõi</th><th>Thân thiết</th><th>KH lẻ</th></tr></thead>
+              <tbody>{mgmtData.filter(g=>g.skus>0).map((g,i)=>{
+                const gv=g.avgCost;
+                const pctPub=g.publishedFloor?pctVsGV(g.publishedFloor,gv):null;
+                return(<tr key={i}>
+                  <td style={{textAlign:'left'}}>{g.label}</td>
+                  <td>{g.skus}</td>
+                  <td>{fv(g.totalQty)}</td>
+                  <td>{fv(gv)}</td>
+                  <td style={{fontWeight:'bold'}}>{fv(g.avgFloor)}</td>
+                  <td style={{fontWeight:'bold',color:pctPub!=null&&pctPub>=0?'#15803d':'#dc2626'}}>{g.publishedFloor?`${fv(g.publishedFloor)} (${pctPub!=null?(pctPub>=0?'+':'')+pctPub.toFixed(2)+'%':''})`:'—'}</td>
+                  <td>{g.avgCompPrice>0?fv(g.avgCompPrice):'—'}</td>
+                  <td className="text-blue">{fv(g.corePrice)}</td>
+                  <td>{fv(g.loyalPrice)}</td>
+                  <td>{fv(g.newPrice)}</td>
+                </tr>);
+              })}</tbody>
             </table>
           </div>
           <div style={{display:'flex',justifyContent:'space-around',marginTop:'40px',textAlign:'center',pageBreakInside:'avoid'}}>
