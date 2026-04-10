@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAKD BUY 5.2 – H&D Aluminum Strategy</title>
+<title>PAKD BUY 5.3 – H&D Aluminum Strategy</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -189,18 +189,21 @@ const groupBySku=rows=>{
 };
 
 // ─────────────────────────────────────────────────────────────
-// FLOOR PRICE LOGIC v5.2
-// Chi phí lưu kho 2% áp dụng cho CẢ hàng trong kho VÀ hàng đi đường
-// GV_blend = WA( GV_kho×1.02 + GV_đường×1.02 ) = WA_tất_cả × 1.02
+// FLOOR PRICE LOGIC v5.3 (Cập nhật 9.5%)
 // ─────────────────────────────────────────────────────────────
-const calcFloorForSku=(costBasisPhysical, inputs)=>{
-  const {finCostPct:finFixed, opsCostPct, creditMode, lendingRate, customCreditDays}=inputs;
-  let finCostRate=0;
-  if(creditMode==='fixed') finCostRate=(finFixed||0)/100;
-  else if(creditMode==='credit') finCostRate=(lendingRate||0)/100*(customCreditDays||0)/365;
-  const totalCostRate=finCostRate+(opsCostPct||0)/100;
-  const floorPrice=costBasisPhysical*(1+totalCostRate);
-  return{floorPrice,finCostRate,totalCostRate};
+const calcFloorForSku=(costBasisRaw, inputs)=>{
+  const {finCostPct:finFixed, opsCostPct, creditMode, lendingRate, customCreditDays, storageCostPct, baseFinCostPct}=inputs;
+  let creditCostRate=0;
+  if(creditMode==='fixed') creditCostRate=(finFixed||0)/100;
+  else if(creditMode==='credit') creditCostRate=(lendingRate||0)/100*(customCreditDays||0)/365;
+
+  const storageRate = (storageCostPct != null ? storageCostPct : 2) / 100;
+  const baseFinRate = (baseFinCostPct != null ? baseFinCostPct : 1.5) / 100;
+  
+  const totalCostRate = storageRate + baseFinRate + creditCostRate + (opsCostPct||0)/100;
+  const floorPrice = costBasisRaw*(1+totalCostRate);
+  
+  return{floorPrice, creditCostRate, totalCostRate, storageRate, baseFinRate};
 };
 
 const findUpdatedImportPrice=(sku,updatedPrices,exchangeRate)=>{
@@ -220,9 +223,6 @@ const findUpdatedImportPrice=(sku,updatedPrices,exchangeRate)=>{
   };
 };
 
-// CHI PHÍ LƯU KHO 2% áp dụng cho CẢ hàng kho VÀ hàng đi đường
-const STORAGE_COST_PCT=0.02;
-
 const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
   const stockRows=skuGroup.inStock;
   const transitRows=skuGroup.inTransit;
@@ -230,24 +230,18 @@ const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
   const qtyTransit=transitRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const totalQty=qtyStock+qtyTransit;
 
-  // Giá vốn bình quân hàng trong kho (chưa điều chỉnh)
+  // Giá vốn bình quân gốc (Thuần)
   const avgCostStockRaw=weightedAvg(stockRows.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
-  // Giá vốn bình quân hàng đi đường (chưa điều chỉnh)
   const avgCostTransitRaw=weightedAvg(transitRows.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0})));
 
-  // CẢ HAI đều cộng thêm 2% chi phí lưu kho
-  const avgCostStockAdjusted=avgCostStockRaw*(1+STORAGE_COST_PCT);
-  const avgCostTransitAdjusted=avgCostTransitRaw*(1+STORAGE_COST_PCT);
-
-  // Giá vốn blend = WA của (hàng kho đã +2% + hàng đi đường đã +2%)
-  let costBasisPhysical=0;
+  let costBasisPhysicalRaw=0;
   if(totalQty>0){
-    costBasisPhysical=(qtyStock*avgCostStockAdjusted+qtyTransit*avgCostTransitAdjusted)/totalQty;
+    costBasisPhysicalRaw=(qtyStock*avgCostStockRaw+qtyTransit*avgCostTransitRaw)/totalQty;
   }
 
   const newImportPriceVND=updatedImportMatch?updatedImportMatch.priceVNDperKg:null;
 
-  const {floorPrice,finCostRate,totalCostRate}=calcFloorForSku(costBasisPhysical,inputs);
+  const {floorPrice,creditCostRate,totalCostRate,storageRate,baseFinRate}=calcFloorForSku(costBasisPhysicalRaw,inputs);
 
   const addCore=(inputs.marginCore||0)/100;
   const addLoyal=(inputs.marginLoyal||1)/100;
@@ -261,13 +255,11 @@ const calcFloorPricePerSku=(skuGroup,updatedImportMatch,inputs)=>{
     thickness:skuGroup.thickness,width:skuGroup.width,
     length:skuGroup.length,coating:skuGroup.coating,
     skuKey:skuGroup.key,skuLabel:skuGroup.label,
-    costBasisPhysical,
+    costBasisPhysical: costBasisPhysicalRaw, // Giá vốn thuần
     avgCostStockRaw,
     avgCostTransitRaw,
-    avgCostStockAdjusted,
-    avgCostTransitAdjusted,
     totalQty,qtyStock,qtyTransit,
-    floorAbsolute:floorPrice,finCostRate,totalCostRate,
+    floorAbsolute:floorPrice,finCostRate:creditCostRate,totalCostRate,storageRate,baseFinRate,
     newImportPriceVND,updatedImportMatch,
     priceCore,priceLoyal,priceNew,
     competitorPrice:updatedImportMatch?.competitorPrice||0,
@@ -318,7 +310,7 @@ const calcMgmtGroups=(floorPriceData,groups)=>{
 };
 
 // ─────────────────────────────────────────────────────────────
-// OTHER CALCS (unchanged)
+// OTHER CALCS
 // ─────────────────────────────────────────────────────────────
 const calcInvoice=(products,exRate)=>{const usd=products.reduce((s,p)=>s+(p.qtyKg/1000)*p.priceFC,0);return{invoiceUSD:usd,invoiceVND:usd*exRate};};
 const calcLanded=(invoiceVND,totalKg,inp)=>{
@@ -469,10 +461,12 @@ const defInputs={
   freightTotal:45000000,importTax:0,processingCost:0,
   businessRiskPercent:1.5,customerCreditDays:30,lendingRate:7.8,
   marginCore:0,marginLoyal:1,marginNew:2,
-  finCostPct:1.5,
   opsCostPct:4.5,
   creditMode:'fixed',
   customCreditDays:30,
+  storageCostPct: 2.0,
+  baseFinCostPct: 1.5,
+  finCostPct: 1.5, // Được dùng như Chi phí Công Nợ (CN) trong mode fixed
 };
 
 // ─── ICONS ────────────────────────────────────────────────────
@@ -579,13 +573,13 @@ const LimitBar=({actual,limit,label,unit='đ'})=>{
 
 const CreditModeSelector=({inputs,setInp})=>{
   const modes=[
-    {v:'none',  l:'Không CN', desc:'Bỏ CP tài chính'},
+    {v:'none',  l:'Không CN', desc:'Bỏ CP công nợ'},
     {v:'fixed', l:'CN cố định',desc:`${inputs.finCostPct}%/năm`},
     {v:'credit',l:'CN theo ngày',desc:`${inputs.customCreditDays} ngày`},
   ];
   return(
     <div style={{background:'#f0f9ff',border:'1px solid #bae6fd',borderRadius:6,padding:'9px 11px',marginBottom:8}}>
-      <div style={{fontSize:'.63rem',color:'#0369a1',fontWeight:900,marginBottom:7}}>💳 Chế độ Công nợ KH</div>
+      <div style={{fontSize:'.63rem',color:'#0369a1',fontWeight:900,marginBottom:7}}>💳 Chế độ Công nợ KH (CN)</div>
       <div style={{display:'flex',gap:4,marginBottom:8}}>
         {modes.map(m=>(
           <button key={m.v} onClick={()=>setInp('creditMode',m.v)}
@@ -597,7 +591,7 @@ const CreditModeSelector=({inputs,setInp})=>{
       </div>
       {inputs.creditMode==='fixed'&&(
         <div>
-          <label className="lbl" style={{color:'#0369a1',fontSize:'.6rem'}}>CP Tài chính CN %/năm</label>
+          <label className="lbl" style={{color:'#0369a1',fontSize:'.6rem'}}>CP Công nợ (CN) %/năm</label>
           <input type="number" step=".1" className="inp inp-xs mono" style={{color:'#0369a1',fontWeight:700}} value={inputs.finCostPct} onChange={e=>setInp('finCostPct',parseFloat(e.target.value)||0)}/>
         </div>
       )}
@@ -868,7 +862,7 @@ const App=()=>{
         <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
           <div style={{background:'linear-gradient(135deg,#0d9488,#2563eb)',borderRadius:'7px',width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:'15px',color:'#fff',fontFamily:'JetBrains Mono'}}>P</div>
           <div>
-            <div style={{fontWeight:900,fontSize:'15px',letterSpacing:'-.02em',color:'#0f172a'}}>PAKD BUY <span style={{color:'#0d9488',fontFamily:'JetBrains Mono',fontSize:'12px'}}>5.2</span></div>
+            <div style={{fontWeight:900,fontSize:'15px',letterSpacing:'-.02em',color:'#0f172a'}}>PAKD BUY <span style={{color:'#0d9488',fontFamily:'JetBrains Mono',fontSize:'12px'}}>5.3</span></div>
             <div style={{fontSize:'11px',color:'#475569',fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em'}}>Floor Price Engine v2</div>
           </div>
           <div style={{width:'1px',height:'24px',background:border1,margin:'0 4px'}}/>
@@ -930,16 +924,25 @@ const App=()=>{
                 ):<div><label className="lbl">Lãi suất vốn %/năm</label><input type="number" step=".1" className="inp inp-xs font-semibold" value={inputs.capitalCostPercent} onChange={e=>setInp('capitalCostPercent',parseFloat(e.target.value)||0)}/></div>}
               </div>
 
-              {/* FLOOR PRICE SETTINGS v5.2 */}
+              {/* FLOOR PRICE SETTINGS v5.3 */}
               <div className="card" style={{border:'1px solid #5eead4'}}>
-                <div className="sh" style={{color:'#0f766e',borderColor:'#99f6e4'}}><Ic.Tag/><span style={{color:'#0f766e'}}>Chính sách Giá Sàn v5.2</span></div>
+                <div className="sh" style={{color:'#0f766e',borderColor:'#99f6e4'}}><Ic.Tag/><span style={{color:'#0f766e'}}>Chính sách Giá Sàn v5.3</span></div>
 
                 <div style={{background:'#f0fdfa',border:'1px solid #99f6e4',borderRadius:5,padding:'7px 9px',marginBottom:8,fontSize:'.6rem',color:'#0f766e',lineHeight:1.8,fontWeight:600}}>
-                  <strong>Sàn = GV_blend × (1 + CPTC + CPHĐKD)</strong><br/>
-                  <span style={{color:'#b45309'}}>📦 GV_blend = WA(GV_kho×1.02 + GV_đường×1.02)</span><br/>
-                  <span style={{color:'#7c3aed'}}>Cả kho VÀ đường đều +2% CP lưu kho</span><br/>
-                  CPTC = Chi phí tài chính công nợ<br/>
-                  CPHĐKD = Chi phí hoạt động KD
+                  <strong>Sàn = GV_gốc × (1 + LK + CPHĐKD + CPTC + CN)</strong><br/>
+                  <span style={{color:'#b45309'}}>📦 GV_gốc = WA(GV_kho + GV_đường)</span><br/>
+                  LK = CP Lưu kho | CPTC = CP Tài chính<br/>
+                  CPHĐKD = CP Hoạt động KD | CN = Công nợ
+                </div>
+
+                <div style={{marginBottom:8}}>
+                  <label className="lbl" style={{color:'#7c3aed'}}>CP Lưu kho (LK) %</label>
+                  <input type="number" step=".1" className="inp inp-xs mono" style={{color:'#7c3aed',fontWeight:700}} value={inputs.storageCostPct ?? 2} onChange={e=>setInp('storageCostPct',parseFloat(e.target.value)||0)}/>
+                </div>
+
+                <div style={{marginBottom:8}}>
+                  <label className="lbl" style={{color:'#b45309'}}>CP Tài chính (CPTC) %</label>
+                  <input type="number" step=".1" className="inp inp-xs mono" style={{color:'#b45309',fontWeight:700}} value={inputs.baseFinCostPct ?? 1.5} onChange={e=>setInp('baseFinCostPct',parseFloat(e.target.value)||0)}/>
                 </div>
 
                 <div style={{marginBottom:8}}>
@@ -1268,7 +1271,7 @@ const App=()=>{
           </div>
         )}
 
-        {/* ════ TAB GIÁ SÀN v5.2 ════ */}
+        {/* ════ TAB GIÁ SÀN v5.3 ════ */}
         {tab==='floor'&&(
           <div style={{flex:1,padding:'14px 18px',overflowY:'auto',background:bg1}}>
             <div style={{maxWidth:'1600px',margin:'0 auto'}}>
@@ -1277,14 +1280,14 @@ const App=()=>{
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
                 <div>
                   <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a',display:'flex',alignItems:'center',gap:8}}>
-                    <span style={{background:'linear-gradient(135deg,#0d9488,#0891b2)',borderRadius:6,padding:'3px 8px',color:'#fff',fontSize:'.82rem'}}>💹 GIÁ SÀN 5.2</span>
+                    <span style={{background:'linear-gradient(135deg,#0d9488,#0891b2)',borderRadius:6,padding:'3px 8px',color:'#fff',fontSize:'.82rem'}}>💹 GIÁ SÀN 5.3</span>
                     Phân tích giá sàn hòa vốn + Đối thủ
                   </h2>
                   <div style={{display:'flex',alignItems:'center',gap:8,marginTop:5,flexWrap:'wrap'}}>
                     <div style={{fontSize:'.72rem',color:'#475569',fontWeight:600,background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:4,padding:'2px 8px'}}>
-                      <strong>Sàn = GV_blend × (1 + {inputs.opsCostPct}% CPHĐKD{inputs.creditMode!=='none'?` + ${inputs.creditMode==='fixed'?inputs.finCostPct+'% CPTC':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}% TC (${inputs.customCreditDays}N)`}`:' + 0 CN'})</strong>
+                      <strong>Sàn = GV_gốc × (1 + {inputs.storageCostPct ?? 2}% LK + {inputs.baseFinCostPct ?? 1.5}% TC + {inputs.opsCostPct}% HĐ{inputs.creditMode!=='none'?` + ${inputs.creditMode==='fixed'?inputs.finCostPct+'% CN':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}% CN`}`:' + 0 CN'})</strong>
                     </div>
-                    <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:20,fontSize:'.68rem',fontWeight:800,background:'#f3e8ff',color:'#6d28d9',border:'1px solid #d8b4fe'}}>📦 Cả kho + đường đều +2% lưu kho</span>
+                    <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:20,fontSize:'.68rem',fontWeight:800,background:'#f3e8ff',color:'#6d28d9',border:'1px solid #d8b4fe'}}>📦 GV_gốc chưa bao gồm LK</span>
                     <span className="mgmt-view-badge">{creditModeLabel}</span>
                   </div>
                 </div>
@@ -1342,10 +1345,10 @@ const App=()=>{
                             <th rowSpan={2} style={{background:'#e2e8f0',width:32}}>#</th>
                             <th rowSpan={2} style={{textAlign:'left',paddingLeft:8,background:'#e2e8f0',minWidth:210}}>SKU</th>
                             <th rowSpan={2} style={{background:'#e2e8f0',width:95}}>Tồn (kg)</th>
-                            <th rowSpan={2} style={{background:'#f0fdf4',color:'#14532d',minWidth:105}}>Giá vốn blend</th>
+                            <th rowSpan={2} style={{background:'#f0fdf4',color:'#14532d',minWidth:105}}>Giá vốn gốc<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8,marginTop:1}}>thuần</div></th>
                             <th rowSpan={2} style={{background:'#dcfce7',color:'#14532d',minWidth:115,fontWeight:900}}>
                               🔒 Sàn HV
-                              <div style={{fontSize:'.55rem',fontWeight:600,opacity:.8,marginTop:1}}>{inputs.opsCostPct}%+{inputs.creditMode==='none'?'0':inputs.creditMode==='fixed'?inputs.finCostPct+'%':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}%`}</div>
+                              <div style={{fontSize:'.55rem',fontWeight:600,opacity:.8,marginTop:1}}>{inputs.storageCostPct ?? 2}%LK+{inputs.baseFinCostPct ?? 1.5}%TC+{inputs.opsCostPct}%HĐ+{inputs.creditMode==='none'?'0':inputs.creditMode==='fixed'?inputs.finCostPct+'%CN':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}%CN`}</div>
                             </th>
                             <th rowSpan={2} style={{background:'#fef3c7',color:'#92400e',minWidth:105}}>🏭 Đối thủ</th>
                             <th rowSpan={2} style={{background:'#fde68a',color:'#92400e',minWidth:105}}>🔻 Sàn ĐT</th>
@@ -1375,13 +1378,7 @@ const App=()=>{
                                 </td>
                                 <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
                                   <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.82rem'}}>{fv(r.costBasisPhysical)}</div>
-                                  <div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>blend đ/kg (+2% lưu kho)</div>
-                                  {(r.qtyStock>0||r.qtyTransit>0)&&(
-                                    <div style={{fontSize:'.55rem',color:'#7c3aed',fontWeight:700,marginTop:1}}>
-                                      {r.qtyStock>0&&`🟢 ${fv(r.avgCostStockRaw)}→${fv(r.avgCostStockAdjusted)} `}
-                                      {r.qtyTransit>0&&`🟡 ${fv(r.avgCostTransitRaw)}→${fv(r.avgCostTransitAdjusted)}`}
-                                    </div>
-                                  )}
+                                  <div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>blend đ/kg</div>
                                 </td>
                                 <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
                                   <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{fv(r.floorAbsolute)}</div>
@@ -1455,7 +1452,8 @@ const App=()=>{
                   <div style={{background:'#fef9c3',border:'1px solid #fde047',borderRadius:7,padding:'9px 13px',marginBottom:13,display:'flex',alignItems:'center',gap:8}}>
                     <Ic.Users/>
                     <div style={{fontSize:'.75rem',color:'#713f12',fontWeight:700}}>
-                      <strong>Chế độ Quản lý</strong> — GV blend đã cộng +2% lưu kho cho cả hàng trong kho lẫn hàng đi đường. <em>Điểm sinh lời</em> = Sàn tự động. <em>Sàn ban hành</em> = nhập tay, hiển thị % so với BQ GV, dùng làm cơ sở tính giá KH.
+                      <strong>Chế độ Quản lý</strong> — GV blend là giá vốn gốc (chưa cộng CP). <em>Điểm sinh lời</em> = Sàn tự động (Đã cộng % LK + CPHĐKD + CPTC + CN).
+                      <em>Sàn ban hành</em> = nhập tay, hiển thị % so với BQ GV, dùng làm cơ sở tính giá KH.
                     </div>
                   </div>
                   <div style={{overflowX:'auto'}}>
@@ -1465,8 +1463,7 @@ const App=()=>{
                           <th style={{textAlign:'left',paddingLeft:8,minWidth:200}}>Nhóm hàng</th>
                           <th style={{width:60}}>SKUs</th>
                           <th style={{minWidth:100}}>Tồn (kg)</th>
-                          <th style={{background:'#f0fdf4',color:'#14532d',minWidth:110}}>BQ Giá vốn<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>(+2% lưu kho)</div></th>
-                          {/* ĐỔI THỨ TỰ: Điểm sinh lời trước, Giá nhập HT sau */}
+                          <th style={{background:'#f0fdf4',color:'#14532d',minWidth:110}}>BQ Giá vốn<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>(chưa cộng CP)</div></th>
                           <th style={{background:'#dcfce7',color:'#14532d',minWidth:125,fontWeight:900}}>📍 Điểm sinh lời<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>tự động</div></th>
                           <th style={{background:'#e0f2fe',color:'#075985',minWidth:115}}>💰 Giá nhập HT<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>từ GSheet</div></th>
                           <th style={{background:'#fef08a',color:'#713f12',minWidth:145,fontWeight:900}}>✏️ Sàn ban hành<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>nhập tay · % vs GV</div></th>
@@ -1479,14 +1476,13 @@ const App=()=>{
                       </thead>
                       <tbody>
                         {mgmtData.map((g,i)=>{
-                          // Tính % so với BQ Giá vốn
-                          const gv=g.avgCost; // BQ Giá vốn (đã +2%)
-                          const pctFloor=pctVsGV(g.publishedFloor||g.avgFloor, gv);
+                          const gv=g.avgCost; // Thuần
+                          const pctFloor=pctVsGV(g.avgFloor, gv); // Cố định, không nhảy theo Sàn ban hành
                           const pctCore=pctVsGV(g.corePrice, gv);
                           const pctLoyal=pctVsGV(g.loyalPrice, gv);
                           const pctNew=pctVsGV(g.newPrice, gv);
                           const pctPublished=g.publishedFloor?pctVsGV(g.publishedFloor, gv):null;
-
+                          
                           return(
                           <tr key={g.id} style={{background:i%2===0?'#ffffff':'#f8fafc'}}>
                             <td style={{paddingLeft:8}}>
@@ -1505,7 +1501,7 @@ const App=()=>{
                             {/* BQ Giá vốn */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}>
                               <div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.88rem'}}>{g.skus>0?fv(gv):'—'}</div>
-                              <div style={{fontSize:'.55rem',color:'#475569',fontWeight:600}}>đ/kg blend</div>
+                              <div style={{fontSize:'.55rem',color:'#475569',fontWeight:600}}>đ/kg blend thuần</div>
                             </td>
                             {/* 📍 Điểm sinh lời (tự động) */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7',borderLeft:'2px solid #86efac',borderRight:'2px solid #86efac'}}>
@@ -1521,7 +1517,7 @@ const App=()=>{
                               <div className="mono" style={{fontWeight:800,color:'#0369a1',fontSize:'.88rem'}}>{g.avgNewImportPrice>0?fv(g.avgNewImportPrice):'—'}</div>
                               {g.avgNewImportPrice>0&&<div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>đ/kg</div>}
                             </td>
-                            {/* ✏️ Sàn ban hành – nhập tay + hiển thị % vs GV */}
+                            {/* ✏️ Sàn ban hành */}
                             <td style={{textAlign:'center',paddingLeft:4,paddingRight:4,background:'#fefce8'}}>
                               <input
                                 className="inp inp-xs mono"
@@ -1539,7 +1535,7 @@ const App=()=>{
                                 <div style={{fontSize:'.52rem',color:'#94a3b8',fontWeight:600,marginTop:1}}>chưa ban hành</div>
                               )}
                             </td>
-                            {/* 👥 BQ Cốt lõi + % vs GV */}
+                            {/* 👥 BQ Cốt lõi */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#eff6ff'}}>
                               <div className="mono" style={{fontWeight:800,color:'#1d4ed8',fontSize:'.88rem'}}>{g.skus>0?fv(g.corePrice):'—'}</div>
                               {g.skus>0&&pctCore!=null&&(
@@ -1549,7 +1545,7 @@ const App=()=>{
                               )}
                               {g.publishedFloor&&<div style={{fontSize:'.52rem',color:'#1d4ed8',fontWeight:700}}>từ sàn BH</div>}
                             </td>
-                            {/* 💛 BQ Thân thiết + % vs GV */}
+                            {/* 💛 BQ Thân thiết */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#ede9fe'}}>
                               <div className="mono" style={{fontWeight:800,color:'#7c3aed',fontSize:'.88rem'}}>{g.skus>0?fv(g.loyalPrice):'—'}</div>
                               {g.skus>0&&pctLoyal!=null&&(
@@ -1559,7 +1555,7 @@ const App=()=>{
                               )}
                               {g.publishedFloor&&<div style={{fontSize:'.52rem',color:'#7c3aed',fontWeight:700}}>từ sàn BH</div>}
                             </td>
-                            {/* 🆕 BQ KH lẻ + % vs GV */}
+                            {/* 🆕 BQ KH lẻ */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#fff7ed'}}>
                               <div className="mono" style={{fontWeight:800,color:'#ea580c',fontSize:'.88rem'}}>{g.skus>0?fv(g.newPrice):'—'}</div>
                               {g.skus>0&&pctNew!=null&&(
@@ -1604,7 +1600,10 @@ const App=()=>{
                     </table>
                   </div>
                   <div style={{marginTop:12,background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:7,padding:'10px 14px',fontSize:'.72rem',color:'#475569',fontWeight:600,lineHeight:1.8}}>
-                    💡 <strong>BQ Giá vốn</strong> = GV blend đã +2% lưu kho (cả kho + đường). <strong>📍 Điểm sinh lời</strong> = Sàn HV tự động = GV × (1 + CPHĐKD + CPTC). <strong>✏️ Sàn ban hành</strong> = nhập tay để làm cơ sở chính thức; % hiển thị so với BQ GV. <strong>👥💛🆕 Giá KH</strong> = Sàn BH × (1 + margin%) — % hiển thị so với BQ GV. Nhấn <strong>Sync</strong> để cập nhật dữ liệu đối thủ.
+                    💡 <strong>BQ Giá vốn</strong> = GV blend thuần (không bao gồm CPLK). <strong>📍 Điểm sinh lời</strong> = Sàn HV tự động = GV × (1 + LK + CPHĐKD + CPTC + CN).
+                    <strong>✏️ Sàn ban hành</strong> = nhập tay để làm cơ sở chính thức; % hiển thị so với BQ GV.
+                    <strong>👥💛🆕 Giá KH</strong> = Sàn BH × (1 + margin%) — % hiển thị so với BQ GV.
+                    Nhấn <strong>Sync</strong> để cập nhật dữ liệu đối thủ.
                   </div>
                 </>
               )}
@@ -1745,13 +1744,13 @@ const App=()=>{
       {/* PRINT */}
       {result&&(
         <div className="print-container">
-          <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD 5.2)</div>
+          <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD 5.3)</div>
           <div className="print-subtitle">Ngày in: {new Date().toLocaleDateString('vi-VN')} | Đơn vị: VNĐ & Kg</div>
           <div className="print-section">
             <div className="print-section-title">I. Thông số</div>
             <div className="print-grid-4">
               <div className="print-box"><div className="print-box-title">Tỷ giá USD</div><div className="print-box-value">{fv(inputs.exchangeRate)}</div></div>
-              <div className="print-box"><div className="print-box-title">CPHĐKD / Chế độ CN</div><div className="print-box-value">{inputs.opsCostPct}% / {creditModeLabel}</div></div>
+              <div className="print-box"><div className="print-box-title">LK / CPTC / HĐKD / CN</div><div className="print-box-value" style={{fontSize:'11pt'}}>{inputs.storageCostPct ?? 2}% / {inputs.baseFinCostPct ?? 1.5}% / {inputs.opsCostPct}% / {creditModeLabel}</div></div>
               <div className="print-box"><div className="print-box-title">Thanh toán</div><div className="print-box-value text-blue">{inputs.paymentMethod}</div></div>
               <div className="print-box"><div className="print-box-title">Tổng khối lượng</div><div className="print-box-value text-green">{fv(result.totalKg)} kg</div></div>
             </div>
