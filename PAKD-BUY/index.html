@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAKD BUY 5.3 – H&D Aluminum Strategy</title>
+<title>PAKD BUY 5.4 – H&D Aluminum Strategy</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -630,6 +630,8 @@ const App=()=>{
   const [mgmtGroups,setMgmtGroups]=useState(DEFAULT_MGMT_GROUPS);
   const [mgmtFloorOverride,setMgmtFloorOverride]=useState({});
   const [dbStatus,setDbStatus]=useState({loading:false,error:null,lastSync:null,source:'local'});
+  const [floorHistory,setFloorHistory]=useState(()=>{try{const s=localStorage.getItem('pakd_floor_history');return s?JSON.parse(s):[];}catch(e){return [];}});
+  const [histFilter,setHistFilter]=useState({group:'ALL',dateFrom:'',dateTo:''});
   const chartRef=useRef(null);const chartInst=useRef(null);
   const setInp=useCallback((f,v)=>setInputs(p=>({...p,[f]:v})),[]);
 
@@ -786,6 +788,126 @@ const App=()=>{
   const setLimField=(f,v)=>setLimitsData(p=>{const arr=[...p];if(arr[0]) arr[0]={...arr[0],[f]:pn(v)};return arr;});
   const saveScenario=()=>{if(!result) return;setScenarios(p=>[...p,{id:uid(),name:`${new Date().toLocaleDateString('vi-VN')} · ${products.map(p=>p.alloy+' '+p.temper).join('+')}`,date:new Date().toLocaleDateString('vi-VN'),totalKg:result.totalKg,invoiceUSD:result.invoiceUSD,globalAvgBefore:result.globalAvgBefore,globalAvgAfter:result.globalAvgAfter,globalBreakEven:result.globalBreakEven,hasRisk:result.hasRisk,totalGrossProfit:result.totalGrossProfit,inputs:{...inputs},products:[...products]}]);};
 
+  // ── FLOOR HISTORY: lưu lịch sử ban hành giá sàn ──
+  const saveFloorHistory=useCallback(()=>{
+    const publishedGroups=mgmtData.filter(g=>g.publishedFloor&&g.skus>0);
+    if(publishedGroups.length===0){alert('Chưa có nhóm nào ban hành Sàn. Hãy nhập Sàn ban hành trước.');return;}
+    const nowISO=new Date().toISOString();
+    const nowVN=new Date().toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const timeVN=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+    const entry={
+      id:uid(),
+      issuedDate:nowVN,
+      issuedTime:timeVN,
+      issuedISO:nowISO,
+      issuedBy:inputs.creator||'—',
+      exchangeRate:inputs.exchangeRate,
+      storageCostPct:inputs.storageCostPct??2,
+      baseFinCostPct:inputs.baseFinCostPct??1.5,
+      opsCostPct:inputs.opsCostPct,
+      creditMode:inputs.creditMode,
+      groups:publishedGroups.map(g=>({
+        id:g.id,label:g.label,alloy:g.alloy,temper:g.temper,
+        minThick:g.minThick,maxThick:g.maxThick,
+        skus:g.skus,totalQty:g.totalQty,
+        avgCost:g.avgCost,
+        autoFloor:g.avgFloor,
+        publishedFloor:g.publishedFloor,
+        corePrice:g.corePrice,
+        loyalPrice:g.loyalPrice,
+        newPrice:g.newPrice,
+        avgCompPrice:g.avgCompPrice,
+        avgCompFloor:g.avgCompFloor,
+      })),
+    };
+    const updated=[entry,...floorHistory];
+    setFloorHistory(updated);
+    try{localStorage.setItem('pakd_floor_history',JSON.stringify(updated));}catch(e){}
+    alert(`✅ Đã lưu lịch sử ban hành ngày ${nowVN} ${timeVN} — ${publishedGroups.length} nhóm.`);
+  },[mgmtData,floorHistory,inputs]);
+
+  // ── EXPORT CSV: xuất báo giá sàn hiện tại ──
+  const exportFloorCSV=useCallback((histEntry)=>{
+    const source=histEntry||{
+      issuedDate:new Date().toLocaleDateString('vi-VN'),
+      issuedTime:new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}),
+      issuedBy:inputs.creator||'—',
+      exchangeRate:inputs.exchangeRate,
+      storageCostPct:inputs.storageCostPct??2,
+      baseFinCostPct:inputs.baseFinCostPct??1.5,
+      opsCostPct:inputs.opsCostPct,
+      groups:mgmtData.filter(g=>g.skus>0).map(g=>({
+        label:g.label,alloy:g.alloy,temper:g.temper,
+        minThick:g.minThick,maxThick:g.maxThick,
+        skus:g.skus,totalQty:g.totalQty,
+        avgCost:g.avgCost,autoFloor:g.avgFloor,
+        publishedFloor:g.publishedFloor||'',
+        corePrice:g.corePrice,loyalPrice:g.loyalPrice,newPrice:g.newPrice,
+        avgCompPrice:g.avgCompPrice,avgCompFloor:g.avgCompFloor,
+      })),
+    };
+    const rows=[];
+    rows.push(['BÁNG GIÁ SÀN BAN HÀNH','','','','','','','','','','','','','']);
+    rows.push(['Ngày ban hành',source.issuedDate+' '+source.issuedTime,'','Người lập',source.issuedBy,'','Tỷ giá USD',source.exchangeRate,'','LK%',source.storageCostPct,'CPTC%',source.baseFinCostPct,'HĐKD%',source.opsCostPct]);
+    rows.push([]);
+    rows.push([
+      'Nhóm hàng','Mác hợp kim','Temper','Dày min (mm)','Dày max (mm)',
+      'Số SKUs','Tồn kho (kg)','BQ Giá vốn (đ/kg)','Sàn tự động (đ/kg)','✏️ Sàn ban hành (đ/kg)',
+      'Giá Cốt lõi (đ/kg)','Giá Thân thiết (đ/kg)','Giá KH lẻ (đ/kg)','BQ Đối thủ (đ/kg)','Sàn Đối thủ (đ/kg)'
+    ]);
+    source.groups.forEach(g=>{
+      rows.push([
+        g.label,g.alloy,g.temper,g.minThick,g.maxThick,
+        g.skus,g.totalQty,
+        Math.round(g.avgCost),Math.round(g.autoFloor),g.publishedFloor?Math.round(g.publishedFloor):'',
+        Math.round(g.corePrice),Math.round(g.loyalPrice),Math.round(g.newPrice),
+        g.avgCompPrice>0?Math.round(g.avgCompPrice):'',
+        g.avgCompFloor>0?Math.round(g.avgCompFloor):'',
+      ]);
+    });
+    const csv=rows.map(r=>r.map(c=>{const s=String(c??'');return s.includes(',')||s.includes('"')?`"${s.replace(/"/g,'""')}`:s;}).join(',')).join('\r\n');
+    const bom='\uFEFF';
+    const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const fname=`GiaSan_${(source.issuedDate||'').replace(/\//g,'-')}_${(source.issuedTime||'').replace(/:/g,'')}.csv`;
+    a.href=url;a.download=fname;a.click();
+    URL.revokeObjectURL(url);
+  },[mgmtData,inputs]);
+
+  // ── EXPORT ALL HISTORY CSV ──
+  const exportHistoryCSV=useCallback(()=>{
+    if(floorHistory.length===0){alert('Chưa có lịch sử nào.');return;}
+    const rows=[];
+    rows.push(['LỊCH SỬ BAN HÀNH GIÁ SÀN – PAKD 5.4','','','','','','','','','','','','','','']);
+    rows.push([]);
+    rows.push([
+      'Ngày ban hành','Giờ','Người lập','Tỷ giá USD','LK%','CPTC%','HĐKD%',
+      'Nhóm hàng','Mác','Temper','Dày min','Dày max','SKUs','Tồn kho (kg)',
+      'BQ GV (đ/kg)','Sàn tự động (đ/kg)','Sàn ban hành (đ/kg)',
+      'Cốt lõi (đ/kg)','Thân thiết (đ/kg)','KH lẻ (đ/kg)','BQ ĐT (đ/kg)','Sàn ĐT (đ/kg)'
+    ]);
+    floorHistory.forEach(e=>{
+      (e.groups||[]).forEach(g=>{
+        rows.push([
+          e.issuedDate,e.issuedTime,e.issuedBy,e.exchangeRate,
+          e.storageCostPct,e.baseFinCostPct,e.opsCostPct,
+          g.label,g.alloy,g.temper,g.minThick,g.maxThick,g.skus,g.totalQty,
+          Math.round(g.avgCost),Math.round(g.autoFloor),g.publishedFloor?Math.round(g.publishedFloor):'',
+          Math.round(g.corePrice),Math.round(g.loyalPrice),Math.round(g.newPrice),
+          g.avgCompPrice>0?Math.round(g.avgCompPrice):'',
+          g.avgCompFloor>0?Math.round(g.avgCompFloor):'',
+        ]);
+      });
+    });
+    const csv=rows.map(r=>r.map(c=>{const s=String(c??'');return s.includes(',')||s.includes('"')?`"${s.replace(/"/g,'""')}`:s;}).join(',')).join('\r\n');
+    const bom='\uFEFF';
+    const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`LichSuGiaSan_${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.csv`;
+    a.click();URL.revokeObjectURL(url);
+  },[floorHistory]);
   const uniqueInvAlloys=[...new Set(inventory.map(r=>r.alloy))];
   const uniqueSpAlloys=[...new Set(sellingPrices.map(r=>r.alloy||'').filter(Boolean))];
   const uniqueFpAlloys=[...new Set(floorPriceData.map(r=>r.alloy))];
@@ -862,7 +984,7 @@ const App=()=>{
         <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
           <div style={{background:'linear-gradient(135deg,#0d9488,#2563eb)',borderRadius:'7px',width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:'15px',color:'#fff',fontFamily:'JetBrains Mono'}}>P</div>
           <div>
-            <div style={{fontWeight:900,fontSize:'15px',letterSpacing:'-.02em',color:'#0f172a'}}>PAKD BUY <span style={{color:'#0d9488',fontFamily:'JetBrains Mono',fontSize:'12px'}}>5.3</span></div>
+            <div style={{fontWeight:900,fontSize:'15px',letterSpacing:'-.02em',color:'#0f172a'}}>PAKD BUY <span style={{color:'#0d9488',fontFamily:'JetBrains Mono',fontSize:'12px'}}>5.4</span></div>
             <div style={{fontSize:'11px',color:'#475569',fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em'}}>Floor Price Engine v2</div>
           </div>
           <div style={{width:'1px',height:'24px',background:border1,margin:'0 4px'}}/>
@@ -874,6 +996,7 @@ const App=()=>{
             {k:'floor',l:'💹 Giá Sàn'},
             {k:'report',l:limitsWarnings.totalAlerts>0?`📈 BC ⚠${limitsWarnings.totalAlerts}`:'📈 Báo cáo'},
             {k:'scenario',l:'💾 Scenarios'},
+            {k:'floorhistory',l:'🗓️ Lịch sử Sàn'},
           ].map(t=>(
             <button key={t.k} onClick={()=>setTab(t.k)} className={`nav-tab ${tab===t.k?'on':''}`}
               style={t.k==='report'&&limitsWarnings.totalAlerts>0?{color:'#dc2626',borderColor:'#fca5a5'}:t.k==='floor'&&tab!=='floor'?{color:'#0d9488'}:{}}>
@@ -1449,11 +1572,17 @@ const App=()=>{
               {/* ──── VIEW: QUẢN LÝ ──── */}
               {fpView==='mgmt'&&(
                 <>
-                  <div style={{background:'#fef9c3',border:'1px solid #fde047',borderRadius:7,padding:'9px 13px',marginBottom:13,display:'flex',alignItems:'center',gap:8}}>
+                  <div style={{background:'#fef9c3',border:'1px solid #fde047',borderRadius:7,padding:'9px 13px',marginBottom:13,display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
                     <Ic.Users/>
                     <div style={{fontSize:'.75rem',color:'#713f12',fontWeight:700}}>
                       <strong>Chế độ Quản lý</strong> — GV blend là giá vốn gốc (chưa cộng CP). <em>Điểm sinh lời</em> = Sàn tự động (Đã cộng % LK + CPHĐKD + CPTC + CN).
                       <em>Sàn ban hành</em> = nhập tay, hiển thị % so với BQ GV, dùng làm cơ sở tính giá KH.
+                    </div>
+                    </div>
+                    <div style={{display:'flex',gap:6,flexShrink:0}}>
+                      <button className="btn btn-teal btn-sm" onClick={()=>exportFloorCSV(null)}>⬇️ Xuất Excel/CSV</button>
+                      <button className="btn btn-success btn-sm" onClick={saveFloorHistory}><Ic.Save/> Lưu lịch sử</button>
                     </div>
                   </div>
                   <div style={{overflowX:'auto'}}>
@@ -1739,12 +1868,144 @@ const App=()=>{
             </div>
           </div>
         )}
-      </div>
+        {/* ════ TAB FLOOR HISTORY ════ */}
+        {tab==='floorhistory'&&(
+          <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
+            <div style={{maxWidth:'1200px',margin:'0 auto'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:15}}>
+                <div>
+                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>🗓️ Lịch sử ban hành Giá Sàn</h2>
+                  <p style={{fontSize:'.72rem',color:'#475569',fontWeight:600,marginTop:3}}>{floorHistory.length} lần ban hành đã lưu · Dữ liệu lưu trong trình duyệt (localStorage)</p>
+                </div>
+                <div style={{display:'flex',gap:8}}>
+                  <button className="btn btn-teal btn-sm" onClick={exportHistoryCSV}>⬇️ Xuất toàn bộ CSV</button>
+                  <button className="btn" style={{background:'#fee2e2',border:'1px solid #fca5a5',color:'#b91c1c',padding:'4px 10px',fontSize:'.73rem',fontWeight:800}} onClick={()=>{if(window.confirm('Xóa toàn bộ lịch sử? Không thể khôi phục.')){setFloorHistory([]);try{localStorage.removeItem('pakd_floor_history');}catch(e){}}}}>🗑️ Xóa lịch sử</button>
+                </div>
+              </div>
 
-      {/* PRINT */}
+              {/* Filter bar */}
+              <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap',alignItems:'center',background:'#f1f5f9',border:'1px solid #e2e8f0',borderRadius:6,padding:'7px 11px'}}>
+                <span style={{fontSize:'.65rem',color:'#475569',fontWeight:800}}>🔎 Lọc:</span>
+                <select className="inp inp-xs" style={{width:'auto',minWidth:180}} value={histFilter.group} onChange={e=>setHistFilter(f=>({...f,group:e.target.value}))}>
+                  <option value="ALL">Tất cả nhóm hàng</option>
+                  {[...new Set(floorHistory.flatMap(e=>(e.groups||[]).map(g=>g.label)))].map(l=><option key={l} value={l}>{l}</option>)}
+                </select>
+                <label style={{fontSize:'.65rem',color:'#475569',fontWeight:700}}>Từ ngày:</label>
+                <input type="date" className="inp inp-xs" style={{width:'auto'}} value={histFilter.dateFrom} onChange={e=>setHistFilter(f=>({...f,dateFrom:e.target.value}))}/>
+                <label style={{fontSize:'.65rem',color:'#475569',fontWeight:700}}>Đến ngày:</label>
+                <input type="date" className="inp inp-xs" style={{width:'auto'}} value={histFilter.dateTo} onChange={e=>setHistFilter(f=>({...f,dateTo:e.target.value}))}/>
+                {(histFilter.group!=='ALL'||histFilter.dateFrom||histFilter.dateTo)&&<button className="btn btn-ghost btn-xs" onClick={()=>setHistFilter({group:'ALL',dateFrom:'',dateTo:''})}>✕ Xóa lọc</button>}
+              </div>
+
+              {floorHistory.length===0?(
+                <div className="card" style={{textAlign:'center',padding:44,border:`1px dashed ${border2}`}}>
+                  <div style={{fontSize:'2rem',marginBottom:11}}>🗓️</div>
+                  <div style={{color:'#64748b',fontWeight:700,fontSize:'.9rem'}}>Chưa có lịch sử ban hành</div>
+                  <div style={{color:'#94a3b8',fontWeight:600,fontSize:'.78rem',marginTop:6}}>Vào tab <strong>💹 Giá Sàn → Chế độ Quản lý</strong>, nhập Sàn ban hành rồi nhấn <strong>"Lưu lịch sử"</strong></div>
+                </div>
+              ):(
+                <div style={{display:'flex',flexDirection:'column',gap:14}}>
+                  {floorHistory.filter(e=>{
+                    if(histFilter.group!=='ALL'&&!(e.groups||[]).some(g=>g.label===histFilter.group)) return false;
+                    if(histFilter.dateFrom||histFilter.dateTo){
+                      const d=e.issuedISO?new Date(e.issuedISO):null;
+                      if(!d) return true;
+                      if(histFilter.dateFrom&&d<new Date(histFilter.dateFrom)) return false;
+                      if(histFilter.dateTo&&d>new Date(histFilter.dateTo+'T23:59:59')) return false;
+                    }
+                    return true;
+                  }).map((entry,ei)=>{
+                    const groups=(entry.groups||[]).filter(g=>histFilter.group==='ALL'||g.label===histFilter.group);
+                    return(
+                      <div key={entry.id} style={{background:bg2,border:`1px solid ${border2}`,borderRadius:9,overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,0.07)'}}>
+                        {/* Entry header */}
+                        <div style={{background:'#fefce8',borderBottom:`1px solid #fde047`,padding:'9px 14px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                          <div style={{display:'flex',gap:16,alignItems:'center'}}>
+                            <div>
+                              <span style={{fontWeight:900,fontSize:'.92rem',color:'#0f172a'}}>📅 {entry.issuedDate}</span>
+                              <span style={{fontWeight:700,fontSize:'.75rem',color:'#475569',marginLeft:7}}>{entry.issuedTime}</span>
+                            </div>
+                            <span className="tag ts" style={{fontSize:'.65rem'}}>👤 {entry.issuedBy||'—'}</span>
+                            <span className="tag tb" style={{fontSize:'.65rem'}}>💱 {fv(entry.exchangeRate)} đ/USD</span>
+                            <span className="tag ts" style={{fontSize:'.62rem'}}>LK {entry.storageCostPct}% · TC {entry.baseFinCostPct}% · HĐKD {entry.opsCostPct}%</span>
+                            <span className="tag tg" style={{fontSize:'.65rem'}}>{groups.length} nhóm</span>
+                          </div>
+                          <div style={{display:'flex',gap:6}}>
+                            <button className="btn btn-ghost btn-xs" onClick={()=>exportFloorCSV(entry)}>⬇️ CSV</button>
+                            <button className="btn-danger" style={{padding:'3px 7px'}} onClick={()=>{const updated=floorHistory.filter(e2=>e2.id!==entry.id);setFloorHistory(updated);try{localStorage.setItem('pakd_floor_history',JSON.stringify(updated));}catch(e){}}}><Ic.X/></button>
+                          </div>
+                        </div>
+                        {/* Data table */}
+                        <div style={{overflowX:'auto'}}>
+                          <table className="tbl" style={{fontSize:'.77rem'}}>
+                            <thead>
+                              <tr>
+                                <th style={{textAlign:'left',paddingLeft:10}}>Nhóm hàng</th>
+                                <th>SKUs</th>
+                                <th>Tồn (kg)</th>
+                                <th style={{background:'#f0fdf4',color:'#14532d'}}>BQ GV (đ/kg)</th>
+                                <th style={{background:'#dcfce7',color:'#14532d'}}>Sàn tự động</th>
+                                <th style={{background:'#fef9c3',color:'#713f12',fontWeight:900}}>✏️ Sàn ban hành</th>
+                                <th style={{background:'#eff6ff',color:'#1e3a8a'}}>Cốt lõi</th>
+                                <th style={{background:'#ede9fe',color:'#5b21b6'}}>Thân thiết</th>
+                                <th style={{background:'#fff7ed',color:'#9a3412'}}>KH lẻ</th>
+                                <th style={{background:'#fef3c7',color:'#92400e'}}>BQ ĐT</th>
+                                <th style={{background:'#fde68a',color:'#92400e'}}>Sàn ĐT</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {groups.map((g,gi)=>{
+                                const pctPub=g.publishedFloor&&g.avgCost>0?((g.publishedFloor-g.avgCost)/g.avgCost*100):null;
+                                return(
+                                  <tr key={gi} style={{background:gi%2===0?'#ffffff':'#f8fafc'}}>
+                                    <td style={{paddingLeft:10}}>
+                                      <div style={{fontWeight:800,fontSize:'.8rem',color:'#0f172a'}}>{g.label}</div>
+                                      <div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>{g.alloy}{g.temper?` ${g.temper}`:''} · {g.minThick}–{g.maxThick}mm</div>
+                                    </td>
+                                    <td style={{textAlign:'center'}}><span className="tag tb" style={{fontSize:'.65rem'}}>{g.skus}</span></td>
+                                    <td style={{textAlign:'right',paddingRight:8}}><div className="mono" style={{fontWeight:700,color:'#15803d',fontSize:'.78rem'}}>{fv(g.totalQty)}</div></td>
+                                    <td style={{textAlign:'right',paddingRight:8,background:'#f0fdf4'}}><div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.82rem'}}>{fv(g.avgCost)}</div></td>
+                                    <td style={{textAlign:'right',paddingRight:8,background:'#dcfce7'}}><div className="mono" style={{fontWeight:800,color:'#15803d',fontSize:'.82rem'}}>{fv(g.autoFloor)}</div></td>
+                                    <td style={{textAlign:'right',paddingRight:8,background:'#fefce8'}}>
+                                      <div className="mono" style={{fontWeight:900,color:g.publishedFloor?'#713f12':'#94a3b8',fontSize:'.88rem'}}>{g.publishedFloor?fv(g.publishedFloor):'—'}</div>
+                                      {pctPub!=null&&<div style={{fontSize:'.55rem',color:pctPub>=0?'#15803d':'#dc2626',fontWeight:800}}>{pctPub>=0?'+':''}{pctPub.toFixed(2)}% GV</div>}
+                                    </td>
+                                    <td style={{textAlign:'right',paddingRight:8,background:'#eff6ff'}}><div className="mono" style={{fontWeight:800,color:'#1d4ed8',fontSize:'.82rem'}}>{fv(g.corePrice)}</div></td>
+                                    <td style={{textAlign:'right',paddingRight:8,background:'#ede9fe'}}><div className="mono" style={{fontWeight:800,color:'#7c3aed',fontSize:'.82rem'}}>{fv(g.loyalPrice)}</div></td>
+                                    <td style={{textAlign:'right',paddingRight:8,background:'#fff7ed'}}><div className="mono" style={{fontWeight:800,color:'#ea580c',fontSize:'.82rem'}}>{fv(g.newPrice)}</div></td>
+                                    <td style={{textAlign:'right',paddingRight:8,background:'#fef3c7'}}><div className="mono" style={{fontWeight:700,color:'#92400e',fontSize:'.78rem'}}>{g.avgCompPrice>0?fv(g.avgCompPrice):'—'}</div></td>
+                                    <td style={{textAlign:'right',paddingRight:8,background:'#fde68a'}}><div className="mono" style={{fontWeight:700,color:'#92400e',fontSize:'.78rem'}}>{g.avgCompFloor>0?fv(g.avgCompFloor):'—'}</div></td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Info box about Google Sheet sync */}
+              <div style={{marginTop:20,background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8,padding:'12px 16px',fontSize:'.72rem',color:'#1d4ed8',lineHeight:1.9}}>
+                <div style={{fontWeight:900,marginBottom:6,fontSize:'.78rem'}}>💡 Hướng dẫn lưu lên Google Sheet (lịch sử dài hạn)</div>
+                <div style={{color:'#334155',fontWeight:600}}>
+                  1. Nhấn <strong>"Xuất toàn bộ CSV"</strong> → tải file <code style={{background:'#dbeafe',padding:'1px 5px',borderRadius:3,fontFamily:'JetBrains Mono'}}>LichSuGiaSan_YYYY-MM-DD.csv</code><br/>
+                  2. Mở Google Sheet tên <strong>"PAKD_FLOOR_HISTORY"</strong> → tab <strong>"lich_su_gia_san"</strong><br/>
+                  3. File → Import → Upload → chọn file CSV vừa tải → chọn <em>"Append to current sheet"</em> (Thêm vào cuối)<br/>
+                  4. Dữ liệu sẽ được ghép nối theo thời gian, tạo thành lịch sử đầy đủ.<br/>
+                  <strong>Lưu ý:</strong> Nút <strong>"Lưu lịch sử"</strong> trong tab chỉ lưu vào trình duyệt (localStorage) — xuất CSV định kỳ để backup lên Google Sheet.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
       {result&&(
         <div className="print-container">
-          <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD 5.3)</div>
+          <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD 5.4)</div>
           <div className="print-subtitle">Ngày in: {new Date().toLocaleDateString('vi-VN')} | Đơn vị: VNĐ & Kg</div>
           <div className="print-section">
             <div className="print-section-title">I. Thông số</div>
