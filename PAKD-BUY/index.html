@@ -826,12 +826,13 @@ const App=()=>{
     alert(`✅ Đã lưu lịch sử ban hành ngày ${nowVN} ${timeVN} — ${publishedGroups.length} nhóm.`);
   },[mgmtData,floorHistory,inputs]);
 
-  // ── EXPORT CSV: xuất báo giá sàn hiện tại ──
+  // ── EXPORT TSV: xuất báo giá sàn hiện tại (Tab-separated, mở thẳng bằng Excel/GSheet) ──
   const exportFloorCSV=useCallback((histEntry)=>{
+    const n=v=>v!=null&&v!==''?String(Math.round(Number(v))):'';
     const source=histEntry||{
       issuedDate:new Date().toLocaleDateString('vi-VN'),
       issuedTime:new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}),
-      issuedBy:inputs.creator||'—',
+      issuedBy:inputs.creator||'-',
       exchangeRate:inputs.exchangeRate,
       storageCostPct:inputs.storageCostPct??2,
       baseFinCostPct:inputs.baseFinCostPct??1.5,
@@ -846,66 +847,60 @@ const App=()=>{
         avgCompPrice:g.avgCompPrice,avgCompFloor:g.avgCompFloor,
       })),
     };
-    const rows=[];
-    rows.push(['BÁNG GIÁ SÀN BAN HÀNH','','','','','','','','','','','','','']);
-    rows.push(['Ngày ban hành',source.issuedDate+' '+source.issuedTime,'','Người lập',source.issuedBy,'','Tỷ giá USD',source.exchangeRate,'','LK%',source.storageCostPct,'CPTC%',source.baseFinCostPct,'HĐKD%',source.opsCostPct]);
-    rows.push([]);
-    rows.push([
-      'Nhóm hàng','Mác hợp kim','Temper','Dày min (mm)','Dày max (mm)',
-      'Số SKUs','Tồn kho (kg)','BQ Giá vốn (đ/kg)','Sàn tự động (đ/kg)','✏️ Sàn ban hành (đ/kg)',
-      'Giá Cốt lõi (đ/kg)','Giá Thân thiết (đ/kg)','Giá KH lẻ (đ/kg)','BQ Đối thủ (đ/kg)','Sàn Đối thủ (đ/kg)'
-    ]);
+    const SEP='\t';
+    const row=(...cells)=>cells.map(c=>String(c??'').replace(/\t/g,' ')).join(SEP);
+    const lines=[];
+    lines.push(row('BANG GIA SAN BAN HANH'));
+    lines.push(row('Ngay ban hanh',source.issuedDate+' '+source.issuedTime,'Nguoi lap',source.issuedBy,'Ty gia USD',source.exchangeRate,'LK%',source.storageCostPct,'CPTC%',source.baseFinCostPct,'HDKD%',source.opsCostPct));
+    lines.push('');
+    lines.push(row('Nhom hang','Mac hop kim','Temper','Day min (mm)','Day max (mm)','So SKUs','Ton kho (kg)','BQ Gia von (d/kg)','San tu dong (d/kg)','San ban hanh (d/kg)','Gia Cot loi (d/kg)','Gia Than thiet (d/kg)','Gia KH le (d/kg)','BQ Doi thu (d/kg)','San Doi thu (d/kg)'));
     source.groups.forEach(g=>{
-      rows.push([
+      lines.push(row(
         g.label,g.alloy,g.temper,g.minThick,g.maxThick,
         g.skus,g.totalQty,
-        Math.round(g.avgCost),Math.round(g.autoFloor),g.publishedFloor?Math.round(g.publishedFloor):'',
-        Math.round(g.corePrice),Math.round(g.loyalPrice),Math.round(g.newPrice),
-        g.avgCompPrice>0?Math.round(g.avgCompPrice):'',
-        g.avgCompFloor>0?Math.round(g.avgCompFloor):'',
-      ]);
+        n(g.avgCost),n(g.autoFloor),n(g.publishedFloor),
+        n(g.corePrice),n(g.loyalPrice),n(g.newPrice),
+        g.avgCompPrice>0?n(g.avgCompPrice):'',
+        g.avgCompFloor>0?n(g.avgCompFloor):'',
+      ));
     });
-    const csv=rows.map(r=>r.map(c=>{const s=String(c??'');return s.includes(',')||s.includes('"')?`"${s.replace(/"/g,'""')}`:s;}).join(',')).join('\r\n');
     const bom='\uFEFF';
-    const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+    const blob=new Blob([bom+lines.join('\r\n')],{type:'text/tab-separated-values;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    const fname=`GiaSan_${(source.issuedDate||'').replace(/\//g,'-')}_${(source.issuedTime||'').replace(/:/g,'')}.csv`;
+    const fname=`GiaSan_${(source.issuedDate||'').replace(/\//g,'-')}_${(source.issuedTime||'').replace(/:/g,'')}.xls`;
     a.href=url;a.download=fname;a.click();
     URL.revokeObjectURL(url);
   },[mgmtData,inputs]);
 
-  // ── EXPORT ALL HISTORY CSV ──
+  // ── EXPORT ALL HISTORY TSV ──
   const exportHistoryCSV=useCallback(()=>{
-    if(floorHistory.length===0){alert('Chưa có lịch sử nào.');return;}
-    const rows=[];
-    rows.push(['LỊCH SỬ BAN HÀNH GIÁ SÀN – PAKD 5.4','','','','','','','','','','','','','','']);
-    rows.push([]);
-    rows.push([
-      'Ngày ban hành','Giờ','Người lập','Tỷ giá USD','LK%','CPTC%','HĐKD%',
-      'Nhóm hàng','Mác','Temper','Dày min','Dày max','SKUs','Tồn kho (kg)',
-      'BQ GV (đ/kg)','Sàn tự động (đ/kg)','Sàn ban hành (đ/kg)',
-      'Cốt lõi (đ/kg)','Thân thiết (đ/kg)','KH lẻ (đ/kg)','BQ ĐT (đ/kg)','Sàn ĐT (đ/kg)'
-    ]);
+    if(floorHistory.length===0){alert('Chua co lich su nao.');return;}
+    const n=v=>v!=null&&v!==''?String(Math.round(Number(v))):'';
+    const SEP='\t';
+    const row=(...cells)=>cells.map(c=>String(c??'').replace(/\t/g,' ')).join(SEP);
+    const lines=[];
+    lines.push(row('LICH SU BAN HANH GIA SAN - PAKD 5.4'));
+    lines.push('');
+    lines.push(row('Ngay ban hanh','Gio','Nguoi lap','Ty gia USD','LK%','CPTC%','HDKD%','Nhom hang','Mac','Temper','Day min','Day max','SKUs','Ton kho (kg)','BQ GV (d/kg)','San tu dong (d/kg)','San ban hanh (d/kg)','Cot loi (d/kg)','Than thiet (d/kg)','KH le (d/kg)','BQ DT (d/kg)','San DT (d/kg)'));
     floorHistory.forEach(e=>{
       (e.groups||[]).forEach(g=>{
-        rows.push([
-          e.issuedDate,e.issuedTime,e.issuedBy,e.exchangeRate,
+        lines.push(row(
+          e.issuedDate,e.issuedTime,e.issuedBy||'-',e.exchangeRate,
           e.storageCostPct,e.baseFinCostPct,e.opsCostPct,
           g.label,g.alloy,g.temper,g.minThick,g.maxThick,g.skus,g.totalQty,
-          Math.round(g.avgCost),Math.round(g.autoFloor),g.publishedFloor?Math.round(g.publishedFloor):'',
-          Math.round(g.corePrice),Math.round(g.loyalPrice),Math.round(g.newPrice),
-          g.avgCompPrice>0?Math.round(g.avgCompPrice):'',
-          g.avgCompFloor>0?Math.round(g.avgCompFloor):'',
-        ]);
+          n(g.avgCost),n(g.autoFloor),n(g.publishedFloor),
+          n(g.corePrice),n(g.loyalPrice),n(g.newPrice),
+          g.avgCompPrice>0?n(g.avgCompPrice):'',
+          g.avgCompFloor>0?n(g.avgCompFloor):'',
+        ));
       });
     });
-    const csv=rows.map(r=>r.map(c=>{const s=String(c??'');return s.includes(',')||s.includes('"')?`"${s.replace(/"/g,'""')}`:s;}).join(',')).join('\r\n');
     const bom='\uFEFF';
-    const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+    const blob=new Blob([bom+lines.join('\r\n')],{type:'text/tab-separated-values;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;a.download=`LichSuGiaSan_${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.csv`;
+    a.href=url;a.download=`LichSuGiaSan_${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.xls`;
     a.click();URL.revokeObjectURL(url);
   },[floorHistory]);
   const uniqueInvAlloys=[...new Set(inventory.map(r=>r.alloy))];
@@ -2001,7 +1996,7 @@ const App=()=>{
             </div>
           </div>
         )}
-</div>
+      </div>
 
       {result&&(
         <div className="print-container">
