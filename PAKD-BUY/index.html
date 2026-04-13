@@ -139,6 +139,7 @@ const GSHEET_INVENTORY="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcm
 const GSHEET_MINSTOCK="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1080747466";
 const GSHEET_LIMITS="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1995461192";
 const GSHEET_UPDATED_IMPORT="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1371908903";
+const GSHEET_FLOOR_HISTORY="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1904019501";
 
 const skuKey=r=>`${r.alloy}|${r.temper}|${r.thickness}|${r.width}|${r.length}|${r.coating||'KP'}`;
 const skuLabel=r=>`${r.alloy} ${r.temper}  ${r.thickness}x${r.width}x${r.length} [${coatingShort(r.coating||'KP')}]`;
@@ -646,6 +647,7 @@ const App=()=>{
       if(which==='all'||which==='ms') toFetch.push(fetchCsv(GSHEET_MINSTOCK).then(d=>({type:'ms',data:d})));
       if(which==='all'||which==='lim') toFetch.push(fetchCsv(GSHEET_LIMITS).then(d=>({type:'lim',data:d})));
       if(which==='all'||which==='uip') toFetch.push(fetchCsv(GSHEET_UPDATED_IMPORT).then(d=>({type:'uip',data:d})));
+      if(which==='all'||which==='fh') toFetch.push(fetchCsv(GSHEET_FLOOR_HISTORY).then(d=>({type:'fh',data:d})));
       const results=await Promise.allSettled(toFetch);
       let errMsg=null;
       results.forEach(r=>{
@@ -688,6 +690,66 @@ const App=()=>{
             competitorFloorPrice:parseFloat(r.competitorfloorprice||r['competitor floor price']||r.CompetitorFloorPrice||0)||0,
           })).filter(r=>r.alloy&&r.priceFC>0);
           if(rows.length>0) setUpdatedImportPrices(rows);
+        }
+        if(type==='fh'){
+          // Parse GSheet Lịch sử Sàn — map đúng 23 cột theo thứ tự header
+          const gv2=(r,keys)=>{for(const k of keys){const norm=k.toLowerCase().replace(/\s+/g,'').replace(/[()đ%\/]/g,'');const v=Object.entries(r).find(([rk])=>rk.toLowerCase().replace(/\s+/g,'').replace(/[()đ%\/]/g,'')===norm);if(v&&v[1]!='') return v[1];}return '';};
+          // Group rows by issuedDate+issuedTime+issuedBy to reconstruct entry objects
+          const entryMap={};
+          data.filter(r=>Object.values(r).some(v=>v!=='')).forEach((r,i)=>{
+            const ngay=gv2(r,['Ngày ban hành','ngaybanhành','ngay ban hanh']);
+            const gio=gv2(r,['Giờ','gio']);
+            const nguoi=gv2(r,['Người lập','nguoilap','nguoi lap']);
+            const tygia=gv2(r,['Tỷ giá USD','tygiausd','ty gia usd']);
+            const lk=gv2(r,['LK%','lk']);
+            const cptc=gv2(r,['CPTC%','cptc']);
+            const hdkd=gv2(r,['HĐKD%','hdkd%','hdkd']);
+            const nhom=gv2(r,['Nhóm hàng','nhomhang','nhom hang']);
+            const mac=gv2(r,['Mác','mac']);
+            const temper=gv2(r,['Temper','temper']);
+            const dayMin=gv2(r,['Dày min','daymin','day min']);
+            const dayMax=gv2(r,['Dày max','daymax','day max']);
+            const skus=gv2(r,['SKUs','skus']);
+            const tonKho=gv2(r,['Tồn kho (kg)','tonkho','ton kho']);
+            const bqGV=gv2(r,['BQ GV (đ/kg)','bqgv','bq gv']);
+            const sanTD=gv2(r,['Sàn tự động (đ/kg)','santudong','san tu dong']);
+            const sanBH=gv2(r,['Sàn ban hành (đ/kg)','sanbanhành','san ban hanh']);
+            const cotLoi=gv2(r,['Cốt lõi (đ/kg)','cotloi','cot loi']);
+            const thanThiet=gv2(r,['Thân thiết (đ/kg)','thanthiet','than thiet']);
+            const khLe=gv2(r,['KH lẻ (đ/kg)','khle','kh le']);
+            const bqDT=gv2(r,['BQ ĐT (đ/kg)','bqdt','bq dt']);
+            const sanDT=gv2(r,['Sàn ĐT (đ/kg)','sandt','san dt']);
+            if(!ngay&&!nhom) return;
+            const key=`${ngay}|${gio}|${nguoi}`;
+            if(!entryMap[key]){
+              entryMap[key]={
+                id:uid()+i,
+                issuedDate:ngay,issuedTime:gio,issuedBy:nguoi,
+                issuedISO:ngay?new Date().toISOString():'',
+                exchangeRate:parseFloat(tygia)||0,
+                storageCostPct:parseFloat(lk)||0,
+                baseFinCostPct:parseFloat(cptc)||0,
+                opsCostPct:parseFloat(hdkd)||0,
+                groups:[],
+              };
+            }
+            if(nhom){
+              entryMap[key].groups.push({
+                id:'g'+i,label:nhom,alloy:mac,temper:temper,
+                minThick:parseFloat(dayMin)||0,maxThick:parseFloat(dayMax)||0,
+                skus:parseInt(skus)||0,totalQty:parseFloat(tonKho)||0,
+                avgCost:parseFloat(bqGV)||0,autoFloor:parseFloat(sanTD)||0,
+                publishedFloor:sanBH?parseFloat(sanBH):null,
+                corePrice:parseFloat(cotLoi)||0,loyalPrice:parseFloat(thanThiet)||0,newPrice:parseFloat(khLe)||0,
+                avgCompPrice:parseFloat(bqDT)||0,avgCompFloor:parseFloat(sanDT)||0,
+              });
+            }
+          });
+          const parsed=Object.values(entryMap).filter(e=>e.groups.length>0);
+          if(parsed.length>0){
+            setFloorHistory(parsed);
+            try{localStorage.setItem('pakd_floor_history',JSON.stringify(parsed));}catch(e){}
+          }
         }
       });
       setDbStatus({loading:false,error:errMsg,lastSync:new Date().toLocaleTimeString('vi-VN'),source:'gsheet'});
@@ -894,23 +956,44 @@ const App=()=>{
     URL.revokeObjectURL(url);
   },[mgmtData,inputs]);
 
-  // ── EXPORT: xuất toàn bộ lịch sử ──
+  // ── EXPORT: xuất toàn bộ lịch sử — 23 cột đúng thứ tự để paste vào GSheet ──
   const exportHistoryCSV=useCallback(()=>{
     if(floorHistory.length===0){alert('Chua co lich su nao.');return;}
     const n=v=>v!=null&&v!==''?String(Math.round(Number(v))):'';
     const titles=['LICH SU BAN HANH GIA SAN - PAKD 5.4'];
-    const headers=['Ngay','Gio','Nguoi lap','Ty gia','LK%','CPTC%','HDKD%','Nhom hang','Mac','Temper','Day min','Day max','SKUs','Ton kho (kg)','BQ GV','San tu dong','San ban hanh','Cot loi','Than thiet','KH le','BQ DT','San DT'];
+    // Đúng 23 cột theo thứ tự yêu cầu
+    const headers=[
+      'Ngày ban hành','Giờ','Người lập','Tỷ giá USD','LK%','CPTC%','HĐKD%',
+      'Nhóm hàng','Mác','Temper','Dày min','Dày max','SKUs','Tồn kho (kg)',
+      'BQ GV (đ/kg)','Sàn tự động (đ/kg)','Sàn ban hành (đ/kg)',
+      'Cốt lõi (đ/kg)','Thân thiết (đ/kg)','KH lẻ (đ/kg)','BQ ĐT (đ/kg)','Sàn ĐT (đ/kg)'
+    ];
     const dataRows=[];
     floorHistory.forEach(e=>{
       (e.groups||[]).forEach(g=>{
         dataRows.push([
-          e.issuedDate,e.issuedTime,e.issuedBy||'-',e.exchangeRate,
-          e.storageCostPct,e.baseFinCostPct,e.opsCostPct,
-          g.label,g.alloy,g.temper||'-',g.minThick,g.maxThick,g.skus,g.totalQty,
-          n(g.avgCost),n(g.autoFloor),n(g.publishedFloor),
-          n(g.corePrice),n(g.loyalPrice),n(g.newPrice),
-          g.avgCompPrice>0?n(g.avgCompPrice):'-',
-          g.avgCompFloor>0?n(g.avgCompFloor):'-',
+          e.issuedDate||'',          // Ngày ban hành
+          e.issuedTime||'',          // Giờ
+          e.issuedBy||'',            // Người lập
+          e.exchangeRate||'',        // Tỷ giá USD
+          e.storageCostPct||'',      // LK%
+          e.baseFinCostPct||'',      // CPTC%
+          e.opsCostPct||'',          // HĐKD%
+          g.label||'',               // Nhóm hàng
+          g.alloy||'',               // Mác
+          g.temper||'',              // Temper
+          g.minThick||'',            // Dày min
+          g.maxThick||'',            // Dày max
+          g.skus||'',                // SKUs
+          g.totalQty||'',            // Tồn kho (kg)
+          n(g.avgCost),              // BQ GV (đ/kg)
+          n(g.autoFloor),            // Sàn tự động (đ/kg)
+          n(g.publishedFloor),       // Sàn ban hành (đ/kg)
+          n(g.corePrice),            // Cốt lõi (đ/kg)
+          n(g.loyalPrice),           // Thân thiết (đ/kg)
+          n(g.newPrice),             // KH lẻ (đ/kg)
+          g.avgCompPrice>0?n(g.avgCompPrice):'', // BQ ĐT (đ/kg)
+          g.avgCompFloor>0?n(g.avgCompFloor):'', // Sàn ĐT (đ/kg)
         ]);
       });
     });
@@ -1888,12 +1971,21 @@ const App=()=>{
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:15}}>
                 <div>
                   <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>🗓️ Lịch sử ban hành Giá Sàn</h2>
-                  <p style={{fontSize:'.72rem',color:'#475569',fontWeight:600,marginTop:3}}>{floorHistory.length} lần ban hành đã lưu · Dữ liệu lưu trong trình duyệt (localStorage)</p>
+                  <p style={{fontSize:'.72rem',color:'#475569',fontWeight:600,marginTop:3}}>{floorHistory.length} lần ban hành · localStorage + GSheet tab <em>Lịch sử Sàn</em></p>
                 </div>
                 <div style={{display:'flex',gap:8}}>
-                  <button className="btn btn-teal btn-sm" onClick={exportHistoryCSV}>⬇️ Xuất toàn bộ CSV</button>
-                  <button className="btn" style={{background:'#fee2e2',border:'1px solid #fca5a5',color:'#b91c1c',padding:'4px 10px',fontSize:'.73rem',fontWeight:800}} onClick={()=>{if(window.confirm('Xóa toàn bộ lịch sử? Không thể khôi phục.')){setFloorHistory([]);try{localStorage.removeItem('pakd_floor_history');}catch(e){}}}}>🗑️ Xóa lịch sử</button>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>syncGoogleSheet('fh')} disabled={dbStatus.loading}>{dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync GSheet</button>
+                  <button className="btn btn-teal btn-sm" onClick={exportHistoryCSV}>⬇️ Xuất .xls</button>
+                  <button className="btn" style={{background:'#fee2e2',border:'1px solid #fca5a5',color:'#b91c1c',padding:'4px 10px',fontSize:'.73rem',fontWeight:800}} onClick={()=>{if(window.confirm('Xóa toàn bộ lịch sử local? Không thể khôi phục.')){setFloorHistory([]);try{localStorage.removeItem('pakd_floor_history');}catch(e){}}}}>🗑️ Xóa local</button>
                 </div>
+              </div>
+
+              {/* Hướng dẫn workflow GSheet */}
+              <div style={{background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:7,padding:'9px 14px',marginBottom:13,fontSize:'.72rem',color:'#1e40af',lineHeight:1.8,fontWeight:600}}>
+                📋 <strong>Quy trình:</strong>
+                &nbsp;① Nhập Sàn ban hành → nhấn <strong>💾 Lưu lịch sử</strong> (lưu local) →
+                &nbsp;② Nhấn <strong>⬇️ Xuất .xls</strong> → mở file → copy toàn bộ dữ liệu (bỏ dòng tiêu đề) → paste vào GSheet tab <em>Lịch sử Sàn</em> (append cuối) →
+                &nbsp;③ Nhấn <strong>🔄 Sync GSheet</strong> để kéo dữ liệu từ GSheet về hiển thị tại đây.
               </div>
 
               {/* Filter bar */}
@@ -2000,16 +2092,12 @@ const App=()=>{
                 </div>
               )}
 
-              {/* Info box about Google Sheet sync */}
-              <div style={{marginTop:20,background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8,padding:'12px 16px',fontSize:'.72rem',color:'#1d4ed8',lineHeight:1.9}}>
-                <div style={{fontWeight:900,marginBottom:6,fontSize:'.78rem'}}>💡 Hướng dẫn lưu lên Google Sheet (lịch sử dài hạn)</div>
-                <div style={{color:'#334155',fontWeight:600}}>
-                  1. Nhấn <strong>"Xuất toàn bộ CSV"</strong> → tải file <code style={{background:'#dbeafe',padding:'1px 5px',borderRadius:3,fontFamily:'JetBrains Mono'}}>LichSuGiaSan_YYYY-MM-DD.csv</code><br/>
-                  2. Mở Google Sheet tên <strong>"PAKD_FLOOR_HISTORY"</strong> → tab <strong>"lich_su_gia_san"</strong><br/>
-                  3. File → Import → Upload → chọn file CSV vừa tải → chọn <em>"Append to current sheet"</em> (Thêm vào cuối)<br/>
-                  4. Dữ liệu sẽ được ghép nối theo thời gian, tạo thành lịch sử đầy đủ.<br/>
-                  <strong>Lưu ý:</strong> Nút <strong>"Lưu lịch sử"</strong> trong tab chỉ lưu vào trình duyệt (localStorage) — xuất CSV định kỳ để backup lên Google Sheet.
-                </div>
+              {/* Cấu trúc cột GSheet */}
+              <div style={{marginTop:16,background:'#f0fdf4',border:'1px solid #86efac',borderRadius:7,padding:'9px 14px',fontSize:'.7rem',color:'#14532d',lineHeight:1.8,fontWeight:600}}>
+                📊 <strong>Cấu trúc header GSheet tab "Lịch sử Sàn" (22 cột — đặt ở hàng 1):</strong><br/>
+                <span style={{fontFamily:'JetBrains Mono',fontSize:'.65rem',background:'#dcfce7',padding:'2px 6px',borderRadius:3,display:'inline-block',marginTop:4,lineHeight:2}}>
+                  Ngày ban hành | Giờ | Người lập | Tỷ giá USD | LK% | CPTC% | HĐKD% | Nhóm hàng | Mác | Temper | Dày min | Dày max | SKUs | Tồn kho (kg) | BQ GV (đ/kg) | Sàn tự động (đ/kg) | Sàn ban hành (đ/kg) | Cốt lõi (đ/kg) | Thân thiết (đ/kg) | KH lẻ (đ/kg) | BQ ĐT (đ/kg) | Sàn ĐT (đ/kg)
+                </span>
               </div>
             </div>
           </div>
