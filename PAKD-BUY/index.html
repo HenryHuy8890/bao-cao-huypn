@@ -826,7 +826,32 @@ const App=()=>{
     alert(`✅ Đã lưu lịch sử ban hành ngày ${nowVN} ${timeVN} — ${publishedGroups.length} nhóm.`);
   },[mgmtData,floorHistory,inputs]);
 
-  // ── EXPORT TSV: xuất báo giá sàn hiện tại (Tab-separated, mở thẳng bằng Excel/GSheet) ──
+  // ── HELPER: tạo HTML table xuất Excel ──
+  const buildExcelHTML=(titleRows,headerCols,dataRows)=>{
+    const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const thStyle='background:#1e3a8a;color:#ffffff;font-weight:bold;padding:6px 10px;border:1px solid #1e40af;white-space:nowrap;';
+    const tdStyle='padding:5px 9px;border:1px solid #cbd5e1;vertical-align:middle;';
+    const numStyle=tdStyle+'text-align:right;font-family:monospace;';
+    let html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;font-size:11pt;}table{border-collapse:collapse;}</style></head><body>`;
+    titleRows.forEach(tr=>{
+      html+=`<p style="font-weight:bold;font-size:13pt;">${esc(tr)}</p>`;
+    });
+    html+=`<table><thead><tr>`;
+    headerCols.forEach(h=>{ html+=`<th style="${thStyle}">${esc(h)}</th>`; });
+    html+=`</tr></thead><tbody>`;
+    dataRows.forEach(row=>{
+      html+=`<tr>`;
+      row.forEach((cell,ci)=>{
+        const isNum=ci>=5&&cell!==''&&!isNaN(Number(cell));
+        html+=`<td style="${isNum?numStyle:tdStyle}">${esc(cell)}</td>`;
+      });
+      html+=`</tr>`;
+    });
+    html+=`</tbody></table></body></html>`;
+    return html;
+  };
+
+  // ── EXPORT: xuất báo giá sàn hiện tại ──
   const exportFloorCSV=useCallback((histEntry)=>{
     const n=v=>v!=null&&v!==''?String(Math.round(Number(v))):'';
     const source=histEntry||{
@@ -847,25 +872,21 @@ const App=()=>{
         avgCompPrice:g.avgCompPrice,avgCompFloor:g.avgCompFloor,
       })),
     };
-    const SEP='\t';
-    const row=(...cells)=>cells.map(c=>String(c??'').replace(/\t/g,' ')).join(SEP);
-    const lines=[];
-    lines.push(row('BANG GIA SAN BAN HANH'));
-    lines.push(row('Ngay ban hanh',source.issuedDate+' '+source.issuedTime,'Nguoi lap',source.issuedBy,'Ty gia USD',source.exchangeRate,'LK%',source.storageCostPct,'CPTC%',source.baseFinCostPct,'HDKD%',source.opsCostPct));
-    lines.push('');
-    lines.push(row('Nhom hang','Mac hop kim','Temper','Day min (mm)','Day max (mm)','So SKUs','Ton kho (kg)','BQ Gia von (d/kg)','San tu dong (d/kg)','San ban hanh (d/kg)','Gia Cot loi (d/kg)','Gia Than thiet (d/kg)','Gia KH le (d/kg)','BQ Doi thu (d/kg)','San Doi thu (d/kg)'));
-    source.groups.forEach(g=>{
-      lines.push(row(
-        g.label,g.alloy,g.temper,g.minThick,g.maxThick,
-        g.skus,g.totalQty,
-        n(g.avgCost),n(g.autoFloor),n(g.publishedFloor),
-        n(g.corePrice),n(g.loyalPrice),n(g.newPrice),
-        g.avgCompPrice>0?n(g.avgCompPrice):'',
-        g.avgCompFloor>0?n(g.avgCompFloor):'',
-      ));
-    });
-    const bom='\uFEFF';
-    const blob=new Blob([bom+lines.join('\r\n')],{type:'text/tab-separated-values;charset=utf-8;'});
+    const titles=[
+      'BANG GIA SAN BAN HANH',
+      `Ngay: ${source.issuedDate} ${source.issuedTime}  |  Nguoi lap: ${source.issuedBy}  |  Ty gia: ${source.exchangeRate}  |  LK: ${source.storageCostPct}%  CPTC: ${source.baseFinCostPct}%  HDKD: ${source.opsCostPct}%`,
+    ];
+    const headers=['Nhom hang','Mac','Temper','Day min','Day max','SKUs','Ton kho (kg)','BQ Gia von','San tu dong','San ban hanh','Cot loi','Than thiet','KH le','BQ Doi thu','San Doi thu'];
+    const dataRows=source.groups.map(g=>[
+      g.label,g.alloy,g.temper||'-',g.minThick,g.maxThick,
+      g.skus,g.totalQty,
+      n(g.avgCost),n(g.autoFloor),n(g.publishedFloor),
+      n(g.corePrice),n(g.loyalPrice),n(g.newPrice),
+      g.avgCompPrice>0?n(g.avgCompPrice):'-',
+      g.avgCompFloor>0?n(g.avgCompFloor):'-',
+    ]);
+    const html=buildExcelHTML(titles,headers,dataRows);
+    const blob=new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     const fname=`GiaSan_${(source.issuedDate||'').replace(/\//g,'-')}_${(source.issuedTime||'').replace(/:/g,'')}.xls`;
@@ -873,31 +894,28 @@ const App=()=>{
     URL.revokeObjectURL(url);
   },[mgmtData,inputs]);
 
-  // ── EXPORT ALL HISTORY TSV ──
+  // ── EXPORT: xuất toàn bộ lịch sử ──
   const exportHistoryCSV=useCallback(()=>{
     if(floorHistory.length===0){alert('Chua co lich su nao.');return;}
     const n=v=>v!=null&&v!==''?String(Math.round(Number(v))):'';
-    const SEP='\t';
-    const row=(...cells)=>cells.map(c=>String(c??'').replace(/\t/g,' ')).join(SEP);
-    const lines=[];
-    lines.push(row('LICH SU BAN HANH GIA SAN - PAKD 5.4'));
-    lines.push('');
-    lines.push(row('Ngay ban hanh','Gio','Nguoi lap','Ty gia USD','LK%','CPTC%','HDKD%','Nhom hang','Mac','Temper','Day min','Day max','SKUs','Ton kho (kg)','BQ GV (d/kg)','San tu dong (d/kg)','San ban hanh (d/kg)','Cot loi (d/kg)','Than thiet (d/kg)','KH le (d/kg)','BQ DT (d/kg)','San DT (d/kg)'));
+    const titles=['LICH SU BAN HANH GIA SAN - PAKD 5.4'];
+    const headers=['Ngay','Gio','Nguoi lap','Ty gia','LK%','CPTC%','HDKD%','Nhom hang','Mac','Temper','Day min','Day max','SKUs','Ton kho (kg)','BQ GV','San tu dong','San ban hanh','Cot loi','Than thiet','KH le','BQ DT','San DT'];
+    const dataRows=[];
     floorHistory.forEach(e=>{
       (e.groups||[]).forEach(g=>{
-        lines.push(row(
+        dataRows.push([
           e.issuedDate,e.issuedTime,e.issuedBy||'-',e.exchangeRate,
           e.storageCostPct,e.baseFinCostPct,e.opsCostPct,
-          g.label,g.alloy,g.temper,g.minThick,g.maxThick,g.skus,g.totalQty,
+          g.label,g.alloy,g.temper||'-',g.minThick,g.maxThick,g.skus,g.totalQty,
           n(g.avgCost),n(g.autoFloor),n(g.publishedFloor),
           n(g.corePrice),n(g.loyalPrice),n(g.newPrice),
-          g.avgCompPrice>0?n(g.avgCompPrice):'',
-          g.avgCompFloor>0?n(g.avgCompFloor):'',
-        ));
+          g.avgCompPrice>0?n(g.avgCompPrice):'-',
+          g.avgCompFloor>0?n(g.avgCompFloor):'-',
+        ]);
       });
     });
-    const bom='\uFEFF';
-    const blob=new Blob([bom+lines.join('\r\n')],{type:'text/tab-separated-values;charset=utf-8;'});
+    const html=buildExcelHTML(titles,headers,dataRows);
+    const blob=new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;a.download=`LichSuGiaSan_${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.xls`;
