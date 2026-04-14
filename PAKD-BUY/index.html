@@ -173,6 +173,33 @@ async function fetchCsv(url){
   return parseCsv(await res.text());
 }
 
+// ── Parse ngày định dạng VN (dd/mm/yyyy hoặc d/m/yyyy) → timestamp ──
+const parseVNDate=s=>{
+  if(!s) return 0;
+  const parts=String(s).trim().split('/');
+  if(parts.length!==3) return 0;
+  const [d,m,y]=parts.map(Number);
+  if(!d||!m||!y) return 0;
+  return new Date(y,m-1,d).getTime();
+};
+
+// ── Lọc UpdatedImportPrice: chỉ giữ ngày gần hôm nay nhất ──
+const filterLatestUIP=rows=>{
+  if(!rows||rows.length===0) return rows;
+  const today=Date.now();
+  // Lấy tập hợp tất cả ngày có trong dữ liệu (không lớn hơn hôm nay)
+  const dates=rows.map(r=>parseVNDate(r.updateDate)).filter(d=>d>0&&d<=today+86400000);
+  if(dates.length===0) return rows; // nếu không parse được ngày nào thì giữ nguyên
+  const latestDate=Math.max(...dates);
+  // Tính ngày gần nhất (chỉ so sánh theo ngày, bỏ giờ)
+  const latestDay=new Date(latestDate).toDateString();
+  const filtered=rows.filter(r=>{
+    const d=parseVNDate(r.updateDate);
+    return d>0&&new Date(d).toDateString()===latestDay;
+  });
+  return filtered.length>0?filtered:rows;
+};
+
 const weightedAvg=rows=>{
   const qty=rows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const val=rows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0),0);
@@ -621,7 +648,7 @@ const App=()=>{
   const [minStockRows,setMinStockRows]=useState(defMinStock);
   const [sellingPrices,setSP]=useState(defSP);
   const [limitsData,setLimitsData]=useState(defLimits);
-  const [updatedImportPrices,setUpdatedImportPrices]=useState(defUpdatedImport);
+  const [updatedImportPrices,setUpdatedImportPrices]=useState(()=>filterLatestUIP(defUpdatedImport));
   const [scenarios,setScenarios]=useState([]);
   const [invFilter,setInvFilter]=useState({status:'ALL',alloy:'ALL',coating:'ALL',stockAlert:'ALL',search:''});
   const [msFilter,setMsFilter]=useState({alloy:'ALL',coating:'ALL',stockAlert:'ALL',search:''});
@@ -689,7 +716,8 @@ const App=()=>{
             competitorPrice:parseFloat(r.competitorprice||r['competitor price']||r.CompetitorPrice||0)||0,
             competitorFloorPrice:parseFloat(r.competitorfloorprice||r['competitor floor price']||r.CompetitorFloorPrice||0)||0,
           })).filter(r=>r.alloy&&r.priceFC>0);
-          if(rows.length>0) setUpdatedImportPrices(rows);
+          const latestRows=filterLatestUIP(rows);
+          if(latestRows.length>0) setUpdatedImportPrices(latestRows);
         }
         if(type==='fh'){
           // Parse GSheet Lịch sử Sàn — map đúng 23 cột theo thứ tự header
@@ -1512,8 +1540,20 @@ const App=()=>{
                 </div>
                 <div style={{display:'flex',gap:8,alignItems:'center',flexShrink:0}}>
                   <div style={{background:'#f0fdfa',border:'1px solid #5eead4',borderRadius:6,padding:'5px 10px',fontSize:'.7rem',fontWeight:700,color:'#0f766e'}}>
-                    {updatedImportPrices.length} dòng giá nhập
-                    {updatedImportPrices[0]?.updateDate&&<span style={{marginLeft:5}}>· {updatedImportPrices[0].updateDate}</span>}
+                    {(()=>{
+                      const latestDate=updatedImportPrices[0]?.updateDate||'';
+                      const latestTs=parseVNDate(latestDate);
+                      const daysDiff=latestTs>0?Math.round((Date.now()-latestTs)/86400000):null;
+                      const isStale=daysDiff!==null&&daysDiff>7;
+                      return(
+                        <span title={`Hệ thống tự động chỉ lấy dữ liệu ngày gần nhất trong GSheet. Nhấn Sync để cập nhật.`}>
+                          📅 Đang dùng giá nhập ngày: <strong style={{color:isStale?'#b45309':'#0f766e'}}>{latestDate||'—'}</strong>
+                          <span style={{marginLeft:6,color:'#0d9488'}}>({updatedImportPrices.length} dòng)</span>
+                          {isStale&&<span style={{marginLeft:6,background:'#fef3c7',color:'#b45309',border:'1px solid #fde047',borderRadius:3,padding:'1px 5px',fontSize:'.65rem'}}>⚠ dữ liệu {daysDiff} ngày trước</span>}
+                          {!isStale&&daysDiff!==null&&<span style={{marginLeft:6,color:'#16a34a',fontSize:'.65rem'}}>✓ mới nhất</span>}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <button className="btn btn-teal btn-sm" onClick={()=>syncGoogleSheet('uip')} disabled={dbStatus.loading}>{dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync</button>
                   <div className="toggle-group">
