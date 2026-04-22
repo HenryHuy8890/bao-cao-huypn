@@ -936,6 +936,8 @@ const App=()=>{
     });
     return map;
   },[floorHistory]);
+
+  const fpFooter=useMemo(()=>{
     if(filteredFp.length===0) return null;
     const totalQty=filteredFp.reduce((s,r)=>s+r.totalQty,0);
     const wa=(field)=>{const tot=filteredFp.reduce((s,r)=>s+r.totalQty*(r[field]||0),0);return totalQty>0?tot/totalQty:0;};
@@ -1759,82 +1761,6 @@ const App=()=>{
                   <td colSpan={2}/>
                 </tr></tfoot>
               </table>
-            </div>
-          </div>
-        )}
-
-        {/* ════ TAB SELLING PRICES ════ */}
-        {tab==='selling'&&(
-          <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
-            <div style={{maxWidth:'1200px',margin:'0 auto'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:15}}>
-                <div>
-                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>🏷️ Giá Bán Kế Hoạch theo SKU</h2>
-                  <p style={{fontSize:'.78rem',color:'#475569',fontWeight:600,marginTop:3}}>Nhập thủ công · Coating: 1E=PE, KP=NOPE · <em>Để trống trường = áp dụng cho tất cả SKU thỏa điều kiện còn lại</em></p>
-                </div>
-                <div style={{display:'flex',gap:7,alignItems:'center'}}>
-                  <button className="btn btn-ghost btn-xs" style={{background:'#eff6ff',border:'1px solid #93c5fd',color:'#1d4ed8'}}
-                    onClick={()=>{
-                      // Đồng bộ: tự sinh SP rows từ products (PAKD Mua), giữ nguyên sellCost nếu đã có
-                      const newRows=[...sellingPrices];
-                      products.forEach(p=>{
-                        const exists=newRows.some(s=>s.alloy===p.alloy&&s.temper===p.temper&&(s.thickness||'')===(p.thickness||'')&&(s.width||'')===(p.width||'')&&(s.length||'')===(p.length||'')&&(s.coating||'KP')===(p.coating||'KP'));
-                        if(!exists) newRows.push({id:uid(),alloy:p.alloy,temper:p.temper,thickness:p.thickness||'',width:p.width||'',length:p.length||'',coating:p.coating||'KP',sellCost:0,comment:''});
-                      });
-                      // Xóa các SP không có trong products (exact match chỉ xóa nếu khớp hoàn toàn)
-                      const filtered=newRows.filter(s=>{
-                        const inProducts=products.some(p=>p.alloy===s.alloy&&p.temper===s.temper&&(s.thickness||'')===(p.thickness||'')&&(s.width||'')===(p.width||'')&&(s.length||'')===(p.length||'')&&(s.coating||'KP')===(p.coating||'KP'));
-                        return inProducts||s.sellCost>0; // giữ lại nếu đã có giá
-                      });
-                      setSP(filtered);
-                    }}
-                    title="Tự sinh/xóa dòng Giá bán đồng bộ theo SKU trong tab PAKD Mua">
-                    🔄 Đồng bộ SKU từ PAKD Mua
-                  </button>
-                  <button className="btn btn-ghost btn-sm" onClick={addSP}><Ic.Plus/> Thêm SKU</button>
-                </div>
-              </div>
-              <FilterBar filter={spFilter} setFilter={setSpFilter} alloys={uniqueSpAlloys} showStatus={false} showCoating={true} total={sellingPrices.length} filtered={filteredSP.length}/>
-              <div style={{overflowX:'auto'}}>
-                <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',minWidth:900,boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
-                  <thead><tr>
-                    <th style={{width:32}}>#</th><th style={{textAlign:'left',paddingLeft:9,minWidth:160}}>Alloy · Temper</th>
-                    <th style={{minWidth:230}}>Quy cách <span style={{fontSize:'.6rem',color:'#94a3b8',fontWeight:600}}>(để trống = áp dụng tất cả)</span></th><th style={{minWidth:140}}>Giá Bán đ/kg</th>
-                    <th style={{minWidth:200}}>Ghi chú</th><th style={{width:34}}></th>
-                  </tr></thead>
-                  <tbody>
-                    {filteredSP.map((sp,i)=>{
-                      const sc=sp.sellCost||sp.price||0;
-                      const isWildcard=!sp.thickness||!sp.width||!sp.length||!sp.temper;
-                      return(
-                        <tr key={sp.id} style={{background:isWildcard?'#fefce8':''}}>
-                          <td style={{textAlign:'center',color:'#64748b',fontSize:'.72rem',fontWeight:700,width:32}} className="mono">{i+1}</td>
-                          <td style={{paddingLeft:9}}>
-                            <input className="inp inp-xs mono" style={{fontWeight:800,color:'#0f172a',fontSize:'.82rem',marginBottom:3}} value={sp.alloy||''} onChange={e=>setSpR(sp.id,'alloy',e.target.value)} placeholder="A5052"/>
-                            <input className="inp inp-xs mono" style={{color:'#2563eb',fontWeight:600,fontSize:'.78rem'}} value={sp.temper||''} onChange={e=>setSpR(sp.id,'temper',e.target.value)} placeholder="H32 (trống=tất cả)"/>
-                          </td>
-                          <td>
-                            <div style={{display:'flex',gap:4,alignItems:'center',flexWrap:'wrap'}}>
-                              <input className="inp inp-xs mono" style={{width:68,textAlign:'center',color:'#b45309',fontWeight:600}} value={sp.thickness||''} onChange={e=>setSpR(sp.id,'thickness',e.target.value)} placeholder="dày*"/>
-                              <span style={{color:'#64748b',fontSize:'.7rem',fontWeight:800}}>x</span>
-                              <input className="inp inp-xs mono" style={{width:68,textAlign:'center',color:'#b45309',fontWeight:600}} value={sp.width||''} onChange={e=>setSpR(sp.id,'width',e.target.value)} placeholder="rộng*"/>
-                              <span style={{color:'#64748b',fontSize:'.7rem',fontWeight:800}}>x</span>
-                              <input className="inp inp-xs mono" style={{width:68,textAlign:'center',color:'#b45309',fontWeight:600}} value={sp.length||''} onChange={e=>setSpR(sp.id,'length',e.target.value)} placeholder="dài*"/>
-                              <button className="btn btn-xs" style={{background:(sp.coating||'KP')==='1E'?'#ccfbf1':'#fef08a',border:`1px solid ${(sp.coating||'KP')==='1E'?'#99f6e4':'#fde047'}`,color:(sp.coating||'KP')==='1E'?'#0f766e':'#a16207',padding:'3px 7px',borderRadius:4,fontSize:'.65rem',fontWeight:800,cursor:'pointer'}} onClick={()=>setSpR(sp.id,'coating',(sp.coating||'KP')==='1E'?'KP':'1E')}>
-                                {(sp.coating||'KP')==='1E'?'🎨 PE':'⬜ NOPE'}
-                              </button>
-                              {isWildcard&&<span className="tag ty" style={{fontSize:'.6rem',padding:'1px 5px'}}>🌐 wildcard</span>}
-                            </div>
-                          </td>
-                          <td><input className="inp inp-sm mono" style={{textAlign:'right',color:'#15803d',fontWeight:800}} value={fv(sc)} onChange={e=>setSpR(sp.id,'sellCost',pn(e.target.value))}/></td>
-                          <td><input className="inp inp-sm" style={{color:'#1e293b',fontWeight:500}} value={sp.comment||''} onChange={e=>setSpR(sp.id,'comment',e.target.value)} placeholder="HĐ KH / Spot… (* để trống = áp dụng tất cả)"/></td>
-                          <td style={{width:34}}><button className="btn-danger" onClick={()=>delSP(sp.id)}><Ic.X/></button></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
             </div>
           </div>
         )}
