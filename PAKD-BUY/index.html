@@ -1522,77 +1522,91 @@ URL.revokeObjectURL(url);
                       const minDelta=minKg>0?curQtyAfter-minKg:null;
                       return(
                       <div key={b.skuKey+i} className={`sku-card ${isOverMax?'alert-over':b.isRisk?'warn':b.stockStatus==='LOW'?'alert-low':''}`}>
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                        
+                        {/* 1. Header: Tên mác và Quy cách */}
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
                           <div>
-                            <div style={{fontWeight:800,fontSize:'.83rem',color:'#0f172a'}}>{b.alloy} {b.temper}</div>
-                            <div style={{fontSize:'.65rem',color:'#334155',marginTop:1,fontWeight:600,fontFamily:'JetBrains Mono'}}>{b.thickness}×{b.width}×{b.length} {b.coating==='1E'?'[PE]':'[—]'}</div>
+                            {/* Cỡ chữ cũ .83rem -> Tăng lên .95rem */}
+                            <div style={{fontWeight:800,fontSize:'.95rem',color:'#0f172a'}}>{b.alloy} {b.temper}</div>
+                            {/* Cỡ chữ cũ .65rem -> Tăng lên .75rem */}
+                            <div style={{fontSize:'.75rem',color:'#334155',marginTop:2,fontWeight:600,fontFamily:'JetBrains Mono'}}>{b.thickness}×{b.width}×{b.length} {b.coating==='1E'?'[PE]':'[—]'}</div>
                           </div>
-                          <div style={{display:'flex',gap:3,flexDirection:'column',alignItems:'flex-end'}}>
+                          <div style={{display:'flex',gap:4,flexDirection:'column',alignItems:'flex-end'}}>
+                            {/* Cỡ chữ Tags tăng từ .63rem -> .7rem */}
                             {b.hasSellPrice
-                              ?<span className={`tag ${b.isRisk?'tr':b.realProfitPerKg>0?'tg':'ty'}`} style={{fontSize:'.63rem'}}>{b.isRisk?'⚠ LỖ':b.realProfitPerKg>0?'✓ LÃI':'≈ HÒA'}</span>
-                              :<span className="tag ts" style={{fontSize:'.63rem'}}>Chưa có giá</span>}
-                            {isOverMax&&<span className="tag tp pulse" style={{fontSize:'.6rem'}}>🟣 QUÁ MAX</span>}
-                            {!isOverMax&&b.stockStatus==='LOW'&&<span className="tag to pulse" style={{fontSize:'.6rem'}}><Ic.Alert/> THIẾU MIN</span>}
+                              ?<span className={`tag ${b.isRisk?'tr':b.realProfitPerKg>0?'tg':'ty'}`} style={{fontSize:'.7rem', padding:'3px 8px'}}>{b.isRisk?'⚠ LỖ':b.realProfitPerKg>0?'✓ LÃI':'≈ HÒA'}</span>
+                              :<span className="tag ts" style={{fontSize:'.7rem', padding:'3px 8px'}}>Chưa có giá</span>}
+                            {isOverMax&&<span className="tag tp pulse" style={{fontSize:'.7rem', padding:'3px 8px'}}>🟣 QUÁ MAX</span>}
+                            {!isOverMax&&b.stockStatus==='LOW'&&<span className="tag to pulse" style={{fontSize:'.7rem', padding:'3px 8px'}}><Ic.Alert/> THIẾU MIN</span>}
                           </div>
                         </div>
                         
-                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'4px',marginBottom:6}}>
+                        {/* 2. Box 3 Trạng thái kho */}
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:8}}>
                           {[
                             {ico:'🟢',lbl:'Trong kho',qty:b.qtyStock,avg:b.avgStock,bg:'#f0fdf4',br:'#bbf7d0',vc:'#16a34a',ac:'#15803d'},
                             {ico:'🟡',lbl:'Đang về',qty:b.qtyTransit,avg:b.avgTransit,bg:'#fefce8',br:'#fef08a',vc:'#d97706',ac:'#b45309'},
                             {ico:'🔵',lbl:'Lô mới',qty:b.qtyKg,avg:b.veKhoPerKg,bg:'#eff6ff',br:'#bfdbfe',vc:'#2563eb',ac:'#1d4ed8'},
                           ].map((x,j)=>(
-                            <div key={j} style={{background:x.bg,border:`1px solid ${x.br}`,borderRadius:4,padding:'4px 5px'}}>
-                              <div style={{fontSize:'.58rem',color:x.ac,fontWeight:800,marginBottom:2}}>{x.ico} {x.lbl}</div>
-                              <div className="mono" style={{fontSize:'.78rem',fontWeight:700,color:x.vc}}>{fv(x.qty)}<span style={{fontSize:'.55rem',marginLeft:1}}>kg</span></div>
-                              <div className="mono" style={{fontSize:'.65rem',color:x.ac,fontWeight:600,marginTop:1}}>{fv(x.avg)}</div>
+                            <div key={j} style={{background:x.bg,border:`1px solid ${x.br}`,borderRadius:5,padding:'6px 8px'}}>
+                              {/* Cỡ chữ Tiêu đề: .58rem -> .68rem */}
+                              <div style={{fontSize:'.68rem',color:x.ac,fontWeight:800,marginBottom:3}}>{x.ico} {x.lbl}</div>
+                              {/* Cỡ chữ Số lượng kg: .78rem -> .9rem */}
+                              <div className="mono" style={{fontSize:'.9rem',fontWeight:700,color:x.vc}}>{fv(x.qty)}<span style={{fontSize:'.65rem',marginLeft:2}}>kg</span></div>
+                              {/* Cỡ chữ Giá vốn: .65rem -> .75rem */}
+                              <div className="mono" style={{fontSize:'.75rem',color:x.ac,fontWeight:600,marginTop:2}}>{fv(x.avg)}</div>
                             </div>
                           ))}
                         </div>
                         
-                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'4px',marginBottom:5}}>
-                          <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:4,padding:'3px 5px'}}>
-                            <div style={{fontSize:'.55rem',color:'#475569',fontWeight:700}}>GV BQ HT</div>
-                            <div className="mono" style={{fontSize:'.72rem',fontWeight:800,color:'#15803d'}}>{fv(b.avgCurrent)}</div>
+                        {/* 3. Box Tính toán Giá vốn BQ */}
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:8}}>
+                          <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:5,padding:'5px 8px'}}>
+                            {/* Tiêu đề: .55rem -> .65rem, Số: .72rem -> .85rem */}
+                            <div style={{fontSize:'.65rem',color:'#475569',fontWeight:700}}>GV BQ HT</div>
+                            <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:'#15803d',marginTop:2}}>{fv(b.avgCurrent)}</div>
                           </div>
-                          <div style={{background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:4,padding:'3px 5px'}}>
-                            <div style={{fontSize:'.55rem',color:'#475569',fontWeight:700}}>GV BQ sau nhập</div>
-                            <div className="mono" style={{fontSize:'.72rem',fontWeight:800,color:'#1d4ed8'}}>{fv(b.avgAfter)}</div>
+                          <div style={{background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:5,padding:'5px 8px'}}>
+                            <div style={{fontSize:'.65rem',color:'#475569',fontWeight:700}}>GV BQ sau nhập</div>
+                            <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:'#1d4ed8',marginTop:2}}>{fv(b.avgAfter)}</div>
                           </div>
-                          <div style={{background:b.profitPct!=null&&b.profitPct>=0?'#f0fdf4':'#fef2f2',border:'1px solid #cbd5e1',borderRadius:4,padding:'3px 5px'}}>
-                            <div style={{fontSize:'.55rem',color:'#475569',fontWeight:700}}>% Lãi/GV</div>
-                            <div className="mono" style={{fontSize:'.72rem',fontWeight:800,color:b.profitPct==null?'#94a3b8':b.profitPct>=0?'#15803d':'#b91c1c'}}>
+                          <div style={{background:b.profitPct!=null&&b.profitPct>=0?'#f0fdf4':'#fef2f2',border:'1px solid #cbd5e1',borderRadius:5,padding:'5px 8px'}}>
+                            <div style={{fontSize:'.65rem',color:'#475569',fontWeight:700}}>% Lãi/GV</div>
+                            <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:b.profitPct==null?'#94a3b8':b.profitPct>=0?'#15803d':'#b91c1c',marginTop:2}}>
                               {b.profitPct!=null?(b.profitPct>=0?'+':'')+b.profitPct.toFixed(1)+'%':'—'}
                             </div>
                           </div>
                         </div>
                         
+                        {/* 4. Thanh trạng thái Min/Max */}
                         {minKg>0&&(
-                          <div style={{marginBottom:5,background:'#f8fafc',borderRadius:4,padding:'3px 5px',border:'1px solid #e2e8f0'}}>
-                            <div style={{display:'flex',justifyContent:'space-between',fontSize:'.57rem',color:'#475569',fontWeight:700,marginBottom:2}}>
+                          <div style={{marginBottom:8,background:'#f8fafc',borderRadius:5,padding:'5px 8px',border:'1px solid #e2e8f0'}}>
+                            <div style={{display:'flex',justifyContent:'space-between',fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:4}}>
                               <span>Tồn sau nhập: {fv(curQtyAfter)} kg</span>
                               <span style={{color:isOverMax?'#6d28d9':minRatio!==null&&minRatio<0.8?'#dc2626':minRatio!==null&&minRatio<1?'#d97706':'#15803d',fontWeight:800}}>
                                 {isOverMax?`▲ quá max ${fv(curQtyAfter-(maxKg||0))}kg`:minDelta!=null?(minDelta>=0?`▲ dư +${fv(minDelta)}kg`:`▼ thiếu ${fv(Math.abs(minDelta))}kg`):''}
                               </span>
                             </div>
-                            <div className="stock-bar" style={{height:4}}>
+                            <div className="stock-bar" style={{height:5}}>
                               <div className="stock-bar-fill" style={{width:`${Math.min((minRatio||0)*100,100)}%`,background:isOverMax?'#7c3aed':minRatio<0.8?'#dc2626':minRatio<1?'#d97706':'#16a34a'}}/>
                             </div>
                           </div>
                         )}
                         
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',background:bg4,borderRadius:4,padding:'5px 7px',border:`1px solid ${border1}`}}>
+                        {/* 5. Box Tổng kết Lãi/Lỗ dưới cùng */}
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',background:bg4,borderRadius:5,padding:'8px 10px',border:`1px solid ${border1}`}}>
                           <div>
-                            <div style={{fontSize:'.58rem',color:'#475569',fontWeight:700}}>Giá bán KH</div>
-                            {b.hasSellPrice?<div className="mono" style={{fontSize:'.82rem',fontWeight:800,color:'#15803d'}}>{fv(b.sellPrice)}</div>:<div style={{fontSize:'.68rem',color:'#64748b',fontStyle:'italic'}}>→ Lấy từ Sàn BH</div>}
+                            <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>Giá bán KH</div>
+                            {/* Số giá bán to nhất: .82rem -> 1rem */}
+                            {b.hasSellPrice?<div className="mono" style={{fontSize:'1rem',fontWeight:800,color:'#15803d'}}>{fv(b.sellPrice)}</div>:<div style={{fontSize:'.75rem',color:'#64748b',fontStyle:'italic'}}>→ Lấy từ Sàn BH</div>}
                           </div>
                           <div style={{textAlign:'center'}}>
-                            <div style={{fontSize:'.55rem',color:'#475569',fontWeight:700}}>Lãi/kg</div>
-                            <div className="mono" style={{fontSize:'.78rem',fontWeight:800,color:!b.hasSellPrice?'#64748b':b.realProfitPerKg>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}</div>
+                            <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>Lãi/kg</div>
+                            <div className="mono" style={{fontSize:'.9rem',fontWeight:800,color:!b.hasSellPrice?'#64748b':b.realProfitPerKg>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}</div>
                           </div>
                           <div style={{textAlign:'right'}}>
-                            <div style={{fontSize:'.55rem',color:'#475569',fontWeight:700}}>Tổng lãi lô</div>
-                            <div className="mono" style={{fontSize:'.8rem',fontWeight:900,color:!b.hasSellPrice?'#64748b':b.grossProfitVND>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(b.grossProfitVND>=0?'+':'')+fv(b.grossProfitVND)+'đ':'—'}</div>
+                            <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>Tổng lãi lô</div>
+                            <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:!b.hasSellPrice?'#64748b':b.grossProfitVND>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(b.grossProfitVND>=0?'+':'')+fv(b.grossProfitVND)+'đ':'—'}</div>
                           </div>
                         </div>
                       </div>
