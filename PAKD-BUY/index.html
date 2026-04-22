@@ -539,9 +539,6 @@ const defMinStock=[
   {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',minStockKg:10000,maxStockKg:30000},
 ];
 const defSP=[
-  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',sellCost:104000,comment:''},
-  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',sellCost:104000,comment:''},
-  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',sellCost:102000,comment:''},
 ];
 const defLimits=[{id:1,totalCreditMin:5000000000,totalCreditMax:15000000000,inventoryMinVND:2000000000,inventoryMaxVND:8000000000,inventoryMinKg:20000,inventoryMaxKg:80000,accountsPayableLimit:7000000000,actualAccountsPayable:5500000000}];
 const defProducts=[
@@ -1678,7 +1675,7 @@ URL.revokeObjectURL(url);
                       </div>
 
                       <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', background:'#f8fafc', borderRadius:5, padding:'5px 8px', border:'1px solid #e2e8f0'}}>
-                        <span style={{fontSize:'.65rem', fontWeight:800, color:'#334155'}}>Giá chốt:</span>
+                        <span style={{fontSize:'.65rem', fontWeight:800, color:'#334155'}}>Giá sàn:</span>
                         {/* Vẫn giữ 1 ô input gọn gàng để bạn chỉnh sửa vi chỉnh nếu cần, nhưng hiển thị dạng text */}
                         <div style={{display:'flex', alignItems:'center'}}>
                           <input className="inp inp-xs mono" style={{width:90, textAlign:'right', color:'#15803d', fontWeight:900, border:'none', background:'transparent', padding:0, fontSize:'.85rem'}} value={fv(sc)} onChange={e=>setSpR(sp.id,'sellCost',pn(e.target.value))} placeholder="0"/>
