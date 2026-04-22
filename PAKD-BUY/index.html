@@ -1921,23 +1921,23 @@ URL.revokeObjectURL(url);
                       <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',minWidth:1050,boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
                         <thead>
                           <tr>
-                            <th rowSpan={2} style={{background:'#e2e8f0',width:28}}>#</th>
-                            <th rowSpan={2} style={{textAlign:'left',paddingLeft:8,background:'#e2e8f0',minWidth:185}}>SKU</th>
-                            <th rowSpan={2} style={{background:'#e2e8f0',width:85}}>Tồn (kg)</th>
-                            <th rowSpan={2} style={{background:'#fee2e2',color:'#991b1b',width:95}}>⚖️ Thiếu/Dư<div style={{fontSize:'.5rem',fontWeight:600,opacity:.8,marginTop:1}}>vs Min</div></th>
-                            <th rowSpan={2} style={{background:'#f0fdf4',color:'#14532d',minWidth:95}}>Giá vốn<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8,marginTop:1}}>thuần</div></th>
-                            <th rowSpan={2} style={{background:'#dcfce7',color:'#14532d',width:95,fontWeight:900}}>
+                            <th rowSpan={2} style={{background:'#e2e8f0',width:30,minWidth:30}}>#</th>
+                            <th rowSpan={2} style={{textAlign:'left',paddingLeft:8,background:'#e2e8f0',width:'100%',minWidth:220}}>SKU</th>
+                            <th rowSpan={2} style={{background:'#e2e8f0',width:85,minWidth:85}}>Tồn (kg)</th>
+                            <th rowSpan={2} style={{background:'#fee2e2',color:'#991b1b',width:100,minWidth:100}}>⚖️ Thiếu/Dư<div style={{fontSize:'.5rem',fontWeight:600,opacity:.8,marginTop:1}}>vs Min</div></th>
+                            <th rowSpan={2} style={{background:'#f0fdf4',color:'#14532d',width:105,minWidth:105}}>Giá vốn<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8,marginTop:1}}>thuần</div></th>
+                            <th rowSpan={2} style={{background:'#dcfce7',color:'#14532d',width:115,minWidth:115,fontWeight:900}}>
                               🔒 Sàn HV
                               <div style={{fontSize:'.5rem',fontWeight:600,opacity:.8,marginTop:1}}>{inputs.storageCostPct ?? 2}+{inputs.baseFinCostPct ?? 1.5}+{inputs.opsCostPct}%</div>
                             </th>
-                            <th rowSpan={2} style={{background:'#fef3c7',color:'#92400e',width:90}}>🏭 Đối thủ</th>
-                            <th rowSpan={2} style={{background:'#fde68a',color:'#92400e',width:90}}>🔻 Sàn ĐT</th>
+                            <th rowSpan={2} style={{background:'#fef3c7',color:'#92400e',width:95,minWidth:95}}>🏭 Đối thủ</th>
+                            <th rowSpan={2} style={{background:'#fde68a',color:'#92400e',width:95,minWidth:95}}>🔻 Sàn ĐT</th>
                             <th colSpan={3} style={{background:'#eff6ff',color:'#1e3a8a',borderBottom:'1px solid #bfdbfe'}}>Giá theo nhóm KH</th>
                           </tr>
                           <tr>
-                            <th style={{background:'#dbeafe',color:'#1e3a8a',fontSize:'.63rem',width:95}}>👥 Cốt lõi (+{inputs.marginCore}%)</th>
-                            <th style={{background:'#ede9fe',color:'#5b21b6',fontSize:'.63rem',width:95}}>💛 Thân thiết (+{inputs.marginLoyal}%)</th>
-                            <th style={{background:'#ffedd5',color:'#9a3412',fontSize:'.63rem',width:95}}>🆕 KH lẻ (+{inputs.marginNew}%)</th>
+                            <th style={{background:'#dbeafe',color:'#1e3a8a',fontSize:'.63rem',width:105,minWidth:105}}>👥 Cốt lõi (+{inputs.marginCore}%)</th>
+                            <th style={{background:'#ede9fe',color:'#5b21b6',fontSize:'.63rem',width:105,minWidth:105}}>💛 Thân thiết (+{inputs.marginLoyal}%)</th>
+                            <th style={{background:'#ffedd5',color:'#9a3412',fontSize:'.63rem',width:105,minWidth:105}}>🆕 KH lẻ (+{inputs.marginNew}%)</th>
                           </tr>
                         </thead>
                         <tbody>
