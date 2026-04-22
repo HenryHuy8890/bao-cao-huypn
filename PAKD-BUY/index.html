@@ -140,8 +140,8 @@ const GSHEET_MINSTOCK="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmu
 const GSHEET_LIMITS="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1995461192";
 const GSHEET_UPDATED_IMPORT="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1371908903";
 const GSHEET_FLOOR_HISTORY="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1904019501";
-// MonthlyRevenue: lấy từ pubhtml sheet MonthlyRevenue
-const GSHEET_MONTHLY_REVENUE="https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLlE3z-xCetz2WTc2fr3qLPhuwlMVUZvZ1E_JilajIWnJZTJImXx0u6r0vVp1ONlj0HwcXEDygHfU/pubhtml";
+// MonthlyRevenue: CSV export trực tiếp từ sheet gid=478887656
+const GSHEET_MONTHLY_REVENUE="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=478887656";
 
 const skuKey=r=>`${r.alloy}|${r.temper}|${r.thickness}|${r.width}|${r.length}|${r.coating||'KP'}`;
 const skuLabel=r=>`${r.alloy} ${r.temper}  ${r.thickness}x${r.width}x${r.length} [${coatingShort(r.coating||'KP')}]`;
@@ -862,39 +862,24 @@ const App=()=>{
       });
       setDbStatus({loading:false,error:errMsg,lastSync:new Date().toLocaleTimeString('vi-VN'),source:'gsheet'});
     }catch(e){setDbStatus(p=>({...p,loading:false,error:e.message||'Lỗi'}));}
-    // Fetch MonthlyRevenue từ pubhtml (async riêng, không block)
+    // Fetch MonthlyRevenue từ CSV export (async riêng, không block)
     try{
       const resp=await fetch(GSHEET_MONTHLY_REVENUE);
       if(resp.ok){
-        const html=await resp.text();
-        const parser=new DOMParser();
-        const doc=parser.parseFromString(html,'text/html');
-        const tables=doc.querySelectorAll('table');
-        let rows=[];
-        tables.forEach(tbl=>{
-          const headerRow=tbl.querySelector('tr');
-          if(!headerRow) return;
-          const headers=Array.from(headerRow.querySelectorAll('th,td')).map(c=>c.textContent.trim().toLowerCase().replace(/\s+/g,''));
-          // Tìm table có cột Thang, MacNhom
-          if(!headers.includes('thang')&&!headers.some(h=>h.includes('thang'))) return;
-          const thangIdx=headers.findIndex(h=>h.includes('thang'));
-          const macIdx=headers.findIndex(h=>h.includes('macnhom')||h.includes('mac'));
-          const slIdx=headers.findIndex(h=>h.includes('sanluong')||h.includes('sl'));
-          const dtIdx=headers.findIndex(h=>h.includes('doanhthu')||h.includes('dt'));
-          const dgIdx=headers.findIndex(h=>h.includes('dongiabanth')||h.includes('dongia'));
-          const bodyRows=Array.from(tbl.querySelectorAll('tr')).slice(1);
-          bodyRows.forEach(tr=>{
-            const cells=Array.from(tr.querySelectorAll('td,th')).map(c=>c.textContent.trim());
-            if(cells.length===0) return;
-            const thang=thangIdx>=0?cells[thangIdx]||'':'';
-            const macNhom=macIdx>=0?cells[macIdx]||'':'';
-            const sanLuong=slIdx>=0?parseFloat((cells[slIdx]||'').replace(/\./g,'').replace(/,/g,'.'))||0:0;
-            const doanhThu=dtIdx>=0?parseFloat((cells[dtIdx]||'').replace(/\./g,'').replace(/,/g,'.'))||0:0;
-            const donGia=dgIdx>=0?parseFloat((cells[dgIdx]||'').replace(/\./g,'').replace(/,/g,'.'))||0:0;
-            if(thang&&macNhom) rows.push({thang,macNhom,sanLuong,doanhThu,donGiaBanTB:donGia});
-          });
-        });
-        if(rows.length>0) setMonthlyRevenue(rows);
+        const text=await resp.text();
+        const rows=parseCsv(text);
+        // Normalize headers: Thang, MacNhom, SanLuong, DoanhThu, DonGiaBanTB
+        const parsed=rows.filter(r=>Object.values(r).some(v=>v!=='')).map(r=>{
+          const gv2=(keys)=>{for(const k of keys){const norm=k.toLowerCase().replace(/\s+/g,'');const found=Object.entries(r).find(([rk])=>rk.toLowerCase().replace(/\s+/g,'')===norm);if(found&&found[1]!='') return found[1];}return '';};
+          const thang=gv2(['Thang','thang','Tháng','tháng']);
+          const macNhom=gv2(['MacNhom','macnhom','Mác Nhóm','mac nhom','MácNhóm']);
+          const sl=parseFloat((gv2(['SanLuong','sanluong','Sản Lượng','san luong'])||'').replace(/\./g,'').replace(/,/g,'.'))||0;
+          const dt=parseFloat((gv2(['DoanhThu','doanhthu','Doanh Thu','doanh thu'])||'').replace(/\./g,'').replace(/,/g,'.'))||0;
+          const dg=parseFloat((gv2(['DonGiaBanTB','dongiabantb','Đơn Giá Bán TB','don gia ban tb','DonGia','dongia'])||'').replace(/\./g,'').replace(/,/g,'.'))||0;
+          if(!thang||!macNhom) return null;
+          return{thang,macNhom,sanLuong:sl,doanhThu:dt,donGiaBanTB:dg};
+        }).filter(Boolean);
+        if(parsed.length>0) setMonthlyRevenue(parsed);
       }
     }catch(e2){console.warn('MonthlyRevenue fetch failed:',e2.message);}
   },[]);
@@ -2419,11 +2404,27 @@ URL.revokeObjectURL(url);
             const msRows=minStockRows.filter(r=>r.alloy===alloy);
             const totalMin=msRows.reduce((s,r)=>s+(parseFloat(r.minStockKg)||0),0);
             const totalMax=msRows.reduce((s,r)=>s+(r.maxStockKg?parseFloat(r.maxStockKg):0),0);
-            const delta=totalMin>0?total-totalMin:null;
+            // Tính từng SKU: dư và thiếu KHÔNG bù trừ nhau
+            let tongDu=0, tongThieu=0;
+            const skuDetails=[];
+            const skuGroups=groupBySku(inventory.filter(r=>r.alloy===alloy));
+            msRows.forEach(ms=>{
+              const k=skuKey(ms);
+              const grp=skuGroups.find(g=>g.key===k);
+              const cur=grp?[...grp.inStock,...grp.inTransit].reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0):0;
+              const min=parseFloat(ms.minStockKg)||0;
+              const max=ms.maxStockKg?parseFloat(ms.maxStockKg):null;
+              const delta=min>0?cur-min:null;
+              const isOverMax=max!==null&&cur>max;
+              if(isOverMax) tongDu+=cur-(max||0);
+              else if(delta!==null&&delta<0) tongThieu+=Math.abs(delta);
+              else if(delta!==null&&delta>0&&!isOverMax) tongDu+=delta;
+              skuDetails.push({k,cur,min,max,delta,isOverMax});
+            });
             const isOver=totalMax>0&&total>totalMax;
-            const isLow=totalMin>0&&total<totalMin*0.8;
-            const isNear=totalMin>0&&total>=totalMin*0.8&&total<totalMin;
-            return{total,totalMin,totalMax,delta,isOver,isLow,isNear};
+            const isLow=tongThieu>0;
+            const isNear=!isLow&&totalMin>0&&total>=totalMin*0.8&&total<totalMin;
+            return{total,totalMin,totalMax,tongDu,tongThieu,isOver,isLow,isNear,skuDetails};
           };
           const getStockCoeff=(alloy)=>{
             const {qtyStock,valStock,qtyTransit,valTransit}=getAlloyStock(alloy);
@@ -2476,10 +2477,27 @@ URL.revokeObjectURL(url);
                     const g=reportData.alloyStats.find(x=>x.alloy===alloy)||{avgBefore:0,avgAfter:0,plainKg:0,coatedKg:0,plainCostValue:0,coatedCostValue:0};
                     let borderColor='#cbd5e1',headerBg='#f1f5f9',headerC='#334155';
                     let alertTag=null;
-                    if(alert.isOver){borderColor='#d8b4fe';headerBg='#f3e8ff';headerC='#581c87';alertTag=<span style={{background:'#f3e8ff',color:'#6d28d9',border:'1px solid #d8b4fe',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>🟣 DƯ +{fv(alert.total-alert.totalMax)}kg</span>;}
-                    else if(alert.isLow){borderColor='#fca5a5';headerBg='#fef2f2';headerC='#991b1b';alertTag=<span style={{background:'#fee2e2',color:'#b91c1c',border:'1px solid #fca5a5',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900,animation:'pulse-warn 1.5s infinite'}}>🔴 THIẾU {fv(alert.totalMin-alert.total)}kg</span>;}
-                    else if(alert.isNear){borderColor='#fdba74';headerBg='#fff7ed';headerC='#92400e';alertTag=<span style={{background:'#ffedd5',color:'#9a3412',border:'1px solid #fdba74',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>🟡 SẮP THIẾU {fv(alert.totalMin-alert.total)}kg</span>;}
-                    else if(alert.totalMin>0){alertTag=<span style={{background:'#dcfce7',color:'#14532d',border:'1px solid #86efac',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>✓ ĐỦ TỒN</span>;}
+                    const hasDu=alert.tongDu>0;
+                    const hasThieu=alert.tongThieu>0;
+                    if(hasDu&&hasThieu){
+                      // Vừa có dư vừa có thiếu ở các SKU khác nhau
+                      borderColor='#f97316';headerBg='#fff7ed';headerC='#9a3412';
+                      alertTag=<div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                        <span style={{background:'#fee2e2',color:'#b91c1c',border:'1px solid #fca5a5',borderRadius:4,padding:'1px 6px',fontSize:'.62rem',fontWeight:900}}>🔴 Thiếu {fv(alert.tongThieu)}kg</span>
+                        <span style={{background:'#f3e8ff',color:'#6d28d9',border:'1px solid #d8b4fe',borderRadius:4,padding:'1px 6px',fontSize:'.62rem',fontWeight:900}}>🟣 Dư {fv(alert.tongDu)}kg</span>
+                      </div>;
+                    } else if(hasThieu){
+                      borderColor='#fca5a5';headerBg='#fef2f2';headerC='#991b1b';
+                      alertTag=<span style={{background:'#fee2e2',color:'#b91c1c',border:'1px solid #fca5a5',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>🔴 THIẾU {fv(alert.tongThieu)}kg</span>;
+                    } else if(hasDu){
+                      borderColor='#d8b4fe';headerBg='#f3e8ff';headerC='#581c87';
+                      alertTag=<span style={{background:'#f3e8ff',color:'#6d28d9',border:'1px solid #d8b4fe',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>🟣 DƯ {fv(alert.tongDu)}kg</span>;
+                    } else if(alert.isNear){
+                      borderColor='#fdba74';headerBg='#fff7ed';headerC='#92400e';
+                      alertTag=<span style={{background:'#ffedd5',color:'#9a3412',border:'1px solid #fdba74',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>🟡 SẮP THIẾU</span>;
+                    } else if(alert.totalMin>0){
+                      alertTag=<span style={{background:'#dcfce7',color:'#14532d',border:'1px solid #86efac',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>✓ ĐỦ KẾ HOẠCH</span>;
+                    }
                     return(
                     <div key={alloy} style={{border:`2px solid ${borderColor}`,borderRadius:10,overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,0.07)'}}>
                       {/* Header mác */}
@@ -2522,14 +2540,23 @@ URL.revokeObjectURL(url);
                             <div className="mono" style={{fontSize:'.65rem',color:'#0f766e',fontWeight:600}}>{fv(g.coatedCostValue)}đ</div>
                           </div>
                         </div>
-                        {/* Min/Max bar */}
+                        {/* Min/Max — dư & thiếu theo từng SKU, không bù trừ */}
                         {alert.totalMin>0&&(
-                          <div style={{background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:5,padding:'5px 9px'}}>
+                          <div style={{background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:5,padding:'6px 9px'}}>
                             <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',color:'#475569',fontWeight:700,marginBottom:3}}>
                               <span>Tổng tồn: <strong>{fv(alert.total)} kg</strong></span>
                               <span>Min: {fv(alert.totalMin)}{alert.totalMax>0?` · Max: ${fv(alert.totalMax)}`:''}</span>
                             </div>
-                            <div className="stock-bar" style={{height:6}}><div className="stock-bar-fill" style={{width:`${Math.min((alert.total/alert.totalMin)*100,100)}%`,background:alert.isOver?'#7c3aed':alert.isLow?'#dc2626':alert.isNear?'#d97706':'#16a34a'}}/></div>
+                            <div className="stock-bar" style={{height:5,marginBottom:5}}><div className="stock-bar-fill" style={{width:`${Math.min((alert.total/alert.totalMin)*100,100)}%`,background:alert.tongThieu>0?'#dc2626':alert.isNear?'#d97706':alert.tongDu>0&&!alert.tongThieu?'#7c3aed':'#16a34a'}}/></div>
+                            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                              {alert.tongThieu>0&&<div style={{fontSize:'.58rem',fontWeight:800,color:'#b91c1c',background:'#fee2e2',border:'1px solid #fca5a5',borderRadius:3,padding:'1px 6px'}}>
+                                🔴 SKU thiếu min: <span className="mono">{fv(alert.tongThieu)} kg</span>
+                              </div>}
+                              {alert.tongDu>0&&<div style={{fontSize:'.58rem',fontWeight:800,color:'#6d28d9',background:'#f3e8ff',border:'1px solid #d8b4fe',borderRadius:3,padding:'1px 6px'}}>
+                                🟣 SKU dư min: <span className="mono">{fv(alert.tongDu)} kg</span>
+                              </div>}
+                              {!alert.tongThieu&&!alert.tongDu&&<div style={{fontSize:'.58rem',fontWeight:700,color:'#15803d'}}>✓ Tất cả SKU đạt kế hoạch</div>}
+                            </div>
                           </div>
                         )}
                         {/* DOANH THU TỪNG THÁNG */}
@@ -2909,7 +2936,10 @@ URL.revokeObjectURL(url);
                   <td className={result.avgProfitPerKg>=0?'text-green':'text-red'}>
                     {result.avgProfitPerKg!=null?(result.avgProfitPerKg>=0?'+':'')+fv(result.avgProfitPerKg):'—'}
                   </td>
-                  <td colSpan={3}></td>
+                  <td className={(()=>{const p=result.avgProfitPerKg!=null&&result.globalAvgAfter>0?(result.avgProfitPerKg/result.globalAvgAfter*100):null;return p===null?'':p>=0?'text-green':'text-red';})()}>
+                    {(()=>{const p=result.avgProfitPerKg!=null&&result.globalAvgAfter>0?(result.avgProfitPerKg/result.globalAvgAfter*100):null;return p!==null?(p>=0?'+':'')+p.toFixed(2)+'%':'—';})()}
+                  </td>
+                  <td colSpan={2}></td>
                 </tr>
               </tfoot>
             </table>
@@ -2930,8 +2960,16 @@ URL.revokeObjectURL(url);
                 </div>
               </div>
               <div className="print-box">
-                <div className="print-box-title">Hệ số QL %</div>
-                <div className="print-box-value" style={{color:'#6d28d9',fontSize:'13pt'}}>{inputs.managementFee}%</div>
+                <div className="print-box-title">% Lãi/GV BQ</div>
+                <div className="print-box-value" style={{fontSize:'13pt',color:(()=>{
+                  const pct=result.avgProfitPerKg!=null&&result.globalAvgAfter>0?(result.avgProfitPerKg/result.globalAvgAfter*100):null;
+                  return pct===null?'#334155':pct>=0?'#166534':'#991b1b';
+                })()}}>
+                  {(()=>{
+                    const pct=result.avgProfitPerKg!=null&&result.globalAvgAfter>0?(result.avgProfitPerKg/result.globalAvgAfter*100):null;
+                    return pct!==null?(pct>=0?'+':'')+pct.toFixed(2)+'%':'—';
+                  })()}
+                </div>
               </div>
               <div className="print-box">
                 <div className="print-box-title">Container</div>
