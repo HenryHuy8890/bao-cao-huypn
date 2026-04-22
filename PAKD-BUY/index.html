@@ -723,7 +723,7 @@ const App=()=>{
   const [updatedImportPrices,setUpdatedImportPrices]=useState(()=>filterLatestUIP(defUpdatedImport));
   const [allRawImportPrices,setAllRawImportPrices]=useState(defUpdatedImport); // unfiltered for prev-week calc
   const [scenarios,setScenarios]=useState([]);
-  const [invFilter,setInvFilter]=useState({status:'ALL',alloy:'ALL',coating:'ALL',stockAlert:'ALL',search:''});
+  const [invFilter,setInvFilter]=useState({status:'ALL',alloy:'ALL',coating:'ALL',stockAlert:'ALL',search:'',costMin:'',costMax:''});
   const [msFilter,setMsFilter]=useState({alloy:'ALL',coating:'ALL',stockAlert:'ALL',search:''});
   const [spFilter,setSpFilter]=useState({alloy:'ALL',coating:'ALL',search:''});
   const [fpFilter,setFpFilter]=useState({alloy:'ALL',coating:'ALL',search:'',thickMin:'',thickMax:''});
@@ -1253,6 +1253,8 @@ URL.revokeObjectURL(url);
     if(invFilter.alloy!=='ALL'&&r.alloy!==invFilter.alloy) return false;
     if(invFilter.coating!=='ALL'&&(r.coating||'KP')!==invFilter.coating) return false;
     if(invFilter.search){const s=invFilter.search.toLowerCase();if(!skuLabel(r).toLowerCase().includes(s)) return false;}
+    if(invFilter.costMin!==''){const mn=parseFloat(String(invFilter.costMin).replace(/\./g,'').replace(/,/g,''));if(!isNaN(mn)&&(parseFloat(r.avgCost)||0)<mn) return false;}
+    if(invFilter.costMax!==''){const mx=parseFloat(String(invFilter.costMax).replace(/\./g,'').replace(/,/g,''));if(!isNaN(mx)&&mx>0&&(parseFloat(r.avgCost)||0)>mx) return false;}
     if(invFilter.stockAlert!=='ALL'){
       const k=skuKey(r),ms=minStockMap[k]||0,mx=maxStockMap[k]||null;
       const grpQty=inventory.filter(x=>skuKey(x)===k).reduce((s,x)=>s+(parseFloat(x.qtyKg)||0),0);
@@ -1717,6 +1719,40 @@ URL.revokeObjectURL(url);
                 </div>
               </div>
               <FilterBar filter={invFilter} setFilter={setInvFilter} alloys={uniqueInvAlloys} showStatus={true} showCoating={true} showStockAlert={true} total={inventory.length} filtered={filteredInventory.length}/>
+              {/* Bộ lọc Giá vốn đ/kg */}
+              <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:11,background:'#fff7ed',border:'1px solid #fed7aa',borderRadius:6,padding:'7px 10px'}}>
+                <span style={{fontSize:'.65rem',color:'#c2410c',fontWeight:800,display:'flex',alignItems:'center',gap:4,whiteSpace:'nowrap'}}><Ic.Filter/> 💰 Giá vốn đ/kg:</span>
+                <div style={{display:'flex',alignItems:'center',gap:4,background:'#fff',border:'1px solid #fdba74',borderRadius:4,padding:'2px 8px'}}>
+                  <span style={{fontSize:'.62rem',color:'#c2410c',fontWeight:700,whiteSpace:'nowrap'}}>≥ Từ:</span>
+                  <input
+                    className="inp inp-xs mono"
+                    style={{width:90,textAlign:'right',color:'#c2410c',fontWeight:700,border:'none',padding:'2px 4px',background:'transparent'}}
+                    placeholder="0"
+                    value={invFilter.costMin||''}
+                    onChange={e=>setInvFilter(f=>({...f,costMin:e.target.value}))}
+                    onBlur={e=>{const v=pn(e.target.value);setInvFilter(f=>({...f,costMin:v>0?fv(v):''}));}}
+                  />
+                  <span style={{color:'#fed7aa',fontSize:'.7rem',margin:'0 2px'}}>—</span>
+                  <span style={{fontSize:'.62rem',color:'#c2410c',fontWeight:700,whiteSpace:'nowrap'}}>≤ Đến:</span>
+                  <input
+                    className="inp inp-xs mono"
+                    style={{width:90,textAlign:'right',color:'#c2410c',fontWeight:700,border:'none',padding:'2px 4px',background:'transparent'}}
+                    placeholder="∞"
+                    value={invFilter.costMax||''}
+                    onChange={e=>setInvFilter(f=>({...f,costMax:e.target.value}))}
+                    onBlur={e=>{const v=pn(e.target.value);setInvFilter(f=>({...f,costMax:v>0?fv(v):''}));}}
+                  />
+                </div>
+                {(invFilter.costMin||invFilter.costMax)&&(
+                  <button className="btn btn-xs btn-ghost" style={{borderColor:'#fdba74',color:'#c2410c'}} onClick={()=>setInvFilter(f=>({...f,costMin:'',costMax:''}))}>✕ Xóa lọc GV</button>
+                )}
+                {(invFilter.costMin||invFilter.costMax)&&(
+                  <span style={{fontSize:'.65rem',color:'#92400e',fontWeight:700,background:'#fef3c7',border:'1px solid #fde047',borderRadius:4,padding:'2px 7px'}}>
+                    🔍 GV {invFilter.costMin?`≥ ${invFilter.costMin}`:''}{invFilter.costMin&&invFilter.costMax?' và ':''}{invFilter.costMax?`≤ ${invFilter.costMax}`:''}
+                  </span>
+                )}
+                <span style={{fontSize:'.62rem',color:'#64748b',fontWeight:600,marginLeft:'auto'}}>Lọc theo giá vốn từng dòng tồn kho</span>
+              </div>
               {dbStatus.error&&<div style={{background:'#fee2e2',border:'1px solid #fca5a5',borderRadius:6,padding:'9px 13px',marginBottom:13,fontSize:'.78rem',color:'#b91c1c',fontWeight:700}}><Ic.Alert/> {dbStatus.error}</div>}
               <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
                 <thead>
