@@ -930,6 +930,7 @@ const App=()=>{
 
   const prevWeekImportPrices=useMemo(()=>filterPrevWeekUIP(allRawImportPrices),[allRawImportPrices]);
 
+  // ĐẶT BIẾN NÀY LÊN TRÊN
   // I.3: Sàn trước đây — lấy từ lịch sử giá sàn (lần ban hành gần nhất)
   const lastPublishedFloorByGroup=useMemo(()=>{
     if(!floorHistory||floorHistory.length===0) return {};
@@ -945,6 +946,14 @@ const App=()=>{
     });
     return map;
   },[floorHistory]);
+
+  // BIẾN NÀY NẰM BÊN DƯỚI
+  const mgmtData=useMemo(()=>{
+    const base=calcMgmtGroups(floorPriceData,mgmtGroups,excludedMgmtSkus);
+    return base.map(g=>{
+      const ov=mgmtFloorOverride[g.id];
+      // I.2: Default Sàn BH = Sàn trước nếu chưa nhập tay
+      const lastHist=lastPublishedFloorByGroup[g.label]; 
 
   const fpFooter=useMemo(()=>{
     if(filteredFp.length===0) return null;
