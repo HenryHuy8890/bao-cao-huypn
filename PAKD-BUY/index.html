@@ -1764,7 +1764,20 @@ URL.revokeObjectURL(url);
               </div>
               <FilterBar filter={msFilter} setFilter={setMsFilter} alloys={uniqueMsAlloys} showStatus={false} showCoating={true} showStockAlert={true} showOverAlert={false} total={minStockRows.length} filtered={filteredMs.length}/>
               <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
-                <thead><tr><th>#</th><th style={{textAlign:'left',paddingLeft:5}}>SKU</th><th>Coating</th><th>Min Stock kg</th><th>Max Stock kg</th><th>Tồn hiện tại kg</th><th>% đạt min</th><th>Thiếu / Dư kg</th><th>Trạng thái</th><th></th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>#</th><th style={{textAlign:'left',paddingLeft:5}}>SKU</th><th>Coating</th><th>Min Stock kg</th><th>Max Stock kg</th><th>Tồn hiện tại kg</th><th>% đạt min</th><th>Thiếu / Dư kg</th><th>Trạng thái</th><th></th>
+                  </tr>
+                  <tr style={{background:'#e2e8f0'}}>
+                    <td colSpan={3} style={{textAlign:'right',paddingRight:9,color:'#334155',fontSize:'.68rem',fontWeight:900}}>TỔNG ({filteredMs.length} dòng)</td>
+                    <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#7c3aed',fontWeight:800,fontSize:'.8rem'}}>{fv(filtMsTotalMin)} kg min</td>
+                    <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#6d28d9',fontWeight:800,fontSize:'.8rem'}}>{filtMsTotalMax>0?fv(filtMsTotalMax)+' kg max':'—'}</td>
+                    <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#2563eb',fontWeight:800,fontSize:'.8rem'}}>{fv(filtMsTotalKg)} kg</td>
+                    <td/>
+                    <td className="mono" style={{textAlign:'right',paddingRight:9,fontWeight:900,color:filtMsDelta>=0?'#15803d':'#b91c1c',fontSize:'.8rem'}}>{filtMsDelta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(filtMsDelta))} kg</td>
+                    <td colSpan={2}/>
+                  </tr>
+                </thead>
                 <tbody>
                   {filteredMs.map((r,i)=>{
                     const k=skuKey(r);const grp=groupBySku(inventory).find(g=>g.key===k);
@@ -1789,14 +1802,6 @@ URL.revokeObjectURL(url);
                     );
                   })}
                 </tbody>
-                <tfoot><tr>
-                  <td colSpan={3} style={{textAlign:'right',paddingRight:9,color:'#1e293b',fontSize:'.7rem'}}>TỔNG ({filteredMs.length} dòng)</td>
-                  <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#7c3aed'}}>{fv(filtMsTotalMin)} kg min</td>
-                  <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#6d28d9'}}>{filtMsTotalMax>0?fv(filtMsTotalMax)+' kg max':'—'}</td>
-                  <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#2563eb'}}>{fv(filtMsTotalKg)} kg</td>
-                  <td/><td className="mono" style={{textAlign:'right',paddingRight:9,fontWeight:900,color:filtMsDelta>=0?'#15803d':'#b91c1c'}}>{filtMsDelta>=0?'▲ dư +':'▼ thiếu '}{fv(Math.abs(filtMsDelta))} kg</td>
-                  <td colSpan={2}/>
-                </tr></tfoot>
               </table>
             </div>
           </div>
