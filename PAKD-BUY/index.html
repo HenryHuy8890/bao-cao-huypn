@@ -2395,17 +2395,15 @@ URL.revokeObjectURL(url);
 
         {/* ════ TAB BÁO CÁO ════ */}
         {tab==='report'&&(()=>{
-          // ── Doanh thu 3 tháng gần nhất ──
           const TARGET_ALLOYS=['A1050','A3003','A5052'];
-          // Lấy danh sách tháng duy nhất đã sort desc
           const allMonths=[...new Set(monthlyRevenue.map(r=>r.thang))].sort((a,b)=>b.localeCompare(a));
           const last3Months=allMonths.slice(0,3);
-          // Helper: lọc doanh thu theo tháng + alloy
           const getRevForAlloyMonth=(alloy,thang)=>{
             const rows=monthlyRevenue.filter(r=>r.thang===thang&&r.macNhom&&r.macNhom.toUpperCase().includes(alloy.replace('A','')));
-            return{sanLuong:rows.reduce((s,r)=>s+r.sanLuong,0),doanhThu:rows.reduce((s,r)=>s+r.doanhThu,0),donGia:rows.reduce((s,r)=>s+r.sanLuong*(r.donGiaBanTB||0),0)/(rows.reduce((s,r)=>s+r.sanLuong,0)||1)};
+            const sl=rows.reduce((s,r)=>s+r.sanLuong,0);
+            const dt=rows.reduce((s,r)=>s+r.doanhThu,0);
+            return{sanLuong:sl,doanhThu:dt,donGia:sl>0?rows.reduce((s,r)=>s+r.sanLuong*(r.donGiaBanTB||0),0)/sl:0};
           };
-          // ── Tính tồn kho & giá trị theo alloy ──
           const getAlloyStock=(alloy)=>{
             const inStock=inventory.filter(r=>r.alloy===alloy&&r.status==='IN_STOCK');
             const inTransit=inventory.filter(r=>r.alloy===alloy&&r.status==='IN_TRANSIT');
@@ -2415,19 +2413,6 @@ URL.revokeObjectURL(url);
             const valTransit=inTransit.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0),0);
             return{qtyStock,valStock,qtyTransit,valTransit};
           };
-          // ── Hệ số tồn kho: tồn hiện tại / BQ sản lượng 3 tháng ──
-          const getStockCoeff=(alloy)=>{
-            const {qtyStock,qtyTransit}=getAlloyStock(alloy);
-            const totalStock=qtyStock+qtyTransit;
-            const avgSL3M=last3Months.length>0?last3Months.reduce((s,m)=>s+getRevForAlloyMonth(alloy,m).sanLuong,0)/last3Months.length:0;
-            const avgDT3M=last3Months.length>0?last3Months.reduce((s,m)=>s+getRevForAlloyMonth(alloy,m).doanhThu,0)/last3Months.length:0;
-            const coeffSL=avgSL3M>0?totalStock/avgSL3M:null;
-            const avgVal=qtyStock+qtyTransit>0?(qtyStock*(getAlloyStock(alloy).valStock/(qtyStock||1))+qtyTransit*(getAlloyStock(alloy).valTransit/(qtyTransit||1)))/(qtyStock+qtyTransit):0;
-            const valStock=getAlloyStock(alloy).valStock+getAlloyStock(alloy).valTransit;
-            const coeffDT=avgDT3M>0?valStock/avgDT3M:null;
-            return{totalStock,avgSL3M,avgDT3M,coeffSL,coeffDT,valStock};
-          };
-          // ── Cảnh báo thiếu/dư của từng alloy so với minStock/maxStock ──
           const getAlloyStockAlert=(alloy)=>{
             const {qtyStock,qtyTransit}=getAlloyStock(alloy);
             const total=qtyStock+qtyTransit;
@@ -2440,44 +2425,174 @@ URL.revokeObjectURL(url);
             const isNear=totalMin>0&&total>=totalMin*0.8&&total<totalMin;
             return{total,totalMin,totalMax,delta,isOver,isLow,isNear};
           };
+          const getStockCoeff=(alloy)=>{
+            const {qtyStock,valStock,qtyTransit,valTransit}=getAlloyStock(alloy);
+            const total=qtyStock+qtyTransit;
+            const totalVal=valStock+valTransit;
+            // hệ số tồn = tồn tháng này / SL hoặc DT từng tháng (không BQ)
+            return{total,totalVal};
+          };
+
           return(
           <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
-            <div style={{maxWidth:'1200px',margin:'0 auto'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-                <div><h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📈 Báo cáo Tồn kho & Doanh thu</h2></div>
+            <div style={{maxWidth:'1340px',margin:'0 auto'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>📈 Báo cáo Tồn kho & Doanh thu</h2>
                 <div style={{display:'flex',gap:8}}>
                   <button className="btn btn-purple btn-sm" onClick={()=>syncGoogleSheet('lim')} disabled={dbStatus.loading}><Ic.Refresh/> Sync Hạn mức</button>
                   <button className="btn btn-ghost btn-sm" onClick={()=>syncGoogleSheet('all')} disabled={dbStatus.loading}><Ic.Refresh/> Sync All</button>
                 </div>
               </div>
-              {limitsData[0]&&limitsData[0].totalCreditMax===0&&limitsData[0].inventoryMaxKg===0&&dbStatus.source==='gsheet'&&(
-                <div style={{background:'#fef2f2',border:'1px solid #fca5a5',borderRadius:6,padding:'9px 13px',marginBottom:12,fontSize:'.75rem',color:'#b91c1c',fontWeight:700}}>
-                  ⚠ Sync hạn mức thành công nhưng tất cả giá trị = 0. Kiểm tra tên cột GSheet.
-                </div>
-              )}
 
-              {/* ── TỔNG KHO ── */}
-              <div style={{background:'#ffffff',border:'1px solid #bfdbfe',borderRadius:10,padding:'14px 18px',marginBottom:16,boxShadow:'0 1px 3px rgba(0,0,0,0.05)'}}>
-                <div style={{fontSize:'.68rem',color:'#1d4ed8',fontWeight:900,textTransform:'uppercase',letterSpacing:'.07em',marginBottom:10}}>🌐 TOÀN KHO</div>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:12}}>
-                  {[{l:'Tổng KL',v:fv(reportData.globalKg)+' kg',c:'#15803d'},{l:'Vốn TK',v:fv(reportData.globalCostValue)+'đ',c:'#1d4ed8'},{l:'BQ GV hiện tại',v:fv(reportData.globalAvg)+' đ/kg',c:'#334155'}].map((x,i)=>(
-                    <div key={i} style={{textAlign:'center',background:bg4,borderRadius:6,padding:'9px 8px',border:`1px solid ${border1}`}}>
-                      <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700,marginBottom:4}}>{x.l}</div>
-                      <div className="mono" style={{fontSize:'.88rem',fontWeight:900,color:x.c,lineHeight:1.2}}>{x.v}</div>
+              {/* ══════════ KHỐI 🌐 TOÀN KHO ══════════ */}
+              <div style={{background:'#ffffff',border:'2px solid #bfdbfe',borderRadius:12,padding:'16px 20px',marginBottom:16,boxShadow:'0 2px 8px rgba(0,0,0,0.07)'}}>
+                <div style={{fontSize:'.72rem',color:'#1d4ed8',fontWeight:900,textTransform:'uppercase',letterSpacing:'.08em',marginBottom:14,display:'flex',alignItems:'center',gap:8}}>
+                  🌐 TOÀN KHO — TỔNG QUAN NHANH
+                  {monthlyRevenue.length===0&&<span style={{fontSize:'.65rem',color:'#b45309',fontWeight:700,background:'#fef3c7',border:'1px solid #fde047',borderRadius:4,padding:'2px 8px'}}>⚠ Chưa có DT — nhấn Sync All</span>}
+                </div>
+
+                {/* ROW 1: KPI toàn kho */}
+                <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:14}}>
+                  {[
+                    {l:'Tổng KL tồn kho',v:fv(reportData.globalKg)+' kg',c:'#15803d',bg:'#f0fdf4',br:'#bbf7d0'},
+                    {l:'Tổng vốn tồn kho',v:fv(reportData.globalCostValue)+'đ',c:'#1d4ed8',bg:'#eff6ff',br:'#bfdbfe'},
+                    {l:'⬜ NOPE — KL · Vốn',v:`${fv(reportData.globalPlainKg)} kg`,sub:fv(reportData.globalPlainCostValue)+'đ',c:'#854d0e',bg:'#fef9c3',br:'#fde047'},
+                    {l:'🎨 PE — KL · Vốn',v:`${fv(reportData.globalCoatedKg)} kg`,sub:fv(reportData.globalCoatedCostValue)+'đ',c:'#0f766e',bg:'#ccfbf1',br:'#99f6e4'},
+                  ].map((x,i)=>(
+                    <div key={i} style={{background:x.bg,border:`1px solid ${x.br}`,borderRadius:8,padding:'10px 13px'}}>
+                      <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700,marginBottom:5}}>{x.l}</div>
+                      <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:x.c}}>{x.v}</div>
+                      {x.sub&&<div className="mono" style={{fontSize:'.75rem',fontWeight:700,color:x.c,marginTop:2}}>{x.sub}</div>}
                     </div>
                   ))}
                 </div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:9,marginBottom:12}}>
-                  {[{lbl:'⬜ NOPE (KP)',kg:reportData.globalPlainKg,val:reportData.globalPlainCostValue,bg:'#fef08a',br:'#fde047',c:'#854d0e'},{lbl:'🎨 PE (1E)',kg:reportData.globalCoatedKg,val:reportData.globalCoatedCostValue,bg:'#ccfbf1',br:'#99f6e4',c:'#0f766e'}].map((x,i)=>(
-                    <div key={i} style={{background:x.bg,border:`1px solid ${x.br}`,borderRadius:6,padding:'8px 11px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                      <div><div style={{fontSize:'.65rem',color:x.c,fontWeight:800,marginBottom:3}}>{x.lbl}</div><div className="mono" style={{fontSize:'.88rem',fontWeight:800,color:x.c}}>{fv(x.kg)} kg</div></div>
-                      <div style={{textAlign:'right'}}><div style={{fontSize:'.6rem',color:x.c,fontWeight:700}}>Vốn</div><div className="mono" style={{fontSize:'.78rem',color:x.c,fontWeight:800}}>{fv(x.val)}đ</div></div>
+
+                {/* ROW 2: BẢNG CHI TIẾT A1050 / A3003 / A5052 — mỗi mác 1 block dọc */}
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:14}}>
+                  {TARGET_ALLOYS.map(alloy=>{
+                    const {qtyStock,valStock,qtyTransit,valTransit}=getAlloyStock(alloy);
+                    const alert=getAlloyStockAlert(alloy);
+                    const {totalVal}=getStockCoeff(alloy);
+                    const g=reportData.alloyStats.find(x=>x.alloy===alloy)||{avgBefore:0,avgAfter:0,plainKg:0,coatedKg:0,plainCostValue:0,coatedCostValue:0};
+                    let borderColor='#cbd5e1',headerBg='#f1f5f9',headerC='#334155';
+                    let alertTag=null;
+                    if(alert.isOver){borderColor='#d8b4fe';headerBg='#f3e8ff';headerC='#581c87';alertTag=<span style={{background:'#f3e8ff',color:'#6d28d9',border:'1px solid #d8b4fe',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>🟣 DƯ +{fv(alert.total-alert.totalMax)}kg</span>;}
+                    else if(alert.isLow){borderColor='#fca5a5';headerBg='#fef2f2';headerC='#991b1b';alertTag=<span style={{background:'#fee2e2',color:'#b91c1c',border:'1px solid #fca5a5',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900,animation:'pulse-warn 1.5s infinite'}}>🔴 THIẾU {fv(alert.totalMin-alert.total)}kg</span>;}
+                    else if(alert.isNear){borderColor='#fdba74';headerBg='#fff7ed';headerC='#92400e';alertTag=<span style={{background:'#ffedd5',color:'#9a3412',border:'1px solid #fdba74',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>🟡 SẮP THIẾU {fv(alert.totalMin-alert.total)}kg</span>;}
+                    else if(alert.totalMin>0){alertTag=<span style={{background:'#dcfce7',color:'#14532d',border:'1px solid #86efac',borderRadius:4,padding:'2px 8px',fontSize:'.67rem',fontWeight:900}}>✓ ĐỦ TỒN</span>;}
+                    return(
+                    <div key={alloy} style={{border:`2px solid ${borderColor}`,borderRadius:10,overflow:'hidden',boxShadow:'0 1px 4px rgba(0,0,0,0.07)'}}>
+                      {/* Header mác */}
+                      <div style={{background:headerBg,padding:'8px 13px',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:`1px solid ${borderColor}`}}>
+                        <span style={{fontWeight:900,fontSize:'1rem',color:headerC}}>{alloy}</span>
+                        {alertTag}
+                      </div>
+                      <div style={{padding:'10px 12px',display:'flex',flexDirection:'column',gap:8}}>
+                        {/* Tồn: Trong kho + Đi đường */}
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>
+                          <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:6,padding:'7px 10px'}}>
+                            <div style={{fontSize:'.6rem',fontWeight:800,color:'#15803d',marginBottom:3}}>🟢 Trong kho</div>
+                            <div className="mono" style={{fontSize:'.92rem',fontWeight:900,color:'#15803d'}}>{fv(qtyStock)}<span style={{fontSize:'.65rem',marginLeft:3,fontWeight:600}}>kg</span></div>
+                            <div className="mono" style={{fontSize:'.7rem',fontWeight:700,color:'#16a34a',marginTop:2}}>{fv(valStock)}<span style={{fontSize:'.6rem',marginLeft:1}}>đ</span></div>
+                          </div>
+                          <div style={{background:'#fefce8',border:'1px solid #fef08a',borderRadius:6,padding:'7px 10px'}}>
+                            <div style={{fontSize:'.6rem',fontWeight:800,color:'#854d0e',marginBottom:3}}>🟡 Đi đường</div>
+                            <div className="mono" style={{fontSize:'.92rem',fontWeight:900,color:'#d97706'}}>{fv(qtyTransit)}<span style={{fontSize:'.65rem',marginLeft:3,fontWeight:600}}>kg</span></div>
+                            <div className="mono" style={{fontSize:'.7rem',fontWeight:700,color:'#b45309',marginTop:2}}>{fv(valTransit)}<span style={{fontSize:'.6rem',marginLeft:1}}>đ</span></div>
+                          </div>
+                        </div>
+                        {/* GV + PE/NOPE */}
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:5}}>
+                          <div style={{background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:5,padding:'5px 7px'}}>
+                            <div style={{fontSize:'.55rem',color:'#64748b',fontWeight:700}}>GV BQ HT</div>
+                            <div className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#334155'}}>{fv(g.avgBefore)}</div>
+                          </div>
+                          <div style={{background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:5,padding:'5px 7px'}}>
+                            <div style={{fontSize:'.55rem',color:'#1d4ed8',fontWeight:700}}>GV sau nhập</div>
+                            <div className="mono" style={{fontSize:'.78rem',fontWeight:800,color:g.avgAfter>g.avgBefore?'#dc2626':'#1d4ed8'}}>{fv(g.avgAfter)}</div>
+                          </div>
+                          <div style={{background:'#fef08a',border:'1px solid #fde047',borderRadius:5,padding:'5px 7px'}}>
+                            <div style={{fontSize:'.55rem',color:'#854d0e',fontWeight:700}}>⬜ NOPE</div>
+                            <div className="mono" style={{fontSize:'.72rem',fontWeight:800,color:'#a16207'}}>{fv(g.plainKg)} kg</div>
+                            <div className="mono" style={{fontSize:'.65rem',color:'#a16207',fontWeight:600}}>{fv(g.plainCostValue)}đ</div>
+                          </div>
+                          <div style={{background:'#ccfbf1',border:'1px solid #99f6e4',borderRadius:5,padding:'5px 7px'}}>
+                            <div style={{fontSize:'.55rem',color:'#0f766e',fontWeight:700}}>🎨 PE</div>
+                            <div className="mono" style={{fontSize:'.72rem',fontWeight:800,color:'#0f766e'}}>{fv(g.coatedKg)} kg</div>
+                            <div className="mono" style={{fontSize:'.65rem',color:'#0f766e',fontWeight:600}}>{fv(g.coatedCostValue)}đ</div>
+                          </div>
+                        </div>
+                        {/* Min/Max bar */}
+                        {alert.totalMin>0&&(
+                          <div style={{background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:5,padding:'5px 9px'}}>
+                            <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',color:'#475569',fontWeight:700,marginBottom:3}}>
+                              <span>Tổng tồn: <strong>{fv(alert.total)} kg</strong></span>
+                              <span>Min: {fv(alert.totalMin)}{alert.totalMax>0?` · Max: ${fv(alert.totalMax)}`:''}</span>
+                            </div>
+                            <div className="stock-bar" style={{height:6}}><div className="stock-bar-fill" style={{width:`${Math.min((alert.total/alert.totalMin)*100,100)}%`,background:alert.isOver?'#7c3aed':alert.isLow?'#dc2626':alert.isNear?'#d97706':'#16a34a'}}/></div>
+                          </div>
+                        )}
+                        {/* DOANH THU TỪNG THÁNG */}
+                        <div style={{background:'#f0f9ff',border:'1px solid #bae6fd',borderRadius:6,padding:'7px 10px'}}>
+                          <div style={{fontSize:'.6rem',color:'#0369a1',fontWeight:900,marginBottom:6,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                            <span>📊 Doanh thu theo tháng</span>
+                            <span style={{fontSize:'.58rem',color:'#64748b',fontWeight:600}}>SL · DT · Đơn giá BQ</span>
+                          </div>
+                          {last3Months.length>0?(
+                            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                              {last3Months.map((m,mi)=>{
+                                const rv=getRevForAlloyMonth(alloy,m);
+                                const coeffSL=rv.sanLuong>0?(alert.total/rv.sanLuong):null;
+                                const coeffDT=rv.doanhThu>0?(totalVal/rv.doanhThu):null;
+                                return(
+                                <div key={mi} style={{background:mi===0?'#e0f2fe':'#ffffff',border:'1px solid #bae6fd',borderRadius:5,padding:'5px 8px'}}>
+                                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:3}}>
+                                    <span style={{fontWeight:900,fontSize:'.65rem',color:'#0369a1'}}>{m}</span>
+                                    {mi===0&&<span style={{fontSize:'.58rem',color:'#0284c7',fontWeight:700,background:'#bae6fd',borderRadius:3,padding:'1px 5px'}}>Gần nhất</span>}
+                                  </div>
+                                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4}}>
+                                    <div>
+                                      <div style={{fontSize:'.55rem',color:'#64748b',fontWeight:600}}>Sản lượng</div>
+                                      <div className="mono" style={{fontSize:'.72rem',fontWeight:800,color:'#15803d'}}>{rv.sanLuong>0?fv(rv.sanLuong)+' kg':'—'}</div>
+                                    </div>
+                                    <div>
+                                      <div style={{fontSize:'.55rem',color:'#64748b',fontWeight:600}}>Doanh thu</div>
+                                      <div className="mono" style={{fontSize:'.72rem',fontWeight:800,color:'#1d4ed8'}}>{rv.doanhThu>0?fv(rv.doanhThu)+'đ':'—'}</div>
+                                    </div>
+                                    <div>
+                                      <div style={{fontSize:'.55rem',color:'#64748b',fontWeight:600}}>Đơn giá BQ</div>
+                                      <div className="mono" style={{fontSize:'.72rem',fontWeight:800,color:'#854d0e'}}>{rv.donGia>0?fv(rv.donGia):'—'}</div>
+                                    </div>
+                                  </div>
+                                  {/* Hệ số tồn so với tháng đó */}
+                                  {(coeffSL!==null||coeffDT!==null)&&(
+                                    <div style={{marginTop:4,display:'flex',gap:8,borderTop:'1px solid #bae6fd',paddingTop:3}}>
+                                      {coeffSL!==null&&<div style={{fontSize:'.58rem',color:'#475569',fontWeight:600}}>
+                                        Hệ số SL: <span className="mono" style={{fontWeight:900,color:coeffSL>3?'#7c3aed':coeffSL>1.5?'#d97706':'#15803d'}}>{coeffSL.toFixed(2)}×</span>
+                                      </div>}
+                                      {coeffDT!==null&&<div style={{fontSize:'.58rem',color:'#475569',fontWeight:600}}>
+                                        Hệ số GT: <span className="mono" style={{fontWeight:900,color:coeffDT>3?'#7c3aed':coeffDT>1.5?'#d97706':'#15803d'}}>{coeffDT.toFixed(2)}×</span>
+                                      </div>}
+                                    </div>
+                                  )}
+                                </div>
+                                );
+                              })}
+                            </div>
+                          ):(
+                            <div style={{textAlign:'center',padding:'8px',color:'#94a3b8',fontSize:'.65rem',fontWeight:600}}>Chưa có dữ liệu — nhấn Sync All</div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
-                <div style={{borderTop:`1px solid ${border1}`,paddingTop:11}}>
+
+                {/* ROW 3: Hạn mức */}
+                <div style={{borderTop:`1px solid ${border1}`,paddingTop:12}}>
                   <div style={{fontSize:'.63rem',color:'#1e293b',fontWeight:900,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:8,display:'flex',alignItems:'center',gap:5}}>
-                    <Ic.Alert/> Hạn mức {limitsWarnings.totalAlerts>0&&<span className="tag tr" style={{fontSize:'.6rem',marginLeft:4}}>{limitsWarnings.totalAlerts} vi phạm</span>}
+                    <Ic.Alert/> Hạn mức tổng {limitsWarnings.totalAlerts>0&&<span className="tag tr" style={{fontSize:'.6rem',marginLeft:4}}>{limitsWarnings.totalAlerts} vi phạm</span>}
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
                     {[
@@ -2499,122 +2614,11 @@ URL.revokeObjectURL(url);
                 </div>
               </div>
 
-              {/* ── CHI TIẾT THEO MÁC A1050 / A3003 / A5052 ── */}
-              <div style={{fontSize:'.72rem',fontWeight:900,color:'#1e293b',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:11}}>Chi tiết theo mác A1050 · A3003 · A5052</div>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(360px,1fr))',gap:14,marginBottom:20}}>
-                {TARGET_ALLOYS.map(alloy=>{
-                  const {qtyStock,valStock,qtyTransit,valTransit}=getAlloyStock(alloy);
-                  const alert=getAlloyStockAlert(alloy);
-                  const coeff=getStockCoeff(alloy);
-                  const g=reportData.alloyStats.find(x=>x.alloy===alloy)||{totalKg:0,totalCostValue:0,avgBefore:0,avgAfter:0,plainKg:0,coatedKg:0,plainCostValue:0,coatedCostValue:0};
-                  // cảnh báo
-                  let alertBorder='#cbd5e1',alertBg='#ffffff';
-                  if(alert.isOver){alertBorder='#d8b4fe';alertBg='#faf5ff';}
-                  else if(alert.isLow){alertBorder='#fca5a5';alertBg='#fef2f2';}
-                  else if(alert.isNear){alertBorder='#fdba74';alertBg='#fff7ed';}
-                  return(
-                  <div key={alloy} style={{background:alertBg,border:`2px solid ${alertBorder}`,borderRadius:10,padding:'14px',boxShadow:'0 2px 6px rgba(0,0,0,0.08)'}}>
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-                      <div style={{fontWeight:900,fontSize:'1.1rem',color:'#0f172a'}}>{alloy}</div>
-                      {/* Cảnh báo thiếu/dư */}
-                      {alert.isOver&&<span className="tag tp pulse" style={{fontSize:'.7rem'}}>🟣 DƯ KHO +{fv(alert.total-alert.totalMax)} kg</span>}
-                      {!alert.isOver&&alert.isLow&&<span className="tag tr pulse" style={{fontSize:'.7rem'}}>🔴 THIẾU {fv(alert.totalMin-alert.total)} kg</span>}
-                      {!alert.isOver&&alert.isNear&&<span className="tag to" style={{fontSize:'.7rem'}}>🟡 SẮP THIẾU {fv(alert.totalMin-alert.total)} kg</span>}
-                      {!alert.isOver&&!alert.isLow&&!alert.isNear&&alert.totalMin>0&&<span className="tag tg" style={{fontSize:'.7rem'}}>✓ ĐỦ TỒN</span>}
-                    </div>
-                    {/* Trong kho + giá trị */}
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:8}}>
-                      <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:6,padding:'8px 10px'}}>
-                        <div style={{fontSize:'.63rem',fontWeight:800,color:'#15803d',marginBottom:4}}>🟢 Trong kho</div>
-                        <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:'#15803d'}}>{fv(qtyStock)} <span style={{fontSize:'.65rem'}}>kg</span></div>
-                        <div style={{fontSize:'.68rem',color:'#15803d',fontWeight:700,marginTop:3}}>Giá trị: <span className="mono" style={{fontWeight:800}}>{fv(valStock)}đ</span></div>
-                      </div>
-                      <div style={{background:'#fefce8',border:'1px solid #fef08a',borderRadius:6,padding:'8px 10px'}}>
-                        <div style={{fontSize:'.63rem',fontWeight:800,color:'#854d0e',marginBottom:4}}>🟡 Đi đường</div>
-                        <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:'#d97706'}}>{fv(qtyTransit)} <span style={{fontSize:'.65rem'}}>kg</span></div>
-                        <div style={{fontSize:'.68rem',color:'#b45309',fontWeight:700,marginTop:3}}>Giá trị: <span className="mono" style={{fontWeight:800}}>{fv(valTransit)}đ</span></div>
-                      </div>
-                    </div>
-                    {/* BQ GV */}
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:8}}>
-                      <div style={{background:bg4,borderRadius:5,padding:'6px 9px',border:`1px solid ${border1}`}}>
-                        <div style={{fontSize:'.6rem',color:'#475569',fontWeight:700}}>BQ GV hiện tại</div>
-                        <div className="mono" style={{fontSize:'.88rem',fontWeight:800,color:'#334155'}}>{fv(g.avgBefore)}</div>
-                      </div>
-                      <div style={{background:'#eff6ff',borderRadius:5,padding:'6px 9px',border:'1px solid #bfdbfe'}}>
-                        <div style={{fontSize:'.6rem',color:'#1d4ed8',fontWeight:700}}>BQ GV sau nhập</div>
-                        <div className="mono" style={{fontSize:'.88rem',fontWeight:800,color:g.avgAfter>g.avgBefore?'#dc2626':'#1d4ed8'}}>{fv(g.avgAfter)}</div>
-                      </div>
-                    </div>
-                    {/* PE/NOPE */}
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5,marginBottom:8}}>
-                      <div style={{background:'#fef08a',border:'1px solid #fde047',borderRadius:5,padding:'5px 8px'}}>
-                        <div style={{fontSize:'.6rem',color:'#854d0e',fontWeight:800}}>⬜ NOPE</div>
-                        <div className="mono" style={{fontSize:'.75rem',fontWeight:800,color:'#a16207'}}>{fv(g.plainKg)} kg · {fv(g.plainCostValue)}đ</div>
-                      </div>
-                      <div style={{background:'#ccfbf1',border:'1px solid #99f6e4',borderRadius:5,padding:'5px 8px'}}>
-                        <div style={{fontSize:'.6rem',color:'#0f766e',fontWeight:800}}>🎨 PE</div>
-                        <div className="mono" style={{fontSize:'.75rem',fontWeight:800,color:'#0f766e'}}>{fv(g.coatedKg)} kg · {fv(g.coatedCostValue)}đ</div>
-                      </div>
-                    </div>
-                    {/* Doanh thu 3 tháng */}
-                    {last3Months.length>0&&(
-                      <div style={{background:'#f0f9ff',border:'1px solid #bae6fd',borderRadius:6,padding:'8px 10px',marginBottom:8}}>
-                        <div style={{fontSize:'.63rem',color:'#0369a1',fontWeight:900,marginBottom:6}}>📊 Doanh thu 3 tháng gần nhất</div>
-                        <table style={{width:'100%',borderCollapse:'collapse',fontSize:'.68rem'}}>
-                          <thead><tr style={{background:'#e0f2fe'}}>
-                            <th style={{padding:'3px 6px',textAlign:'left',fontWeight:800,color:'#075985'}}>Tháng</th>
-                            <th style={{padding:'3px 6px',textAlign:'right',fontWeight:800,color:'#075985'}}>SL (kg)</th>
-                            <th style={{padding:'3px 6px',textAlign:'right',fontWeight:800,color:'#075985'}}>DT (đ)</th>
-                            <th style={{padding:'3px 6px',textAlign:'right',fontWeight:800,color:'#075985'}}>Đ.giá BQ</th>
-                          </tr></thead>
-                          <tbody>
-                            {last3Months.map((m,mi)=>{
-                              const rv=getRevForAlloyMonth(alloy,m);
-                              return(
-                                <tr key={mi} style={{background:mi%2===0?'#ffffff':'#f0f9ff'}}>
-                                  <td style={{padding:'3px 6px',fontWeight:700,color:'#0369a1'}}>{m}</td>
-                                  <td className="mono" style={{padding:'3px 6px',textAlign:'right',fontWeight:700,color:'#15803d'}}>{fv(rv.sanLuong)}</td>
-                                  <td className="mono" style={{padding:'3px 6px',textAlign:'right',fontWeight:700,color:'#1d4ed8'}}>{fv(rv.doanhThu)}</td>
-                                  <td className="mono" style={{padding:'3px 6px',textAlign:'right',fontWeight:700,color:'#854d0e'}}>{fv(rv.donGia)}</td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                        {monthlyRevenue.length===0&&<div style={{textAlign:'center',padding:'6px',color:'#94a3b8',fontSize:'.65rem',fontWeight:600}}>⚠ Chưa có dữ liệu — nhấn Sync All để tải</div>}
-                      </div>
-                    )}
-                    {/* Hệ số tồn kho */}
-                    <div style={{background:'#fef9c3',border:'1px solid #fde047',borderRadius:6,padding:'8px 10px'}}>
-                      <div style={{fontSize:'.63rem',color:'#713f12',fontWeight:900,marginBottom:5}}>📐 Hệ số tồn kho so với 3T trước</div>
-                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>
-                        <div style={{background:'#fff',borderRadius:4,padding:'5px 8px',border:'1px solid #fde047'}}>
-                          <div style={{fontSize:'.58rem',color:'#854d0e',fontWeight:700}}>Tồn / BQ Sản lượng</div>
-                          <div className="mono" style={{fontSize:'.88rem',fontWeight:900,color:coeff.coeffSL===null?'#94a3b8':coeff.coeffSL>2?'#7c3aed':coeff.coeffSL<0.5?'#dc2626':'#15803d'}}>
-                            {coeff.coeffSL!==null?coeff.coeffSL.toFixed(2)+'×':'—'}
-                          </div>
-                          <div style={{fontSize:'.6rem',color:'#64748b',marginTop:2}}>BQ 3T: {fv(coeff.avgSL3M)} kg/T</div>
-                        </div>
-                        <div style={{background:'#fff',borderRadius:4,padding:'5px 8px',border:'1px solid #fde047'}}>
-                          <div style={{fontSize:'.58rem',color:'#854d0e',fontWeight:700}}>Giá trị / BQ DT</div>
-                          <div className="mono" style={{fontSize:'.88rem',fontWeight:900,color:coeff.coeffDT===null?'#94a3b8':coeff.coeffDT>2?'#7c3aed':coeff.coeffDT<0.5?'#dc2626':'#15803d'}}>
-                            {coeff.coeffDT!==null?coeff.coeffDT.toFixed(2)+'×':'—'}
-                          </div>
-                          <div style={{fontSize:'.6rem',color:'#64748b',marginTop:2}}>BQ 3T: {fv(coeff.avgDT3M)}đ/T</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  );
-                })}
-              </div>
-
-              {/* ── CÁC MÁC KHÁC ── */}
+              {/* CÁC MÁC KHÁC (không phải 3 mác chính) */}
               {reportData.alloyStats.filter(g=>!TARGET_ALLOYS.includes(g.alloy)).length>0&&(
                 <>
                   <div style={{fontSize:'.72rem',fontWeight:900,color:'#1e293b',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:11}}>Các mác khác</div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(360px,1fr))',gap:11}}>
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(340px,1fr))',gap:11}}>
                     {reportData.alloyStats.filter(g=>!TARGET_ALLOYS.includes(g.alloy)).map((g,i)=>(
                       <div key={i} style={{background:bg2,border:`1px solid ${border2}`,borderRadius:8,padding:'13px',boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
                         <div style={{fontWeight:900,fontSize:'1rem',color:'#0f172a',marginBottom:10}}>{g.alloy}</div>
