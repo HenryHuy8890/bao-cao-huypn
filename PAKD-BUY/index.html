@@ -913,22 +913,7 @@ const App=()=>{
     return true;
   }),[floorPriceData,fpFilter]);
 
-  const mgmtData=useMemo(()=>{
-    const base=calcMgmtGroups(floorPriceData,mgmtGroups,excludedMgmtSkus);
-    return base.map(g=>{
-      const ov=mgmtFloorOverride[g.id];
-      // I.2: Default Sàn BH = Sàn trước nếu chưa nhập tay
-      const lastHist=lastPublishedFloorByGroup[g.label];
-      const publishedFloor=ov!=null&&ov>0?ov:(lastHist&&lastHist.publishedFloor>0?lastHist.publishedFloor:null);
-      const baseFloor=publishedFloor||g.avgFloor;
-      const corePrice=baseFloor*(1+(inputs.marginCore||0)/100);
-      const loyalPrice=baseFloor*(1+(inputs.marginLoyal||1)/100);
-      const newPrice=baseFloor*(1+(inputs.marginNew||2)/100);
-      return{...g,publishedFloor,isDefaultFromHistory:ov==null&&!!lastHist,corePrice,loyalPrice,newPrice};
-    });
-  },[floorPriceData,mgmtGroups,mgmtFloorOverride,excludedMgmtSkus,lastPublishedFloorByGroup,inputs.marginCore,inputs.marginLoyal,inputs.marginNew]);
-
-  const prevWeekImportPrices=useMemo(()=>filterPrevWeekUIP(allRawImportPrices),[allRawImportPrices]);
+  
 
   // ĐẶT BIẾN NÀY LÊN TRÊN
   // I.3: Sàn trước đây — lấy từ lịch sử giá sàn (lần ban hành gần nhất)
@@ -947,13 +932,22 @@ const App=()=>{
     return map;
   },[floorHistory]);
 
-  // BIẾN NÀY NẰM BÊN DƯỚI
   const mgmtData=useMemo(()=>{
     const base=calcMgmtGroups(floorPriceData,mgmtGroups,excludedMgmtSkus);
     return base.map(g=>{
       const ov=mgmtFloorOverride[g.id];
       // I.2: Default Sàn BH = Sàn trước nếu chưa nhập tay
-      const lastHist=lastPublishedFloorByGroup[g.label]; 
+      const lastHist=lastPublishedFloorByGroup[g.label];
+      const publishedFloor=ov!=null&&ov>0?ov:(lastHist&&lastHist.publishedFloor>0?lastHist.publishedFloor:null);
+      const baseFloor=publishedFloor||g.avgFloor;
+      const corePrice=baseFloor*(1+(inputs.marginCore||0)/100);
+      const loyalPrice=baseFloor*(1+(inputs.marginLoyal||1)/100);
+      const newPrice=baseFloor*(1+(inputs.marginNew||2)/100);
+      return{...g,publishedFloor,isDefaultFromHistory:ov==null&&!!lastHist,corePrice,loyalPrice,newPrice};
+    });
+  },[floorPriceData,mgmtGroups,mgmtFloorOverride,excludedMgmtSkus,lastPublishedFloorByGroup,inputs.marginCore,inputs.marginLoyal,inputs.marginNew]);
+
+  const prevWeekImportPrices=useMemo(()=>filterPrevWeekUIP(allRawImportPrices),[allRawImportPrices]);
 
   const fpFooter=useMemo(()=>{
     if(filteredFp.length===0) return null;
