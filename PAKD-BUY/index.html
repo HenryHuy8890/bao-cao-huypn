@@ -2468,6 +2468,67 @@ URL.revokeObjectURL(url);
                   ))}
                 </div>
 
+                {/* ROW 1b: TỔNG DOANH THU NHÔM (A1050+A3003+A5052) theo từng tháng */}
+                {(()=>{
+                  if(last3Months.length===0) return null;
+                  // Tổng SL và DT của cả 3 mác theo từng tháng
+                  const totals=last3Months.map(m=>{
+                    let sl=0,dt=0;
+                    TARGET_ALLOYS.forEach(al=>{
+                      const rv=getRevForAlloyMonth(al,m);
+                      sl+=rv.sanLuong; dt+=rv.doanhThu;
+                    });
+                    const donGia=sl>0?dt/sl:0;
+                    // Hệ số tồn tổng: (tổng tồn 3 mác) / SL tháng đó
+                    const tongTon=TARGET_ALLOYS.reduce((s,al)=>{const {qtyStock,qtyTransit}=getAlloyStock(al);return s+qtyStock+qtyTransit;},0);
+                    const tongVal=TARGET_ALLOYS.reduce((s,al)=>{const {valStock,valTransit}=getAlloyStock(al);return s+valStock+valTransit;},0);
+                    const coeffSL=sl>0?tongTon/sl:null;
+                    const coeffDT=dt>0?tongVal/dt:null;
+                    return{m,sl,dt,donGia,coeffSL,coeffDT};
+                  });
+                  return(
+                  <div style={{background:'#f0f4ff',border:'2px solid #a5b4fc',borderRadius:9,padding:'11px 14px',marginBottom:14}}>
+                    <div style={{fontSize:'.68rem',color:'#3730a3',fontWeight:900,marginBottom:10,display:'flex',alignItems:'center',gap:6}}>
+                      📊 TỔNG DOANH THU NHÔM (A1050 + A3003 + A5052) — từng tháng
+                      <span style={{fontSize:'.6rem',color:'#6366f1',fontWeight:700,background:'#e0e7ff',borderRadius:3,padding:'1px 7px'}}>Tồn / DT tháng</span>
+                    </div>
+                    <div style={{display:'grid',gridTemplateColumns:`repeat(${last3Months.length},1fr)`,gap:9}}>
+                      {totals.map((t,ti)=>(
+                        <div key={ti} style={{background:ti===0?'#e0e7ff':'#ffffff',border:`1px solid ${ti===0?'#818cf8':'#c7d2fe'}`,borderRadius:7,padding:'8px 11px'}}>
+                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                            <span style={{fontWeight:900,fontSize:'.75rem',color:'#3730a3'}}>{t.m}</span>
+                            {ti===0&&<span style={{fontSize:'.58rem',color:'#4f46e5',fontWeight:700,background:'#c7d2fe',borderRadius:3,padding:'1px 5px'}}>Gần nhất</span>}
+                          </div>
+                          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:5,marginBottom:6}}>
+                            <div>
+                              <div style={{fontSize:'.56rem',color:'#64748b',fontWeight:600}}>Sản lượng</div>
+                              <div className="mono" style={{fontSize:'.78rem',fontWeight:900,color:'#15803d'}}>{t.sl>0?fv(t.sl)+' kg':'—'}</div>
+                            </div>
+                            <div>
+                              <div style={{fontSize:'.56rem',color:'#64748b',fontWeight:600}}>Doanh thu</div>
+                              <div className="mono" style={{fontSize:'.78rem',fontWeight:900,color:'#1d4ed8'}}>{t.dt>0?fv(t.dt)+'đ':'—'}</div>
+                            </div>
+                            <div>
+                              <div style={{fontSize:'.56rem',color:'#64748b',fontWeight:600}}>Đơn giá BQ</div>
+                              <div className="mono" style={{fontSize:'.78rem',fontWeight:800,color:'#854d0e'}}>{t.donGia>0?fv(t.donGia):'—'}</div>
+                            </div>
+                          </div>
+                          <div style={{display:'flex',gap:8,borderTop:'1px solid #c7d2fe',paddingTop:4}}>
+                            {t.coeffSL!==null&&<div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>
+                              Hệ số SL: <span className="mono" style={{fontWeight:900,color:t.coeffSL>3?'#7c3aed':t.coeffSL>1.5?'#d97706':'#15803d'}}>{t.coeffSL.toFixed(2)}×</span>
+                            </div>}
+                            {t.coeffDT!==null&&<div style={{fontSize:'.6rem',color:'#475569',fontWeight:600}}>
+                              Hệ số GT: <span className="mono" style={{fontWeight:900,color:t.coeffDT>3?'#7c3aed':t.coeffDT>1.5?'#d97706':'#15803d'}}>{t.coeffDT.toFixed(2)}×</span>
+                            </div>}
+                            {t.coeffSL===null&&t.coeffDT===null&&<div style={{fontSize:'.6rem',color:'#94a3b8'}}>Chưa có dữ liệu</div>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  );
+                })()}
+
                 {/* ROW 2: BẢNG CHI TIẾT A1050 / A3003 / A5052 — mỗi mác 1 block dọc */}
                 <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:14}}>
                   {TARGET_ALLOYS.map(alloy=>{
@@ -2910,7 +2971,7 @@ URL.revokeObjectURL(url);
                       <td>{b.thickness}×{b.width}×{b.length} [{b.coating==='1E'?'PE':'NOPE'}]</td>
                       <td>{fv(b.qtyKg)}</td>
                       <td>{fv(b.priceFC)}</td>
-                      <td>{fv(b.physPerKg)}</td>
+                      <td>{fv(b.veKhoPerKg)}</td>
                       <td style={{fontWeight:'bold',color:'#1d4ed8'}}>{fv(b.avgAfter)}</td>
                       <td className={b.hasSellPrice?(b.realProfitPerKg>=0?'text-green':'text-red'):''}>
                         {b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}
@@ -2931,7 +2992,7 @@ URL.revokeObjectURL(url);
                   <td colSpan={2} style={{textAlign:'right'}}>TỔNG / BQ</td>
                   <td>{fv(result.totalKg)}</td>
                   <td></td>
-                  <td>{fv(result.landedPerKg)}</td>
+                  <td>{fv(result.blends.reduce((s,b)=>s+b.qtyKg*(b.veKhoPerKg||0),0)/(result.totalKg||1))}</td>
                   <td style={{color:'#1d4ed8',fontWeight:'bold'}}>{fv(result.globalAvgAfter)}</td>
                   <td className={result.avgProfitPerKg>=0?'text-green':'text-red'}>
                     {result.avgProfitPerKg!=null?(result.avgProfitPerKg>=0?'+':'')+fv(result.avgProfitPerKg):'—'}
