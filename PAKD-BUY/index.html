@@ -1478,68 +1478,122 @@ URL.revokeObjectURL(url);
             </div>
 
             {/* CENTER — Lô hàng + SKU cards + Giá bán */}
-            {/* Thùng chứa cố định cao độ 350px cho toàn bộ bảng */}
-			<div style={{ flexShrink: 0, padding: '5px 11px', background: bg2, borderBottom: `1px solid ${border1}` }}>
-			  <div style={{ maxHeight: '350px', overflowY: 'auto', border: `1px solid ${border1}`, borderRadius: '4px' }}>
-				<table className="tbl" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
-				  <thead style={{ position: 'sticky', top: 0, zIndex: 20, background: '#e2e8f0' }}>
-					<tr>
-					  <th style={{ width: 30, borderBottom: `2px solid ${border2}` }}>#</th>
-					  <th style={{ textAlign: 'left', paddingLeft: 4, borderBottom: `2px solid ${border2}` }}>SKU</th>
-					  <th style={{ width: 95, borderBottom: `2px solid ${border2}` }}>KL kg</th>
-					  <th style={{ width: 90, borderBottom: `2px solid ${border2}` }}>Giá CIF<div style={{ fontSize: '.5rem', opacity: .8 }}>USD/T</div></th>
-					  <th style={{ width: 88, borderBottom: `2px solid ${border2}` }}>Invoice USD</th>
-					  <th style={{ width: 95, borderBottom: `2px solid ${border2}` }}>Về kho đ/kg</th>
-					  <th style={{ width: 28, borderBottom: `2px solid ${border2}` }}></th>
-					</tr>
-				  </thead>
-				  <tbody>
-					{products.map((p, i) => {
-					  // Tính giá về kho trực tiếp tại dòng
-					  const veKho = p.priceFC > 0 && inputs.exchangeRate > 0
-						? (p.priceFC * inputs.exchangeRate * (1 + (inputs.managementFee || 0) / 100)) / 1000
-						: null;
+            <div style={{flex:1,minWidth:0,display:'flex',flexDirection:'column',background:bg1}}>
+              {/* Toolbar */}
+              <div style={{padding:'7px 11px',borderBottom:`1px solid ${border1}`,display:'flex',alignItems:'center',justifyContent:'space-between',flexShrink:0,background:bg2}}>
+                <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                  <Ic.Ship/><span style={{fontWeight:800,fontSize:'.86rem',color:'#0f172a'}}>Lô hàng dự định mua</span>
+                  <span className="tag tb">{products.length} SKU</span>
+                  {result&&<span className="tag ts mono">{fv(result.totalKg)} kg</span>}
+                  {result&&<span className="tag ty mono">{fu(result.invoiceUSD)}</span>}
+                </div>
+                <div style={{display:'flex',gap:5,alignItems:'center'}}>
+                  <button className="btn btn-ghost btn-xs" style={{background:'#eff6ff',border:'1px solid #93c5fd',color:'#1d4ed8'}}
+                    onClick={()=>setProducts(prev=>prev.map(p=>{
+                      const thick=parseFloat(p.thickness)||0;
+                      const match=updatedImportPrices.find(u=>u.alloy===p.alloy&&u.temper===p.temper&&thick>=(parseFloat(u.minThick)||0)&&thick<=(parseFloat(u.maxThick)||999));
+                      if(match&&match.priceFC>0) return{...p,priceFC:match.priceFC};
+                      if(!p.thickness||!p.temper){const fallback=updatedImportPrices.find(u=>u.alloy===p.alloy&&(!p.temper||u.temper===p.temper));if(fallback&&fallback.priceFC>0) return{...p,priceFC:fallback.priceFC};}
+                      return p;
+                    }))}
+                    title="Đồng bộ Giá CIF từ GSheet">🔄 Đồng bộ CIF</button>
+                  <button className="btn btn-ghost btn-sm" onClick={addProduct}><Ic.Plus/> Thêm SKU</button>
+                </div>
+              </div>
 
-					  return (
-						<tr key={p.id}>
-						  <td style={{ textAlign: 'center', color: '#475569', fontSize: '.72rem', fontWeight: 'bold' }} className="mono">{i + 1}</td>
-						  <td style={{ paddingLeft: 4 }}><SkuSel row={p} onChange={patch => setProduct(p.id, patch)} /></td>
-						  <td><input className="inp inp-xs mono" style={{ textAlign: 'right', color: '#15803d', fontWeight: 700 }} value={fv(p.qtyKg)} onChange={e => setProduct(p.id, { qtyKg: pn(e.target.value) })} /></td>
-						  <td><input type="number" className="inp inp-xs mono" style={{ textAlign: 'right', color: '#b45309', fontWeight: 700 }} value={p.priceFC} onChange={e => setProduct(p.id, { priceFC: parseFloat(e.target.value) || 0 })} /></td>
-						  <td className="mono" style={{ textAlign: 'right', paddingRight: 5, color: '#1e293b', fontWeight: 700, fontSize: '.76rem' }}>{fu((p.qtyKg / 1000) * p.priceFC)}</td>
-						  <td style={{ textAlign: 'right', paddingRight: 5 }}>
-							{veKho ? <span className="mono" style={{ fontSize: '.8rem', fontWeight: 700, color: '#15803d' }}>{fv(veKho)}</span> : <span style={{ color: '#64748b' }}>—</span>}
-						  </td>
-						  <td><button className="btn-danger" onClick={() => delProduct(p.id)}><Ic.X /></button></td>
-						</tr>
-					  );
-					})}
-				  </tbody>
-				  {/* Tfoot nằm cùng bảng để đảm bảo căn lề cột chuẩn xác */}
-				  {result && (
-					<tfoot style={{ position: 'sticky', bottom: 0, zIndex: 10, background: '#f1f5f9' }}>
-					  <tr>
-						<td colSpan={2} style={{ textAlign: 'right', color: '#0f172a', fontWeight: 800, paddingRight: 7 }}>TỔNG / BQ</td>
-						<td className="mono" style={{ textAlign: 'right', paddingRight: 5, color: '#15803d', fontWeight: 800 }}>{fv(result.totalKg)}</td>
-						<td />
-						<td className="mono" style={{ textAlign: 'right', paddingRight: 5, color: '#b45309', fontWeight: 800 }}>{fu(result.invoiceUSD)}</td>
-						<td className="mono" style={{ textAlign: 'right', paddingRight: 5, color: '#1d4ed8', fontWeight: 800 }}>
-						  {(() => {
-							const totalKgProd = products.reduce((s, p) => s + p.qtyKg, 0);
-							const bqVeKho = totalKgProd > 0 ? products.reduce((s, p) => {
-							  const vk = p.priceFC > 0 && inputs.exchangeRate > 0 ? (p.priceFC * inputs.exchangeRate * (1 + (inputs.managementFee || 0) / 100)) / 1000 : 0;
-							  return s + p.qtyKg * vk;
-							}, 0) / totalKgProd : 0;
-							return bqVeKho > 0 ? fv(bqVeKho) + ' avg' : '—';
-						  })()}
-						</td>
-						<td />
-					  </tr>
-					</tfoot>
-				  )}
-				</table>
-			  </div>
-			</div>
+              {/* Lô hàng dự định mua — cố định ~350px, cuộn tbody khi >5 SKU */}
+              <div style={{flexShrink:0,background:bg2,borderBottom:`1px solid ${border1}`}}>
+                {/* thead cố định */}
+                <div style={{padding:'5px 11px 0'}}>
+                  <table className="tbl" style={{tableLayout:'fixed',width:'100%'}}>
+                    <colgroup>
+                      <col style={{width:24}}/>
+                      <col/>
+                      <col style={{width:95}}/>
+                      <col style={{width:90}}/>
+                      <col style={{width:88}}/>
+                      <col style={{width:95}}/>
+                      <col style={{width:28}}/>
+                    </colgroup>
+                    <thead><tr>
+                      <th style={{width:24}}>#</th>
+                      <th style={{textAlign:'left',paddingLeft:4}}>SKU</th>
+                      <th style={{width:95}}>KL kg</th>
+                      <th style={{width:90}}>Giá CIF<div style={{fontSize:'.5rem',fontWeight:600,opacity:.8}}>USD/T</div></th>
+                      <th style={{width:88}}>Invoice USD</th>
+                      <th style={{width:95}}>Về kho đ/kg</th>
+                      <th style={{width:28}}></th>
+                    </tr></thead>
+                  </table>
+                </div>
+                {/* tbody — scroll vùng này, chiều cao cố định ~5 dòng */}
+                <div style={{height:245,overflowY:'auto',padding:'0 11px'}}>
+                  <table className="tbl" style={{tableLayout:'fixed',width:'100%'}}>
+                    <colgroup>
+                      <col style={{width:24}}/>
+                      <col/>
+                      <col style={{width:95}}/>
+                      <col style={{width:90}}/>
+                      <col style={{width:88}}/>
+                      <col style={{width:95}}/>
+                      <col style={{width:28}}/>
+                    </colgroup>
+                    <tbody>
+                      {products.map((p,i)=>{
+                        const veKho=p.priceFC>0&&inputs.exchangeRate>0
+                          ?(p.priceFC*inputs.exchangeRate*(1+(inputs.managementFee||0)/100))/1000
+                          :null;
+                        return(
+                          <tr key={p.id}>
+                            <td style={{textAlign:'center',color:'#475569',fontSize:'.72rem',fontWeight:'bold'}} className="mono">{i+1}</td>
+                            <td style={{paddingLeft:4}}><SkuSel row={p} onChange={patch=>setProduct(p.id,patch)}/></td>
+                            <td><input className="inp inp-xs mono" style={{textAlign:'right',color:'#15803d',fontWeight:700}} value={fv(p.qtyKg)} onChange={e=>setProduct(p.id,{qtyKg:pn(e.target.value)})}/></td>
+                            <td><input type="number" className="inp inp-xs mono" style={{textAlign:'right',color:'#b45309',fontWeight:700}} value={p.priceFC} onChange={e=>setProduct(p.id,{priceFC:parseFloat(e.target.value)||0})}/></td>
+                            <td className="mono" style={{textAlign:'right',paddingRight:5,color:'#1e293b',fontWeight:700,fontSize:'.76rem'}}>{fu((p.qtyKg/1000)*p.priceFC)}</td>
+                            <td style={{textAlign:'right',paddingRight:5}}>
+                              {veKho?<span className="mono" style={{fontSize:'.8rem',fontWeight:700,color:'#15803d'}}>{fv(veKho)}</span>:<span style={{color:'#64748b'}}>—</span>}
+                            </td>
+                            <td><button className="btn-danger" onClick={()=>delProduct(p.id)}><Ic.X/></button></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {/* tfoot TỔNG/BQ — luôn hiển thị bên dưới */}
+                {result&&(
+                  <div style={{padding:'0 11px 5px',borderTop:`1px solid ${border1}`}}>
+                    <table className="tbl" style={{tableLayout:'fixed',width:'100%'}}>
+                      <colgroup>
+                        <col style={{width:24}}/>
+                        <col/>
+                        <col style={{width:95}}/>
+                        <col style={{width:90}}/>
+                        <col style={{width:88}}/>
+                        <col style={{width:95}}/>
+                        <col style={{width:28}}/>
+                      </colgroup>
+                      <tfoot><tr>
+                        <td colSpan={2} style={{textAlign:'right',color:'#1e293b',fontSize:'.68rem',paddingRight:7}}>TỔNG / BQ</td>
+                        <td className="mono" style={{textAlign:'right',paddingRight:5,color:'#15803d',fontSize:'.8rem'}}>{fv(result.totalKg)}</td>
+                        <td/>
+                        <td className="mono" style={{textAlign:'right',paddingRight:5,color:'#b45309',fontSize:'.8rem'}}>{fu(result.invoiceUSD)}</td>
+                        <td className="mono" style={{textAlign:'right',paddingRight:5,color:'#1d4ed8',fontSize:'.8rem'}}>
+                          {(()=>{
+                            const totalKgProd=products.reduce((s,p)=>s+p.qtyKg,0);
+                            const bqVeKho=totalKgProd>0?products.reduce((s,p)=>{
+                              const vk=p.priceFC>0&&inputs.exchangeRate>0?(p.priceFC*inputs.exchangeRate*(1+(inputs.managementFee||0)/100))/1000:0;
+                              return s+p.qtyKg*vk;
+                            },0)/totalKgProd:0;
+                            return bqVeKho>0?fv(bqVeKho)+' avg':'—';
+                          })()}
+                        </td>
+                        <td/>
+                      </tr></tfoot>
+                    </table>
+                  </div>
+                )}
+              </div>
 
              {/* SKU Cards - Bây giờ chiếm toàn bộ chiều rộng cột giữa */}
               <div style={{flex:1,overflowY:'auto',padding:'12px 14px'}}>
