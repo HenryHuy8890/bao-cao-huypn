@@ -2058,8 +2058,8 @@ URL.revokeObjectURL(url);
                               🔒 Sàn HV
                               <div style={{fontSize:'.5rem',fontWeight:600,opacity:.8,marginTop:1}}>{inputs.storageCostPct ?? 2}+{inputs.baseFinCostPct ?? 1.5}+{inputs.opsCostPct}%</div>
                             </th>
-                            <th rowSpan={2} style={{background:'#fef3c7',color:'#92400e',width:95,minWidth:95}}>🏭 Đối thủ</th>
-                            <th rowSpan={2} style={{background:'#fde68a',color:'#92400e',width:95,minWidth:95}}>🔻 Sàn ĐT</th>
+                            <th rowSpan={2} style={{background:'#fafafa',color:'#b8a060',width:95,minWidth:95,fontWeight:400,fontSize:'.66rem',opacity:.7}}>🏭 Đối thủ</th>
+                            <th rowSpan={2} style={{background:'#fafafa',color:'#b8a060',width:95,minWidth:95,fontWeight:400,fontSize:'.66rem',opacity:.7}}>🔻 Sàn ĐT</th>
                             <th colSpan={3} style={{background:'#eff6ff',color:'#1e3a8a',borderBottom:'1px solid #bfdbfe'}}>Giá theo nhóm KH</th>
                           </tr>
                           <tr>
@@ -2099,19 +2099,19 @@ URL.revokeObjectURL(url);
                                   <div className="mono" style={{fontWeight:900,color:'#15803d',fontSize:'.92rem'}}>{fv(r.floorAbsolute)}</div>
                                   <div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>+{(r.totalCostRate*100).toFixed(2)}% GV</div>
                                 </td>
-                                <td style={{textAlign:'right',paddingRight:6,background:'#fffbeb'}}>
+                                <td style={{textAlign:'right',paddingRight:6,background:'#fafafa',opacity:.65}}>
                                   {r.competitorPrice>0?(
                                     <>
-                                      <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.82rem'}}>{fv(r.competitorPrice)}</div>
-                                      {diffComp!==null&&<div style={{fontSize:'.57rem',fontWeight:700,color:diffComp>0?'#dc2626':'#15803d'}}>{diffComp>0?'▲':'▼'}{fv(Math.abs(diffComp))}</div>}
+                                      <div className="mono" style={{fontWeight:400,color:'#92400e',fontSize:'.78rem',fontStyle:'italic'}}>{fv(r.competitorPrice)}</div>
+                                      {diffComp!==null&&<div style={{fontSize:'.55rem',fontWeight:400,color:diffComp>0?'#dc2626':'#15803d'}}>{diffComp>0?'▲':'▼'}{fv(Math.abs(diffComp))}</div>}
                                     </>
                                   ):<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
                                 </td>
-                                <td style={{textAlign:'right',paddingRight:6,background:'#fef9c3'}}>
+                                <td style={{textAlign:'right',paddingRight:6,background:'#fafafa',opacity:.65}}>
                                   {r.competitorFloorPrice>0?(
                                     <>
-                                      <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.82rem'}}>{fv(r.competitorFloorPrice)}</div>
-                                      {diffCompFloor!==null&&<div style={{fontSize:'.57rem',fontWeight:700,color:diffCompFloor>0?'#dc2626':'#15803d'}}>{diffCompFloor>0?'▲':'▼'}{fv(Math.abs(diffCompFloor))}</div>}
+                                      <div className="mono" style={{fontWeight:400,color:'#92400e',fontSize:'.78rem',fontStyle:'italic'}}>{fv(r.competitorFloorPrice)}</div>
+                                      {diffCompFloor!==null&&<div style={{fontSize:'.55rem',fontWeight:400,color:diffCompFloor>0?'#dc2626':'#15803d'}}>{diffCompFloor>0?'▲':'▼'}{fv(Math.abs(diffCompFloor))}</div>}
                                     </>
                                   ):<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
                                 </td>
