@@ -1954,13 +1954,6 @@ URL.revokeObjectURL(url);
                     <span style={{background:'linear-gradient(135deg,#0d9488,#0891b2)',borderRadius:6,padding:'3px 8px',color:'#fff',fontSize:'.82rem'}}>💹 GIÁ SÀN 5.7</span>
                     Phân tích giá sàn hòa vốn + Đối thủ
                   </h2>
-                  <div style={{display:'flex',alignItems:'center',gap:8,marginTop:5,flexWrap:'wrap'}}>
-                    <div style={{fontSize:'.72rem',color:'#475569',fontWeight:600,background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:4,padding:'2px 8px'}}>
-                      <strong>Sàn = GV_gốc × (1 + {inputs.storageCostPct ?? 2}% LK + {inputs.baseFinCostPct ?? 1.5}% TC + {inputs.opsCostPct}% HĐ{inputs.creditMode!=='none'?` + ${inputs.creditMode==='fixed'?inputs.finCostPct+'% CN':`${((inputs.lendingRate||0)/100*(inputs.customCreditDays||0)/365*100).toFixed(2)}% CN`}`:' + 0 CN'})</strong>
-                    </div>
-                    <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'3px 8px',borderRadius:20,fontSize:'.68rem',fontWeight:800,background:'#f3e8ff',color:'#6d28d9',border:'1px solid #d8b4fe'}}>📦 GV_gốc chưa bao gồm LK</span>
-                    <span className="mgmt-view-badge">{creditModeLabel}</span>
-                  </div>
                 </div>
                 <div style={{display:'flex',gap:8,alignItems:'center',flexShrink:0}}>
                   <div style={{background:'#f0fdfa',border:'1px solid #5eead4',borderRadius:6,padding:'5px 10px',fontSize:'.7rem',fontWeight:700,color:'#0f766e'}}>
