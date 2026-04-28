@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAKD BUY 5.9 – H&D Aluminum Strategy</title>
+<title>PAKD BUY 6.0 – H&D Aluminum Strategy</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -125,7 +125,7 @@ const ALLOYS=["A1050","A1052","A1060","A3003","A3003 CT","A3105","A5052","A5083"
 const TEMPERS=["H14","H16","H18","H24","H32","H34","H111","O","T5","T6"];
 const THICKS=["0.4","0.5","0.6","0.7","0.8","0.9","1.0","1.2","1.5","2.0","2.5","3.0","4.0","5.0","6.0"];
 const WIDTHS=["600","800","1000","1200","1220","1250","1500","1524","2000"];
-const LENGTHS=["Coil","1000","1200","2000","2400","2500","3000","4000","6000","Custom"];
+const LENGTHS=["C","1000","1200","2000","2400","2500","3000","4000","6000","Custom"];
 
 const coatingFromGSheet=(val)=>{
   if(!val) return 'KP';
@@ -530,22 +530,22 @@ const calcLimitsWarnings=(limitsData,inventory)=>{
 
 // ─── DEFAULT DATA ─────────────────────────────────────────────
 const defInventory=[
-  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',status:'IN_STOCK',qtyKg:2986,avgCost:92820},
-  {id:2,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',status:'IN_TRANSIT',qtyKg:10000,avgCost:101466},
-  {id:3,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',status:'IN_STOCK',qtyKg:5000,avgCost:95000},
-  {id:4,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',status:'IN_STOCK',qtyKg:3000,avgCost:90000},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'1E',status:'IN_STOCK',qtyKg:2986,avgCost:92820},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'1E',status:'IN_TRANSIT',qtyKg:10000,avgCost:101466},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'C',coating:'1E',status:'IN_STOCK',qtyKg:5000,avgCost:95000},
+  {id:4,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'KP',status:'IN_STOCK',qtyKg:3000,avgCost:90000},
 ];
 const defMinStock=[
-  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',minStockKg:31000,maxStockKg:50000},
-  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',minStockKg:15000,maxStockKg:null},
-  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',minStockKg:10000,maxStockKg:30000},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'1E',minStockKg:31000,maxStockKg:50000},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'C',coating:'1E',minStockKg:15000,maxStockKg:null},
+  {id:3,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'KP',minStockKg:10000,maxStockKg:30000},
 ];
 const defSP=[
 ];
 const defLimits=[{id:1,totalCreditMin:5000000000,totalCreditMax:15000000000,inventoryMinVND:2000000000,inventoryMaxVND:8000000000,inventoryMinKg:20000,inventoryMaxKg:80000,accountsPayableLimit:7000000000,actualAccountsPayable:5500000000}];
 const defProducts=[
-  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'1E',qtyKg:12000,priceFC:3870},
-  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'Coil',coating:'1E',qtyKg:5000,priceFC:3870},
+  {id:1,alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'1E',qtyKg:12000,priceFC:3870},
+  {id:2,alloy:'A1050',temper:'H14',thickness:'0.8',width:'1200',length:'C',coating:'1E',qtyKg:5000,priceFC:3870},
 ];
 const defUpdatedImport=[
   {id:1,updateDate:'30/03/2026',alloy:'A1050',temper:'H14',minThick:0.2,maxThick:0.49,priceFC:3940,note:'CIF HPH',importCoef:1.015,competitorPrice:103000,competitorFloorPrice:100500},
@@ -760,7 +760,7 @@ const App=()=>{
         if(r.status==='rejected'){errMsg=r.reason?.message||'Lỗi';return;}
         const{type,data}=r.value;if(!data) return;
         if(type==='inv'){
-          const rows=data.filter(r=>r.alloy).map((r,i)=>({id:uid()+i,alloy:r.alloy||'A5052',temper:r.temper||'H32',thickness:r.thickness||'1.0',width:r.width||'1200',length:r.length||'Coil',coating:coatingFromGSheet(r.coating||'KP'),status:(r.status||'IN_STOCK').toUpperCase(),qtyKg:parseFloat(r.qtykg||r.qty_kg||r['qty kg']||0),avgCost:parseFloat(r.avgcost||r.avg_cost||r['avg cost']||0)}));
+          const rows=data.filter(r=>r.alloy).map((r,i)=>({id:uid()+i,alloy:r.alloy||'A5052',temper:r.temper||'H32',thickness:r.thickness||'1.0',width:r.width||'1200',length:r.length||'C',coating:coatingFromGSheet(r.coating||'KP'),status:(r.status||'IN_STOCK').toUpperCase(),qtyKg:parseFloat(r.qtykg||r.qty_kg||r['qty kg']||0),avgCost:parseFloat(r.avgcost||r.avg_cost||r['avg cost']||0),expectedDeliveryDate:(r.expecteddeliverydate||r.expected_delivery_date||r['expecteddeliverydate']||r['expected delivery date']||'').trim()}));
           if(rows.length>0) setInvs(rows);
         }
         if(type==='ms'){
@@ -987,16 +987,16 @@ const App=()=>{
     ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:'#1e293b',font:{size:10,weight:'bold'},padding:8,usePointStyle:true}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fv(c.parsed.y)+' đ/kg'}}},scales:{x:{grid:{color:'#e2e8f0'},ticks:{color:'#334155',font:{size:9}}},y:{grid:{color:'#e2e8f0'},beginAtZero:false,ticks:{color:'#334155',font:{size:9},callback:v=>fv(v)}}}}});
   },[result]);
 
-  const addProduct=()=>setProducts(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',qtyKg:1000,priceFC:3870}]);
+  const addProduct=()=>setProducts(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'KP',qtyKg:1000,priceFC:3870}]);
   const delProduct=id=>{if(products.length>1) setProducts(p=>p.filter(r=>r.id!==id));};
   const setProduct=(id,patch)=>setProducts(p=>p.map(r=>r.id===id?{...r,...patch}:r));
-  const addInv=()=>setInvs(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',status:'IN_STOCK',qtyKg:0,avgCost:0}]);
+  const addInv=()=>setInvs(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'KP',status:'IN_STOCK',qtyKg:0,avgCost:0}]);
   const delInv=id=>setInvs(p=>p.filter(r=>r.id!==id));
   const setInv=(id,patch)=>setInvs(p=>p.map(r=>r.id===id?{...r,...patch}:r));
-  const addMS=()=>setMinStockRows(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',minStockKg:0,maxStockKg:null}]);
+  const addMS=()=>setMinStockRows(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'KP',minStockKg:0,maxStockKg:null}]);
   const delMS=id=>setMinStockRows(p=>p.filter(r=>r.id!==id));
   const setMS=(id,patch)=>setMinStockRows(p=>p.map(r=>r.id===id?{...r,...patch}:r));
-  const addSP=()=>setSP(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'Coil',coating:'KP',sellCost:0,comment:''}]);
+  const addSP=()=>setSP(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'KP',sellCost:0,comment:''}]);
   const delSP=id=>setSP(p=>p.filter(r=>r.id!==id));
   const setSpR=(id,f,v)=>setSP(p=>p.map(r=>r.id===id?{...r,[f]:v}:r));
   const setLimField=(f,v)=>setLimitsData(p=>{const arr=[...p];if(arr[0]) arr[0]={...arr[0],[f]:pn(v)};return arr;});
@@ -1648,7 +1648,6 @@ URL.revokeObjectURL(url);
                         {/* 3. Box Tính toán Giá vốn BQ */}
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',marginBottom:8}}>
                           <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:5,padding:'5px 8px'}}>
-                            {/* Tiêu đề: .55rem -> .65rem, Số: .72rem -> .85rem */}
                             <div style={{fontSize:'.65rem',color:'#475569',fontWeight:700}}>GV BQ HT</div>
                             <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:'#15803d',marginTop:2}}>{fv(b.avgCurrent)}</div>
                           </div>
@@ -1656,10 +1655,10 @@ URL.revokeObjectURL(url);
                             <div style={{fontSize:'.65rem',color:'#475569',fontWeight:700}}>GV BQ sau nhập</div>
                             <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:'#1d4ed8',marginTop:2}}>{fv(b.avgAfter)}</div>
                           </div>
-                          <div style={{background:b.profitPct!=null&&b.profitPct>=0?'#f0fdf4':'#fef2f2',border:'1px solid #cbd5e1',borderRadius:5,padding:'5px 8px'}}>
-                            <div style={{fontSize:'.65rem',color:'#475569',fontWeight:700}}>% Lãi/GV</div>
-                            <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:b.profitPct==null?'#94a3b8':b.profitPct>=0?'#15803d':'#b91c1c',marginTop:2}}>
-                              {b.profitPct!=null?(b.profitPct>=0?'+':'')+b.profitPct.toFixed(1)+'%':'—'}
+                          <div style={{background:b.hasSellPrice&&b.realProfitPerKg!=null&&b.realProfitPerKg>=0?'#f0fdf4':'#fef2f2',border:'1px solid #cbd5e1',borderRadius:5,padding:'5px 8px'}}>
+                            <div style={{fontSize:'.65rem',color:'#475569',fontWeight:700}}>VNĐ/Kg</div>
+                            <div className="mono" style={{fontSize:'.85rem',fontWeight:800,color:!b.hasSellPrice?'#94a3b8':b.realProfitPerKg>=0?'#15803d':'#b91c1c',marginTop:2}}>
+                              {b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}
                             </div>
                           </div>
                         </div>
@@ -1680,19 +1679,20 @@ URL.revokeObjectURL(url);
                         )}
                         
                         {/* 5. Box Tổng kết Lãi/Lỗ dưới cùng */}
-                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',background:bg4,borderRadius:5,padding:'8px 10px',border:`1px solid ${border1}`}}>
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',background:bg4,borderRadius:5,padding:'8px 10px',border:`1px solid ${border1}`}}>
                           <div>
-                            <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>Giá bán KH</div>
-                            {/* Số giá bán to nhất: .82rem -> 1rem */}
-                            {b.hasSellPrice?<div className="mono" style={{fontSize:'1rem',fontWeight:800,color:'#15803d'}}>{fv(b.sellPrice)}</div>:<div style={{fontSize:'.75rem',color:'#64748b',fontStyle:'italic'}}>→ Lấy từ Sàn BH</div>}
-                          </div>
-                          <div style={{textAlign:'center'}}>
-                            <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>Lãi/kg</div>
-                            <div className="mono" style={{fontSize:'.9rem',fontWeight:800,color:!b.hasSellPrice?'#64748b':b.realProfitPerKg>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(b.realProfitPerKg>=0?'+':'')+fv(b.realProfitPerKg):'—'}</div>
-                          </div>
-                          <div style={{textAlign:'right'}}>
                             <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>Tổng lãi lô</div>
                             <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:!b.hasSellPrice?'#64748b':b.grossProfitVND>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(b.grossProfitVND>=0?'+':'')+fv(b.grossProfitVND)+'đ':'—'}</div>
+                          </div>
+                          <div style={{textAlign:'center'}}>
+                            <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>Giá sàn</div>
+                            {b.hasSellPrice?<div className="mono" style={{fontSize:'1rem',fontWeight:800,color:'#15803d'}}>{fv(b.sellPrice)}</div>:<div style={{fontSize:'.75rem',color:'#64748b',fontStyle:'italic'}}>→ Lấy từ Sàn BH</div>}
+                          </div>
+                          <div style={{textAlign:'right'}}>
+                            <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700,marginBottom:2,whiteSpace:'nowrap'}}>% Lãi/BQ Sau nhập</div>
+                            <div className="mono" style={{fontSize:'.9rem',fontWeight:800,color:b.profitPct==null?'#94a3b8':b.profitPct>=0?'#15803d':'#b91c1c'}}>
+                              {b.profitPct!=null?(b.profitPct>=0?'+':'')+b.profitPct.toFixed(1)+'%':'—'}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1840,14 +1840,14 @@ URL.revokeObjectURL(url);
               {dbStatus.error&&<div style={{background:'#fee2e2',border:'1px solid #fca5a5',borderRadius:6,padding:'9px 13px',marginBottom:13,fontSize:'.78rem',color:'#b91c1c',fontWeight:700}}><Ic.Alert/> {dbStatus.error}</div>}
               <table className="tbl" style={{background:bg2,borderRadius:8,overflow:'hidden',boxShadow:'0 1px 3px rgba(0,0,0,0.1)'}}>
                 <thead>
-                  <tr><th>#</th><th style={{textAlign:'left',paddingLeft:5}}>SKU</th><th style={{width:72}}>Coating</th><th style={{width:90}}>Status</th><th style={{width:95}}>KL kg</th><th style={{width:105}}>Giá vốn đ/kg</th><th style={{width:115}}>Tổng Vốn VND</th><th style={{width:75}}>MinStock</th><th style={{width:115}}>Thiếu/Dư kg</th><th style={{width:28}}></th></tr>
+                  <tr><th>#</th><th style={{textAlign:'left',paddingLeft:5}}>SKU</th><th style={{width:72}}>Coating</th><th style={{width:90}}>Status</th><th style={{width:95}}>KL kg</th><th style={{width:105}}>Giá vốn đ/kg</th><th style={{width:115}}>Tổng Vốn VND</th><th style={{width:75}}>MinStock</th><th style={{width:115}}>Thiếu/Dư kg</th><th style={{width:100}}>Dự Kiến</th><th style={{width:28}}></th></tr>
                   {/* III.1: Summary row at top */}
                   <tr style={{background:'#e2e8f0'}}>
                     <td colSpan={4} style={{textAlign:'right',paddingRight:9,color:'#334155',fontSize:'.68rem',fontWeight:900}}>TỔNG ({filteredInventory.length} dòng)</td>
                     <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#15803d',fontWeight:800,fontSize:'.8rem'}}>{fv(filteredInventory.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0))} kg</td>
                     <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#475569',fontWeight:800,fontSize:'.8rem'}}>{fv(weightedAvg(filteredInventory.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0}))))} avg</td>
                     <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#1d4ed8',fontWeight:800,fontSize:'.8rem'}}>{fv(filteredInventory.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0),0))}</td>
-                    <td/><td/><td/>
+                    <td/><td/><td/><td/>
                   </tr>
                 </thead>
                 <tbody>
@@ -1875,6 +1875,7 @@ URL.revokeObjectURL(url);
                         <td className="mono" style={{textAlign:'right',paddingRight:9,color:'#2563eb',fontSize:'.78rem',fontWeight:700}}>{fv((parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0))}</td>
                         <td style={{textAlign:'center'}}>{ms>0?(<div><div style={{fontSize:'.63rem',color:ratio<0.8?'#dc2626':ratio<1?'#d97706':ratio>2?'#6d28d9':'#16a34a',fontWeight:800}}>{Math.round((ratio||0)*100)}%</div><div style={{fontSize:'.57rem',color:'#475569',fontWeight:600}}>{fv(ms)}</div></div>):<span style={{color:'#64748b',fontSize:'.63rem'}}>—</span>}</td>
                         <td style={{textAlign:'right',paddingRight:9}}>{delta!=null?(<span className="mono" style={{fontSize:'.72rem',fontWeight:800,color:delta>=0?'#15803d':'#b91c1c'}}>{delta>=0?'▲+':'▼'}{fv(Math.abs(delta))}</span>):<span style={{color:'#64748b',fontSize:'.63rem'}}>—</span>}</td>
+                        <td style={{textAlign:'center',padding:'4px 6px',fontSize:'.75rem',fontWeight:500,color:'#334155'}}>{r.expectedDeliveryDate||'—'}</td>
                         <td><button className="btn-danger" onClick={()=>delInv(r.id)}><Ic.X/></button></td>
                       </tr>
                     );
@@ -2003,7 +2004,7 @@ URL.revokeObjectURL(url);
                       )}
                     </div>
                     <div style={{width:1,height:18,background:'#99f6e4',flexShrink:0}}/>
-                    {[{f:'marginCore',l:'Cốt%',c:'#1d4ed8'},{f:'marginLoyal',l:'TT%',c:'#7c3aed'},{f:'marginNew',l:'Lẻ%',c:'#ea580c'}].map(x=>(
+                    {[{f:'marginCore',l:'A%',c:'#1d4ed8'},{f:'marginLoyal',l:'B%',c:'#7c3aed'},{f:'marginNew',l:'C%',c:'#ea580c'}].map(x=>(
                       <div key={x.f} style={{display:'flex',alignItems:'center',gap:2}}>
                         <label style={{fontSize:'.62rem',color:x.c,fontWeight:800,whiteSpace:'nowrap'}}>{x.l}</label>
                         <input type="number" step=".1" className="inp inp-xs mono" style={{width:46,color:x.c,fontWeight:700,padding:'2px 4px'}} value={inputs[x.f]??0} onChange={e=>setInp(x.f,parseFloat(e.target.value)||0)}/>
@@ -2069,9 +2070,9 @@ URL.revokeObjectURL(url);
                             <th colSpan={3} style={{background:'#eff6ff',color:'#1e3a8a',borderBottom:'1px solid #bfdbfe'}}>Giá theo nhóm KH</th>
                           </tr>
                           <tr>
-                            <th style={{background:'#dbeafe',color:'#1e3a8a',fontSize:'.63rem',width:105,minWidth:105}}>👥 Cốt lõi (+{inputs.marginCore}%)</th>
-                            <th style={{background:'#ede9fe',color:'#5b21b6',fontSize:'.63rem',width:105,minWidth:105}}>💛 Thân thiết (+{inputs.marginLoyal}%)</th>
-                            <th style={{background:'#ffedd5',color:'#9a3412',fontSize:'.63rem',width:105,minWidth:105}}>🆕 KH lẻ (+{inputs.marginNew}%)</th>
+                            <th style={{background:'#dbeafe',color:'#1e3a8a',fontSize:'.63rem',width:105,minWidth:105}}>A Group (+{inputs.marginCore}%)</th>
+                            <th style={{background:'#ede9fe',color:'#5b21b6',fontSize:'.63rem',width:105,minWidth:105}}>B Group (+{inputs.marginLoyal}%)</th>
+                            <th style={{background:'#ffedd5',color:'#9a3412',fontSize:'.63rem',width:105,minWidth:105}}>C Group (+{inputs.marginNew}%)</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -2197,13 +2198,13 @@ URL.revokeObjectURL(url);
                           <th style={{background:'#dcfce7',color:'#14532d',width:105,fontWeight:900}}>📍 Điểm HV<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>tự động</div></th>
                           <th style={{background:'#bfdbfe',color:'#1e40af',width:100}}>💰 Giá nhập<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>tuần trước</div></th>
                           <th style={{background:'#e0f2fe',color:'#075985',width:100}}>💰 Giá nhập HT<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>từ GSheet</div></th>
-                          <th style={{background:'#fef3c7',color:'#92400e',width:95}}>🏭 BQ ĐT</th>
-                          <th style={{background:'#fde68a',color:'#92400e',width:95}}>🔻 Sàn ĐT</th>
-                          <th style={{background:'#fef9c3',color:'#854d0e',width:100}}>🕐 Sàn trước<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>từ lịch sử</div></th>
+                          <th style={{background:'#fef3c7',color:'#b8a060',width:95,fontWeight:400,fontSize:'.66rem',opacity:.75}}>🏭 BQ ĐT</th>
+                          <th style={{background:'#fde68a',color:'#b8a060',width:95,fontWeight:400,fontSize:'.66rem',opacity:.75}}>🔻 Sàn ĐT</th>
+                          <th style={{background:'#fef9c3',color:'#b8a060',width:100,fontWeight:400,fontSize:'.66rem',opacity:.75}}>🕐 Sàn trước<div style={{fontSize:'.52rem',fontWeight:400,opacity:.8}}>từ lịch sử</div></th>
                           <th style={{background:'#fef08a',color:'#713f12',width:115,fontWeight:900}}>✏️ Sàn BH<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>nhập tay·%GV</div></th>
-                          <th style={{background:'#dbeafe',color:'#1e3a8a',width:100}}>👥 Cốt lõi<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>%GV</div></th>
-                          <th style={{background:'#ede9fe',color:'#5b21b6',width:100}}>💛 Thân thiết<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>%GV</div></th>
-                          <th style={{background:'#ffedd5',color:'#9a3412',width:100}}>🆕 KH lẻ<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>%GV</div></th>
+                          <th style={{background:'#dbeafe',color:'#1e3a8a',width:100}}>A Group<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>A%·%GV</div></th>
+                          <th style={{background:'#ede9fe',color:'#5b21b6',width:100}}>B Group<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>B%·%GV</div></th>
+                          <th style={{background:'#ffedd5',color:'#9a3412',width:100}}>C Group<div style={{fontSize:'.52rem',fontWeight:600,opacity:.8}}>C%·%GV</div></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2305,37 +2306,37 @@ URL.revokeObjectURL(url);
                               )}
                             </td>
                             {/* 🏭 BQ Đối thủ */}
-                            <td style={{textAlign:'right',paddingRight:6,background:'#fffbeb'}}>
-                              <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.82rem'}}>{g.avgCompPrice>0?fv(g.avgCompPrice):'—'}</div>
+                            <td style={{textAlign:'right',paddingRight:6,background:'#fafafa',opacity:.65}}>
+                              <div className="mono" style={{fontWeight:400,color:'#92400e',fontSize:'.78rem',fontStyle:'italic'}}>{g.avgCompPrice>0?fv(g.avgCompPrice):'—'}</div>
                               {g.avgCompPrice>0&&g.skus>0&&(
-                                <div style={{fontSize:'.55rem',fontWeight:700,color:g.avgFloor>g.avgCompPrice?'#dc2626':'#15803d'}}>
+                                <div style={{fontSize:'.55rem',fontWeight:400,color:g.avgFloor>g.avgCompPrice?'#dc2626':'#15803d'}}>
                                   {g.avgFloor>g.avgCompPrice?`▲${fv(g.avgFloor-g.avgCompPrice)}`:`▼${fv(g.avgCompPrice-g.avgFloor)}`}
                                 </div>
                               )}
                             </td>
                             {/* 🔻 BQ Sàn ĐT */}
-                            <td style={{textAlign:'right',paddingRight:6,background:'#fef9c3'}}>
-                              <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.82rem'}}>{g.avgCompFloor>0?fv(g.avgCompFloor):'—'}</div>
+                            <td style={{textAlign:'right',paddingRight:6,background:'#fafafa',opacity:.65}}>
+                              <div className="mono" style={{fontWeight:400,color:'#92400e',fontSize:'.78rem',fontStyle:'italic'}}>{g.avgCompFloor>0?fv(g.avgCompFloor):'—'}</div>
                               {g.avgCompFloor>0&&g.skus>0&&(
-                                <div style={{fontSize:'.55rem',fontWeight:700,color:g.avgFloor>g.avgCompFloor?'#dc2626':'#15803d'}}>
+                                <div style={{fontSize:'.55rem',fontWeight:400,color:g.avgFloor>g.avgCompFloor?'#dc2626':'#15803d'}}>
                                   {g.avgFloor>g.avgCompFloor?`▲${fv(g.avgFloor-g.avgCompFloor)}`:`▼${fv(g.avgCompFloor-g.avgFloor)}`}
                                 </div>
                               )}
                             </td>
                             {/* 🕐 Sàn trước đây (I.3) */}
-                            <td style={{textAlign:'right',paddingRight:6,background:'#fef9c3'}}>
+                            <td style={{textAlign:'right',paddingRight:6,background:'#fafafa',opacity:.65}}>
                               {lastFloor?(
                                 <>
-                                  <div className="mono" style={{fontWeight:800,color:'#92400e',fontSize:'.82rem'}}>{fv(lastFloor.publishedFloor)}</div>
-                                  <div style={{fontSize:'.55rem',color:'#64748b',fontWeight:600}}>{lastFloor.issuedDate}</div>
+                                  <div className="mono" style={{fontWeight:400,color:'#92400e',fontSize:'.78rem',fontStyle:'italic'}}>{fv(lastFloor.publishedFloor)}</div>
+                                  <div style={{fontSize:'.55rem',color:'#94a3b8',fontWeight:400}}>{lastFloor.issuedDate}</div>
                                 </>
                               ):<span style={{color:'#94a3b8',fontSize:'.65rem',fontStyle:'italic'}}>—</span>}
                             </td>
                             {/* ✏️ Sàn ban hành */}
-                            <td style={{textAlign:'center',paddingLeft:3,paddingRight:3,background:g.isDefaultFromHistory?'#fef9c3':'#fefce8'}}>
+                            <td style={{textAlign:'center',paddingLeft:3,paddingRight:3,background:'#ffffff'}}>
                               <input
                                 className="inp inp-xs mono"
-                                style={{textAlign:'right',color:'#713f12',fontWeight:900,fontSize:'.82rem',background:g.publishedFloor?'#fef9c3':'#fff',border:`1px solid ${g.publishedFloor?'#fde047':'#94a3b8'}`}}
+                                style={{textAlign:'right',color:'#713f12',fontWeight:900,fontSize:'.82rem',background:'#ffffff',border:`1px solid ${g.publishedFloor?'#fde047':'#94a3b8'}`}}
                                 placeholder="—"
                                 value={mgmtFloorOverride[g.id]!=null?fv(mgmtFloorOverride[g.id]):(g.isDefaultFromHistory&&g.publishedFloor?fv(g.publishedFloor):'')}
                                 onChange={e=>{const v=e.target.value.replace(/\./g,'').replace(/,/g,'');const n=parseFloat(v)||0;setMgmtFloorOverride(p=>({...p,[g.id]:n>0?n:null}));}}
@@ -2349,7 +2350,7 @@ URL.revokeObjectURL(url);
                                 <div style={{fontSize:'.52rem',color:'#94a3b8',fontWeight:600,marginTop:1}}>chưa BH</div>
                               )}
                             </td>
-                            {/* 👥 BQ Cốt lõi */}
+                            {/* 👥 A Group */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#eff6ff'}}>
                               <div className="mono" style={{fontWeight:800,color:'#1d4ed8',fontSize:'.88rem'}}>{g.skus>0?fv(g.corePrice):'—'}</div>
                               {g.skus>0&&pctCore!=null&&(
@@ -2359,7 +2360,7 @@ URL.revokeObjectURL(url);
                               )}
                               {g.publishedFloor&&<div style={{fontSize:'.52rem',color:'#1d4ed8',fontWeight:700}}>từ sàn BH</div>}
                             </td>
-                            {/* 💛 BQ Thân thiết */}
+                            {/* 💛 B Group */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#ede9fe'}}>
                               <div className="mono" style={{fontWeight:800,color:'#7c3aed',fontSize:'.88rem'}}>{g.skus>0?fv(g.loyalPrice):'—'}</div>
                               {g.skus>0&&pctLoyal!=null&&(
@@ -2369,7 +2370,7 @@ URL.revokeObjectURL(url);
                               )}
                               {g.publishedFloor&&<div style={{fontSize:'.52rem',color:'#7c3aed',fontWeight:700}}>từ sàn BH</div>}
                             </td>
-                            {/* 🆕 BQ KH lẻ */}
+                            {/* 🆕 C Group */}
                             <td style={{textAlign:'right',paddingRight:8,background:'#fff7ed'}}>
                               <div className="mono" style={{fontWeight:800,color:'#ea580c',fontSize:'.88rem'}}>{g.skus>0?fv(g.newPrice):'—'}</div>
                               {g.skus>0&&pctNew!=null&&(
