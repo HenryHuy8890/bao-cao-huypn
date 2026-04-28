@@ -1682,14 +1682,14 @@ URL.revokeObjectURL(url);
                         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'6px',background:bg4,borderRadius:5,padding:'8px 10px',border:`1px solid ${border1}`}}>
                           <div>
                             <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>Tổng lãi lô</div>
-                            <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:!b.hasSellPrice?'#64748b':b.grossProfitVND>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(b.grossProfitVND>=0?'+':'')+fv(b.grossProfitVND)+'đ':'—'}</div>
+                            <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:!b.hasSellPrice?'#64748b':b.grossProfitVND>=0?'#15803d':'#b91c1c'}}>{b.hasSellPrice?(()=>{const v=b.grossProfitVND;const sign=v>=0?'+':'';const abs=Math.abs(v);return abs>=1e9?sign+(abs/1e9).toFixed(1)+' tỷ':abs>=1e6?sign+(abs/1e6).toFixed(1)+' tr':sign+fv(v);})():'—'}</div>
                           </div>
                           <div style={{textAlign:'center'}}>
                             <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>Giá sàn</div>
                             {b.hasSellPrice?<div className="mono" style={{fontSize:'1rem',fontWeight:800,color:'#15803d'}}>{fv(b.sellPrice)}</div>:<div style={{fontSize:'.75rem',color:'#64748b',fontStyle:'italic'}}>→ Lấy từ Sàn BH</div>}
                           </div>
                           <div style={{textAlign:'right'}}>
-                            <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700,marginBottom:2,whiteSpace:'nowrap'}}>% Lãi/BQ Sau nhập</div>
+                            <div style={{fontSize:'.68rem',color:'#475569',fontWeight:700,marginBottom:2}}>% Lãi/BQSN</div>
                             <div className="mono" style={{fontSize:'.9rem',fontWeight:800,color:b.profitPct==null?'#94a3b8':b.profitPct>=0?'#15803d':'#b91c1c'}}>
                               {b.profitPct!=null?(b.profitPct>=0?'+':'')+b.profitPct.toFixed(1)+'%':'—'}
                             </div>
