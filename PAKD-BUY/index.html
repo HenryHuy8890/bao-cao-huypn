@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAKD BUY 6.0 – H&D Aluminum Strategy</title>
+<title>PAKD BUY 7.0 – H&D Aluminum Strategy + Cash Flow</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -142,6 +142,10 @@ const GSHEET_UPDATED_IMPORT="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rq
 const GSHEET_FLOOR_HISTORY="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1904019501";
 // MonthlyRevenue: CSV export trực tiếp từ sheet gid=478887656
 const GSHEET_MONTHLY_REVENUE="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=478887656";
+// GID for "Kế hoạch dòng tiền" sheet — user configures via UI, saved to localStorage
+const GSHEET_BASE="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=";
+const getCashFlowGID=()=>{try{return localStorage.getItem('pakd_cf_gid')||'';}catch(e){return '';}};
+const GSHEET_CASHFLOW_URL=()=>{const gid=getCashFlowGID();return gid?GSHEET_BASE+gid:'';};
 
 const skuKey=r=>`${r.alloy}|${r.temper}|${r.thickness}|${r.width}|${r.length}|${r.coating||'KP'}`;
 const skuLabel=r=>`${r.alloy} ${r.temper}  ${r.thickness}x${r.width}x${r.length} [${coatingShort(r.coating||'KP')}]`;
@@ -713,6 +717,57 @@ const CreditModeSelector=({inputs,setInp})=>{
   );
 };
 
+
+const DEF_CASHFLOW_DATA=[];
+// ─── CASH FLOW HELPERS ──────────────────────────────────────────────────────
+const parseCashFlowCSV=(rows)=>{
+  // Kế hoạch dòng tiền: col A=Tháng, B=Tuần, C=Tổng mua, D=Nhập ngoại, E=Mua nội, F=Tổng thu, G=DT TM, H=Thu CN, I=DT PSSan LK CN, J=HM mới, K=Khác, L=KH (balance), M=TổngHM, N=HM HD, O=HM ĐD, P=HM const
+  const out=[];let lastThang='';
+  rows.forEach((r,i)=>{
+    if(i<2) return; // skip 2 header rows
+    const vals=Object.values(r);
+    const col=(n)=>{const v=vals[n]||'';return v===''?null:parseFloat(String(v).replace(/,/g,''))||null;};
+    const colS=(n)=>String(vals[n]||'').trim();
+    const thang=colS(0)||lastThang;
+    if(thang) lastThang=thang;
+    const tuan=colS(1);
+    if(!tuan||!tuan.startsWith('Tu')) return;
+    out.push({
+      thang,tuan,
+      tongMua:col(2),nhapNgoai:col(3),muaNoi:col(4),
+      tongThu:col(5),dtTM:col(6),thuCN:col(7),dtPSLKCN:col(8),hmMoi:col(9),khac:col(10),
+      balance:col(11),
+      tongHM:col(12),hmHD:col(13),hmDD:col(14),hmConst:col(15),
+    });
+  });
+  return out;
+};
+
+const getWeekNumber=(dateStr)=>{
+  // Parse "dd/mm/yyyy" or "mm/yyyy" or month text
+  if(!dateStr) return null;
+  const parts=String(dateStr).trim().split('/');
+  if(parts.length===3){const[d,m,y]=parts.map(Number);const dt=new Date(y,m-1,d);const jan1=new Date(y,0,1);return Math.ceil(((dt-jan1)/86400000+jan1.getDay()+1)/7);}
+  return null;
+};
+
+const getCurrentWeekLabel=()=>{
+  // ISO week number
+  const now=new Date();
+  const d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
+  const dayNum=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const wk=Math.ceil((((d-yearStart)/86400000)+1)/7);
+  return `Tuần ${String(wk).padStart(2,'0')}`;
+};
+
+const matchWeekLabel=(cfTuan,targetTuan)=>{
+  // cfTuan: "Tuần 20" or "Tuần 5", targetTuan: same format
+  const norm=s=>String(s||'').replace(/\s+/g,'').replace('Tuần','').replace('tuan','');
+  return parseInt(norm(cfTuan))===parseInt(norm(targetTuan));
+};
+
 // ─── APP ──────────────────────────────────────────────────────
 const App=()=>{
   const [tab,setTab]=useState('main');
@@ -739,6 +794,12 @@ const App=()=>{
   const [floorHistory,setFloorHistory]=useState(()=>{try{const s=localStorage.getItem('pakd_floor_history');return s?JSON.parse(s):[];}catch(e){return [];}});
   const [histFilter,setHistFilter]=useState({group:'ALL',dateFrom:'',dateTo:''});
   const [monthlyRevenue,setMonthlyRevenue]=useState([]);
+  const [cashFlowData,setCashFlowData]=useState([]);
+  const [cfGid,setCfGid]=useState(()=>{try{return localStorage.getItem('pakd_cf_gid')||'';}catch(e){return '';}});
+  const saveCfGid=(gid)=>{setCfGid(gid);try{localStorage.setItem('pakd_cf_gid',gid);}catch(e){}};
+  const [cfWeekTarget,setCFWeekTarget]=useState('');
+  const [cfMode,setCFMode]=useState('auto'); // 'auto' | 'manual'
+  const [cfManualWeek,setCFManualWeek]=useState('');
   const chartRef=useRef(null);const chartInst=useRef(null);
   const setInp=useCallback((f,v)=>setInputs(p=>({...p,[f]:v})),[]);
 
@@ -754,6 +815,7 @@ const App=()=>{
       if(which==='all'||which==='lim') toFetch.push(fetchCsv(GSHEET_LIMITS).then(d=>({type:'lim',data:d})));
       if(which==='all'||which==='uip') toFetch.push(fetchCsv(GSHEET_UPDATED_IMPORT).then(d=>({type:'uip',data:d})));
       if(which==='all'||which==='fh') toFetch.push(fetchCsv(GSHEET_FLOOR_HISTORY).then(d=>({type:'fh',data:d})));
+      if(which==='all'||which==='cf'){const cfUrl=GSHEET_CASHFLOW_URL();if(cfUrl) toFetch.push(fetchCsv(cfUrl).then(d=>({type:'cf',data:d})));else if(which==='cf') alert('Chưa cấu hình GID sheet Kế hoạch dòng tiền. Vào tab 💰 Dòng Tiền để cài đặt.');}
       const results=await Promise.allSettled(toFetch);
       let errMsg=null;
       results.forEach(r=>{
@@ -798,6 +860,10 @@ const App=()=>{
           const latestRows=filterLatestUIP(rows);
           if(latestRows.length>0) setUpdatedImportPrices(latestRows);
           setAllRawImportPrices(rows);
+        }
+        if(type==='cf'){
+          const parsed=parseCashFlowCSV(data);
+          if(parsed.length>0) setCashFlowData(parsed);
         }
         if(type==='fh'){
           // Parse GSheet Lịch sử Sàn — map đúng 23 cột theo thứ tự header
@@ -864,6 +930,15 @@ const App=()=>{
     }catch(e){setDbStatus(p=>({...p,loading:false,error:e.message||'Lỗi'}));}
     // Fetch MonthlyRevenue từ CSV export (async riêng, không block)
     try{
+      // Fetch cash flow data (only if GID is configured)
+      try{
+        const cfUrl=GSHEET_CASHFLOW_URL();
+        if(cfUrl){
+          const cfRows=await fetchCsv(cfUrl);
+          const cfParsed=parseCashFlowCSV(cfRows);
+          if(cfParsed.length>0) setCashFlowData(cfParsed);
+        }
+      }catch(eCF){console.warn('CashFlow fetch failed:',eCF.message);}
       const resp=await fetch(GSHEET_MONTHLY_REVENUE);
       if(resp.ok){
         const text=await resp.text();
@@ -1377,9 +1452,10 @@ URL.revokeObjectURL(url);
             {k:'report',l:limitsWarnings.totalAlerts>0?`📈 BC ⚠${limitsWarnings.totalAlerts}`:'📈 Báo cáo'},
             {k:'scenario',l:'💾 Scenarios'},
             {k:'floorhistory',l:'🗓️ Lịch sử Sàn'},
+            {k:'cashflow',l:'💰 Dòng Tiền'},
           ].map(t=>(
             <button key={t.k} onClick={()=>setTab(t.k)} className={`nav-tab ${tab===t.k?'on':''}`}
-              style={t.k==='report'&&limitsWarnings.totalAlerts>0?{color:'#dc2626',borderColor:'#fca5a5'}:t.k==='floor'&&tab!=='floor'?{color:'#0d9488'}:{}}>
+              style={t.k==='report'&&limitsWarnings.totalAlerts>0?{color:'#dc2626',borderColor:'#fca5a5'}:t.k==='floor'&&tab!=='floor'?{color:'#0d9488'}:t.k==='cashflow'&&tab!=='cashflow'?{color:'#7c3aed'}:{}}>
               {t.l}
             </button>
           ))}
@@ -3149,6 +3225,396 @@ URL.revokeObjectURL(url);
     </div>
   );
 };
+
+        {/* ════ TAB CASH FLOW ════ */}
+        {tab==='cashflow'&&(()=>{
+          // Tính toán giá trị đơn hàng hiện tại
+          const nhapNgoaiVal=result?(result.invoiceVND||0):0;
+          const muaNoiVal=0; // phương án mua hiện tại là nhập ngoại
+          const tongMuaVal=nhapNgoaiVal+muaNoiVal;
+          const vatVal=result?(result.vatValue||0):0;
+          const totalPayVal=tongMuaVal+vatVal;
+
+          // Xác định tuần thanh toán
+          const autoWeek=getCurrentWeekLabel();
+          const targetWeek=cfMode==='manual'&&cfManualWeek?cfManualWeek:autoWeek;
+
+          // Tìm dòng cashflow khớp tuần
+          const cfRow=cashFlowData.find(r=>matchWeekLabel(r.tuan,targetWeek));
+          const cfNearby=cashFlowData.filter((r,i)=>{
+            const idx=cashFlowData.indexOf(cfRow);
+            return idx>=0?Math.abs(i-idx)<=3:false;
+          });
+
+          // Tính số liệu
+          const planned_nhapNgoai=cfRow?cfRow.nhapNgoai||0:0;
+          const planned_muaNoi=cfRow?cfRow.muaNoi||0:0;
+          const planned_tong=cfRow?cfRow.tongMua||0:0;
+          const planned_thu=cfRow?cfRow.tongThu||0:0;
+          const planned_dtTM=cfRow?cfRow.dtTM||0:0;
+          const planned_balance=cfRow?cfRow.balance||0:0;
+
+          const actual_nhapNgoai=nhapNgoaiVal;
+          const delta_nhapNgoai=actual_nhapNgoai - planned_nhapNgoai;
+          const delta_tong=(tongMuaVal) - planned_tong;
+
+          // Tính khả năng chi
+          const tongThuKH=planned_thu;
+          const canAfford=tongThuKH>0?(tongMuaVal<=tongThuKH):null;
+          const affordPct=tongThuKH>0?(tongMuaVal/tongThuKH*100):null;
+
+          // Credit limit check
+          const creditLimit=limitsData.length>0?(limitsData.find(r=>r.id)||limitsData[0]):null;
+          const totalCreditMax=creditLimit?creditLimit.totalCreditMax:0;
+          const actualAP=creditLimit?creditLimit.actualAccountsPayable:0;
+          const apAfter=actualAP+tongMuaVal;
+          const apOk=totalCreditMax>0?apAfter<=totalCreditMax:null;
+
+          // All weeks for dropdown
+          const allWeeks=[...new Set(cashFlowData.map(r=>r.tuan))];
+
+          const barW=(v,max)=>max>0?Math.min(100,Math.abs(v)/max*100):0;
+
+          return(
+          <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
+            <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+
+              {/* Header */}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+                <div>
+                  <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>💰 Phân tích Dòng Tiền – Phương án mua</h2>
+                  <p style={{fontSize:'.72rem',color:'#475569',fontWeight:600,marginTop:3}}>
+                    So sánh PA mua hiện tại với Kế hoạch dòng tiền · Nguồn: GSheet tab <em>Kế hoạch dòng tiền</em>
+                  </p>
+                </div>
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>syncGoogleSheet('cf')} disabled={dbStatus.loading}>
+                    {dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync CF
+                  </button>
+                  {cashFlowData.length===0&&<span className="tag tr">⚠ Chưa có dữ liệu dòng tiền</span>}
+                  {cashFlowData.length>0&&<span className="tag tg">{cashFlowData.length} tuần dữ liệu</span>}
+                </div>
+              </div>
+
+
+              {/* GSheet setup guide + GID config */}
+              {(()=>{
+                const isConfigured=!!cfGid;
+                const hasData=cashFlowData.length>0;
+                return(
+                <div style={{marginBottom:14}}>
+                  {/* Setup guide - show when not configured */}
+                  {!isConfigured&&(
+                  <div style={{background:'#fffbeb',border:'1px solid #fcd34d',borderRadius:8,padding:'14px 16px',marginBottom:10}}>
+                    <div style={{fontWeight:900,fontSize:'.82rem',color:'#92400e',marginBottom:10}}>🛠️ Cần cấu hình GSheet lần đầu</div>
+                    <div style={{display:'flex',flexDirection:'column',gap:8,fontSize:'.75rem',fontWeight:600,color:'#78350f'}}>
+                      <div style={{background:'#fff',border:'1px solid #fde68a',borderRadius:6,padding:'10px 12px',lineHeight:1.9}}>
+                        <div style={{fontWeight:900,color:'#92400e',marginBottom:6}}>📋 Bước 1 — Tạo sheet mới trong GSheet</div>
+                        <div>Mở GSheet tại: <code style={{background:'#fef3c7',padding:'1px 5px',borderRadius:3,fontSize:'.72rem',fontWeight:700}}>docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU</code></div>
+                        <div style={{marginTop:4}}>→ Nhấn <strong>+</strong> góc dưới trái → đặt tên sheet: <strong>"CashFlow"</strong></div>
+                      </div>
+                      <div style={{background:'#fff',border:'1px solid #fde68a',borderRadius:6,padding:'10px 12px',lineHeight:1.9}}>
+                        <div style={{fontWeight:900,color:'#92400e',marginBottom:6}}>📋 Bước 2 — Dán dữ liệu vào sheet CashFlow</div>
+                        <div>Copy bảng bên dưới và paste vào <strong>ô A1</strong> của sheet CashFlow:</div>
+                        <div style={{marginTop:6,background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:5,padding:'8px 10px',fontFamily:'monospace',fontSize:'.65rem',lineHeight:1.7,overflowX:'auto',whiteSpace:'nowrap',color:'#0f172a'}}>
+                          <div style={{fontWeight:900,color:'#1d4ed8'}}>Thang | Tuan | NhapNgoai | MuaNoi | TongThu | DTTM | ThuCN | Balance | TongHM | HmHD | HmDD</div>
+                          <div style={{color:'#475569',marginTop:2}}>(paste data từ file xlsx bên dưới — mỗi tuần 1 dòng)</div>
+                        </div>
+                      </div>
+                      <div style={{background:'#fff',border:'1px solid #fde68a',borderRadius:6,padding:'10px 12px',lineHeight:1.9}}>
+                        <div style={{fontWeight:900,color:'#92400e',marginBottom:6}}>📋 Bước 3 — Lấy GID của sheet CashFlow</div>
+                        <div>Nhấn vào tab <strong>CashFlow</strong> trong GSheet → nhìn lên URL trình duyệt</div>
+                        <div>→ Tìm phần <code style={{background:'#fef3c7',padding:'1px 5px',borderRadius:3,fontSize:'.72rem'}}>gid=XXXXXXXXX</code> ở cuối URL</div>
+                        <div>→ Copy số đó và điền vào ô bên dưới</div>
+                      </div>
+                    </div>
+                  </div>
+                  )}
+
+                  {/* GID input card */}
+                  <div className="card" style={{background:'#eff6ff',border:`1px solid ${isConfigured?'#93c5fd':'#fcd34d'}`}}>
+                    <div className="sh" style={{color:'#1e40af'}}><Ic.Database/>{isConfigured?'✓ GSheet CashFlow đã cấu hình':'⚙️ Nhập GID sheet CashFlow'}</div>
+                    <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+                      <div style={{display:'flex',gap:6,alignItems:'center',flex:1}}>
+                        <label className="lbl" style={{whiteSpace:'nowrap',marginBottom:0}}>Sheet GID:</label>
+                        <input
+                          className="inp mono"
+                          style={{maxWidth:200,letterSpacing:1}}
+                          placeholder="Nhập GID (vd: 1648847065)"
+                          value={cfGid}
+                          onChange={e=>saveCfGid(e.target.value.trim())}
+                        />
+                        {isConfigured&&<span className="tag tg" style={{fontSize:'.65rem'}}>✓ Đã lưu</span>}
+                      </div>
+                      <button
+                        className={`btn btn-sm ${isConfigured?'btn-solid':'btn-ghost'}`}
+                        onClick={()=>syncGoogleSheet('cf')}
+                        disabled={dbStatus.loading||!isConfigured}
+                        title={!isConfigured?'Cần nhập GID trước':''}
+                      >
+                        {dbStatus.loading?<div className="spinner" style={{width:12,height:12}}/>:<Ic.Refresh/>}
+                        {isConfigured?`Sync (${cashFlowData.length} tuần)`:'Sync GSheet'}
+                      </button>
+                      {isConfigured&&cashFlowData.length===0&&<span className="tag ty" style={{fontSize:'.65rem'}}>⚠ Chưa có dữ liệu — nhấn Sync</span>}
+                      {hasData&&<span className="tag tg" style={{fontSize:'.65rem'}}>✓ {cashFlowData.length} tuần</span>}
+                    </div>
+
+                    {/* Cấu trúc header bảng để user copy */}
+                    {!isConfigured&&(
+                    <div style={{marginTop:12,background:'#f1f5f9',border:'1px solid #cbd5e1',borderRadius:6,padding:'10px 12px'}}>
+                      <div style={{fontSize:'.65rem',fontWeight:900,color:'#334155',marginBottom:6,textTransform:'uppercase'}}>📄 Header dòng 1 của sheet CashFlow (copy nguyên dòng này):</div>
+                      <div style={{fontFamily:'monospace',fontSize:'.68rem',fontWeight:700,color:'#0f172a',background:'#ffffff',border:'1px solid #e2e8f0',borderRadius:4,padding:'6px 8px',userSelect:'all',cursor:'text',lineHeight:1.6}}>
+                        Thang	Tuan	NhapNgoai	MuaNoi	TongThu	DTTM	ThuCN	Balance	TongHM	HmHD	HmDD
+                      </div>
+                      <div style={{fontSize:'.62rem',color:'#475569',fontWeight:600,marginTop:6}}>
+                        💡 Tip: Mở file <strong>Kế hoạch dòng tiền 2025-06.xlsx</strong> → copy cột A–K từ dòng dữ liệu (bỏ merged header) → paste vào GSheet từ A2 trở đi
+                      </div>
+                    </div>
+                    )}
+                  </div>
+                </div>
+                );
+              })()}
+
+              {/* Tuần thanh toán selector */}
+              <div className="card" style={{marginBottom:14,background:'#eff6ff',border:'1px solid #bfdbfe'}}>
+                <div className="sh" style={{color:'#1e40af'}}><Ic.Calendar/>⏰ Chọn tuần thanh toán</div>
+                <div style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
+                  <div style={{display:'flex',gap:0,border:'1px solid #93c5fd',borderRadius:6,overflow:'hidden',background:'#ffffff'}}>
+                    <button onClick={()=>setCFMode('auto')} className="toggle-btn" style={cfMode==='auto'?{background:'#2563eb',color:'#fff'}:{color:'#1d4ed8'}}>🤖 Tuần hiện tại</button>
+                    <button onClick={()=>setCFMode('manual')} className="toggle-btn" style={cfMode==='manual'?{background:'#7c3aed',color:'#fff'}:{color:'#7c3aed'}}>✏️ Chọn tuần</button>
+                  </div>
+                  {cfMode==='manual'&&(
+                    <select className="inp" style={{width:'auto',minWidth:160}} value={cfManualWeek} onChange={e=>setCFManualWeek(e.target.value)}>
+                      <option value="">-- Chọn tuần --</option>
+                      {allWeeks.map(w=><option key={w} value={w}>{w}</option>)}
+                    </select>
+                  )}
+                  <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                    <span style={{fontSize:'.72rem',fontWeight:700,color:'#475569'}}>Tuần đang xét:</span>
+                    <span className="tag tb" style={{fontSize:'.82rem',fontWeight:900}}>{targetWeek}</span>
+                    {cfRow&&<span className="tag tg" style={{fontSize:'.68rem'}}>✓ Tìm thấy trong KH</span>}
+                    {!cfRow&&cashFlowData.length>0&&<span className="tag ty" style={{fontSize:'.68rem'}}>⚠ Không có dữ liệu tuần này</span>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Không có kết quả */}
+              {!result&&(
+                <div className="card" style={{textAlign:'center',padding:44,border:'1px dashed #cbd5e1'}}>
+                  <div style={{fontSize:'2rem',marginBottom:11}}>📊</div>
+                  <div style={{color:'#64748b',fontWeight:700,fontSize:'.9rem'}}>Chưa có Phương án mua</div>
+                  <div style={{color:'#94a3b8',fontWeight:600,fontSize:'.78rem',marginTop:6}}>Vào tab <strong>📊 PAKD Mua</strong> để nhập phương án mua trước</div>
+                </div>
+              )}
+
+              {result&&(
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+
+                {/* LEFT: PA Mua tóm tắt */}
+                <div>
+                  <div className="card" style={{marginBottom:14}}>
+                    <div className="sh"><Ic.Ship/>Phương án mua hiện tại</div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:12}}>
+                      {[
+                        {l:'💵 Giá trị hóa đơn (trước VAT)',v:fv(nhapNgoaiVal)+' đ',sub:fu(result.invoiceUSD||0)+' USD',c:'#1d4ed8'},
+                        {l:'🔢 KL hàng',v:fv(result.totalKg)+' kg',sub:(result.totalKg/1000).toFixed(2)+' tấn',c:'#0369a1'},
+                        {l:'📦 VAT (10%)',v:fv(vatVal)+' đ',sub:'',c:'#475569'},
+                        {l:'💳 Tổng cần thanh toán',v:fv(totalPayVal)+' đ',sub:'Bao gồm VAT',c:'#7c3aed'},
+                      ].map((x,i)=>(
+                        <div key={i} className="kpi" style={{borderColor:x.c,borderLeftWidth:4}}>
+                          <div className="kpi-l">{x.l}</div>
+                          <div className="kpi-v" style={{color:x.c,fontSize:'1rem'}}>{x.v}</div>
+                          {x.sub&&<div className="kpi-s">{x.sub}</div>}
+                        </div>
+                      ))}
+                    </div>
+                    {/* SKU breakdown */}
+                    <div style={{background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:6,padding:'8px 10px'}}>
+                      <div style={{fontSize:'.65rem',fontWeight:800,color:'#475569',textTransform:'uppercase',marginBottom:6}}>SKU trong phương án</div>
+                      <table className="tbl" style={{fontSize:'.72rem'}}>
+                        <thead><tr><th style={{textAlign:'left'}}>Mác / Quy cách</th><th>KL (kg)</th><th>Giá FC</th><th>Thành tiền VND</th></tr></thead>
+                        <tbody>
+                          {(result.rows||[]).map((r,i)=>(
+                            <tr key={i}>
+                              <td><div style={{fontWeight:700,color:'#0f172a'}}>{r.alloy} {r.temper}</div><div style={{fontSize:'.6rem',color:'#64748b'}}>{r.thickness}×{r.width}×{r.length} [{coatingShort(r.coating||'KP')}]</div></td>
+                              <td className="mono" style={{textAlign:'right',fontWeight:700}}>{fv(r.qtyKg)}</td>
+                              <td className="mono" style={{textAlign:'right',color:'#0369a1',fontWeight:700}}>{fu(r.priceFC||0)}</td>
+                              <td className="mono" style={{textAlign:'right',color:'#1d4ed8',fontWeight:800}}>{fv((r.qtyKg/1000)*(r.priceFC||0)*(inputs.exchangeRate||26000))}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Credit limit check */}
+                  <div className="card" style={{borderLeft:'4px solid '+(apOk===false?'#dc2626':apOk===true?'#16a34a':'#94a3b8')}}>
+                    <div className="sh"><Ic.Alert/>Kiểm tra Hạn mức tín dụng</div>
+                    {creditLimit?(
+                      <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
+                          {[
+                            {l:'Tổng HM tín dụng',v:fv(totalCreditMax)+' đ',c:'#1d4ed8'},
+                            {l:'Công nợ hiện tại',v:fv(actualAP)+' đ',c:'#475569'},
+                            {l:'CN sau khi mua',v:fv(apAfter)+' đ',c:apOk===false?'#dc2626':'#16a34a'},
+                          ].map((x,i)=><div key={i} className="kpi" style={{borderColor:x.c,borderLeftWidth:3}}><div className="kpi-l">{x.l}</div><div className="kpi-v" style={{color:x.c,fontSize:'.9rem'}}>{x.v}</div></div>)}
+                        </div>
+                        <div style={{background:apOk===false?'#fee2e2':apOk===true?'#dcfce7':'#f1f5f9',border:`1px solid ${apOk===false?'#fca5a5':apOk===true?'#86efac':'#cbd5e1'}`,borderRadius:6,padding:'8px 12px',fontSize:'.78rem',fontWeight:700,color:apOk===false?'#991b1b':apOk===true?'#14532d':'#334155'}}>
+                          {apOk===false?`⚠ VƯỢT HẠN MỨC: cần thêm ${fv(apAfter-totalCreditMax)}đ hạn mức`
+                            :apOk===true?`✓ Còn dư hạn mức: ${fv(totalCreditMax-apAfter)}đ`
+                            :'Không có dữ liệu hạn mức'}
+                        </div>
+                        {totalCreditMax>0&&<div>
+                          <div style={{fontSize:'.62rem',color:'#475569',fontWeight:700,marginBottom:3}}>Sử dụng hạn mức: {(apAfter/totalCreditMax*100).toFixed(1)}%</div>
+                          <div className="stock-bar"><div className="stock-bar-fill" style={{width:barW(apAfter,totalCreditMax)+'%',background:apOk===false?'#dc2626':apAfter/totalCreditMax>0.85?'#f59e0b':'#16a34a'}}/></div>
+                        </div>}
+                      </div>
+                    ):<div style={{color:'#94a3b8',fontWeight:600,fontSize:'.78rem'}}>Sync GSheet để xem hạn mức</div>}
+                  </div>
+                </div>
+
+                {/* RIGHT: Cash flow comparison */}
+                <div>
+                  {/* So sánh với kế hoạch */}
+                  <div className="card" style={{marginBottom:14,borderLeft:'4px solid #7c3aed'}}>
+                    <div className="sh" style={{color:'#7c3aed'}}>📅 So sánh với Kế hoạch dòng tiền – {targetWeek}</div>
+                    {cashFlowData.length===0?(
+                      <div style={{textAlign:'center',padding:20,color:'#94a3b8',fontWeight:600,fontSize:'.78rem'}}>
+                        <button className="btn btn-ghost btn-sm" onClick={()=>syncGoogleSheet('cf')}>🔄 Sync Kế hoạch dòng tiền</button>
+                      </div>
+                    ):!cfRow?(
+                      <div style={{color:'#92400e',background:'#fef9c3',border:'1px solid #fde047',borderRadius:6,padding:'10px 12px',fontSize:'.78rem',fontWeight:700}}>
+                        ⚠ Không tìm thấy dữ liệu cho {targetWeek} trong kế hoạch.<br/>
+                        <span style={{fontWeight:600,color:'#475569'}}>Thử chọn tuần khác hoặc kiểm tra GSheet tab "Kế hoạch dòng tiền".</span>
+                      </div>
+                    ):(
+                      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                        {/* Header info */}
+                        <div style={{background:'#faf5ff',border:'1px solid #e9d5ff',borderRadius:6,padding:'8px 12px',fontSize:'.72rem',fontWeight:700,color:'#6b21a8'}}>
+                          <span>📅 {cfRow.thang} – {cfRow.tuan}</span>
+                        </div>
+
+                        {/* 3-column comparison table */}
+                        <table className="tbl">
+                          <thead>
+                            <tr>
+                              <th style={{textAlign:'left'}}>Chỉ tiêu</th>
+                              <th style={{background:'#dbeafe',color:'#1e3a8a'}}>KH dòng tiền</th>
+                              <th style={{background:'#f3e8ff',color:'#581c87'}}>PA Mua thực tế</th>
+                              <th style={{background:'#f0fdf4',color:'#14532d'}}>Chênh lệch</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {[
+                              {l:'🛒 Nhập ngoại',kh:planned_nhapNgoai,tt:nhapNgoaiVal},
+                              {l:'🏭 Mua nội',kh:planned_muaNoi,tt:muaNoiVal},
+                              {l:'📦 Tổng nhu cầu mua',kh:planned_tong,tt:tongMuaVal,bold:true},
+                              {l:'💰 Tổng thu dự kiến',kh:planned_thu,tt:null,noTT:true},
+                              {l:'📈 DT thương mại KH',kh:planned_dtTM,tt:null,noTT:true},
+                              {l:'⚖️ Balance (KH)',kh:planned_balance,tt:null,noTT:true,isBalance:true},
+                            ].map((row,i)=>{
+                              const delta=row.tt!=null?row.tt-(row.kh||0):null;
+                              const isOver=delta!=null&&delta>0;
+                              return(
+                                <tr key={i} style={{background:i%2===0?'#ffffff':'#f8fafc'}}>
+                                  <td style={{fontWeight:row.bold?800:600,fontSize:'.78rem',paddingLeft:10}}>{row.l}</td>
+                                  <td style={{textAlign:'right',paddingRight:8}}>
+                                    <div className="mono" style={{fontWeight:700,color:'#1d4ed8',fontSize:'.78rem'}}>{row.kh!=null?fv(row.kh)+'đ':'—'}</div>
+                                  </td>
+                                  <td style={{textAlign:'right',paddingRight:8}}>
+                                    {!row.noTT&&row.tt!=null?<div className="mono" style={{fontWeight:800,color:'#7c3aed',fontSize:'.78rem'}}>{fv(row.tt)}đ</div>
+                                      :row.isBalance?<div className="mono" style={{fontWeight:800,color:row.kh<0?'#dc2626':'#16a34a',fontSize:'.78rem'}}>{row.kh!=null?fv(row.kh)+'đ':'—'}</div>
+                                      :<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
+                                  </td>
+                                  <td style={{textAlign:'right',paddingRight:8}}>
+                                    {delta!=null?<div className="mono" style={{fontWeight:800,color:isOver?'#dc2626':'#16a34a',fontSize:'.78rem'}}>{delta>=0?'+':''}{fv(delta)}đ</div>
+                                      :<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+
+                        {/* Affordability gauge */}
+                        {affordPct!=null&&(
+                          <div style={{background:affordPct>100?'#fee2e2':affordPct>80?'#fef9c3':'#dcfce7',border:`1px solid ${affordPct>100?'#fca5a5':affordPct>80?'#fde047':'#86efac'}`,borderRadius:7,padding:'10px 14px'}}>
+                            <div style={{fontSize:'.72rem',fontWeight:800,color:'#0f172a',marginBottom:6}}>
+                              {affordPct>100?`⚠ VƯỢT kế hoạch thu ${(affordPct-100).toFixed(1)}%`
+                                :affordPct>80?`⚡ Sát kế hoạch – chiếm ${affordPct.toFixed(1)}% nguồn thu`
+                                :`✓ Nằm trong kế hoạch – chiếm ${affordPct.toFixed(1)}% nguồn thu`}
+                            </div>
+                            <div className="stock-bar" style={{height:8}}>
+                              <div className="stock-bar-fill" style={{width:Math.min(100,affordPct)+'%',background:affordPct>100?'#dc2626':affordPct>80?'#f59e0b':'#16a34a'}}/>
+                            </div>
+                            <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',color:'#475569',fontWeight:600,marginTop:3}}>
+                              <span>0đ</span><span>KH Thu: {fv(tongThuKH)}đ</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Timeline: các tuần lân cận */}
+                  {cashFlowData.length>0&&(
+                  <div className="card">
+                    <div className="sh">📊 Dòng tiền các tuần lân cận</div>
+                    <div style={{overflowX:'auto'}}>
+                      <table className="tbl" style={{fontSize:'.7rem',minWidth:500}}>
+                        <thead>
+                          <tr>
+                            <th style={{textAlign:'left'}}>Tuần</th>
+                            <th>KH Nhập ngoại</th>
+                            <th>KH Mua nội</th>
+                            <th>KH Tổng thu</th>
+                            <th>Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {cashFlowData.slice(0,Math.min(cashFlowData.length,20)).map((r,i)=>{
+                            const isCurrent=matchWeekLabel(r.tuan,targetWeek);
+                            return(
+                              <tr key={i} style={{background:isCurrent?'#eff6ff':'',fontWeight:isCurrent?800:500}}>
+                                <td style={{paddingLeft:8}}>
+                                  {isCurrent&&<span className="tag tb" style={{fontSize:'.6rem',marginRight:4}}>▶</span>}
+                                  <span style={{color:isCurrent?'#1d4ed8':'#0f172a'}}>{r.thang&&r.thang!==cashFlowData[i-1]?.thang?<span style={{fontSize:'.58rem',color:'#7c3aed',display:'block',fontWeight:900}}>{r.thang}</span>:null}{r.tuan}</span>
+                                </td>
+                                <td style={{textAlign:'right',color:'#dc2626'}}>{r.nhapNgoai!=null?fv(r.nhapNgoai/1e9)+'B':'—'}</td>
+                                <td style={{textAlign:'right',color:'#f59e0b'}}>{r.muaNoi!=null?fv(r.muaNoi/1e9)+'B':'—'}</td>
+                                <td style={{textAlign:'right',color:'#16a34a'}}>{r.tongThu!=null?fv(r.tongThu/1e9)+'B':'—'}</td>
+                                <td style={{textAlign:'right',color:r.balance<0?'#dc2626':'#16a34a',fontWeight:700}}>{r.balance!=null?fv(r.balance/1e9)+'B':'—'}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  )}
+                </div>
+              </div>
+              )}
+
+              {/* Gợi ý hành động */}
+              {result&&cashFlowData.length>0&&(
+              <div style={{marginTop:14,background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8,padding:'12px 16px'}}>
+                <div style={{fontWeight:900,fontSize:'.78rem',color:'#1e40af',marginBottom:8}}>💡 Nhận xét & Gợi ý</div>
+                <div style={{display:'flex',flexDirection:'column',gap:6,fontSize:'.75rem',fontWeight:600,color:'#1e3a8a'}}>
+                  {delta_nhapNgoai>0&&<div>• ⚠ Giá trị nhập ngoại PA mua cao hơn KH <strong>{fv(delta_nhapNgoai)}đ</strong> – cân nhắc điều chỉnh tuần hoặc giảm lượng hàng</div>}
+                  {delta_nhapNgoai<=0&&<div>• ✓ Giá trị nhập ngoại nằm trong kế hoạch</div>}
+                  {apOk===false&&<div>• 🔴 Công nợ sau khi mua vượt hạn mức – cần thu hồi công nợ hoặc tăng hạn mức trước khi đặt hàng</div>}
+                  {apOk===true&&<div>• ✓ Hạn mức tín dụng còn đủ để thực hiện đơn hàng này</div>}
+                  {cfRow&&planned_balance<0&&<div>• ℹ Tuần {targetWeek} KH có balance âm (<strong>{fv(planned_balance/1e9)}B</strong>) – đây là tuần căng thẳng dòng tiền</div>}
+                  {!cfRow&&<div>• ℹ Chưa có dữ liệu KH cho {targetWeek} – hãy cập nhật GSheet hoặc chọn tuần khác</div>}
+                </div>
+              </div>
+              )}
+            </div>
+          </div>
+          );
+        })()}
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
