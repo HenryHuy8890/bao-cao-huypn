@@ -711,10 +711,10 @@ const CreditModeSelector=({inputs,setInp})=>{
         </div>
 
         {/* ════ TAB CASH FLOW ════ */}
-        {tab==='cashflow'&&(()=>{
+        {tab==='cashflow'&&(()=>{try{
           const nhapNgoaiVal=result?(result.invoiceVND||0):0;
           const tongMuaVal=nhapNgoaiVal;
-          const vatVal=result?((result.vatValue)||0):0;
+          const vatVal=result?(result.invoiceVND*0.1):0;
           const totalPayVal=tongMuaVal+vatVal;
           const autoWeek=getCurrentWeekLabel();
           const targetWeek=cfMode==='manual'&&cfManualWeek?cfManualWeek:autoWeek;
@@ -981,7 +981,7 @@ const CreditModeSelector=({inputs,setInp})=>{
             </div>
           </div>
           );
-        })()}
+        }catch(eCF){return(<div style={{padding:20,color:'#dc2626',fontWeight:700,fontSize:'.85rem',background:'#fee2e2',borderRadius:8,margin:16}}>⚠ Lỗi hiển thị Dòng Tiền: {String(eCF.message)}</div>);}})()}
 
       )}
     </div>
@@ -991,16 +991,25 @@ const CreditModeSelector=({inputs,setInp})=>{
 
 // ─── CASH FLOW HELPERS ───────────────────────────────────────
 const parseCashFlowCSV=(rows)=>{
+  const pn=(v)=>{if(v==null||v==='') return null;const p=parseFloat(String(v).replace(/,/g,''));return isNaN(p)?null:p;};
+  const gv=(r,...ks)=>{for(const k of ks){const v=r[k];if(v!=null&&v!=='') return v;}return null;};
   const out=[];let lastThang='';
-  rows.forEach((r,i)=>{
-    if(i<2) return;
-    const vals=Object.values(r);
-    const col=(n)=>{const v=vals[n]||'';if(v==='') return null;const p=parseFloat(String(v).replace(/,/g,''));return isNaN(p)?null:p;};
-    const colS=(n)=>String(vals[n]||'').trim();
-    const thang=colS(0)||lastThang;if(thang) lastThang=thang;
-    const tuan=colS(1);
-    if(!tuan||!tuan.startsWith('Tu')) return;
-    out.push({thang,tuan,nhapNgoai:col(3),muaNoi:col(4),tongThu:col(5),dtTM:col(6),thuCN:col(7),balance:col(11),tongHM:col(12),hmHD:col(13),hmDD:col(14)});
+  rows.forEach(r=>{
+    const thang=String(gv(r,'thang','Thang')||'').trim()||lastThang;
+    if(thang) lastThang=thang;
+    const tuan=String(gv(r,'tuan','Tuan')||'').trim();
+    if(!tuan||!tuan.toLowerCase().startsWith('tu')) return;
+    out.push({thang,tuan,
+      nhapNgoai:pn(gv(r,'nhapngoai','NhapNgoai')),
+      muaNoi:pn(gv(r,'muanoi','MuaNoi')),
+      tongThu:pn(gv(r,'tongthu','TongThu')),
+      dtTM:pn(gv(r,'dttm','DTTM')),
+      thuCN:pn(gv(r,'thucn','ThuCN')),
+      balance:pn(gv(r,'balance','Balance')),
+      tongHM:pn(gv(r,'tonghm','TongHM')),
+      hmHD:pn(gv(r,'hmhd','HmHD')),
+      hmDD:pn(gv(r,'hmdd','HmDD')),
+    });
   });
   return out;
 };
