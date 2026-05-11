@@ -758,8 +758,16 @@ const CashFlowTab=({result,inputs,cashFlowData,cfMode,setCFMode,cfManualWeek,set
   const actualAP=creditLimit?creditLimit.actualAccountsPayable:0;
   const apAfter=actualAP+tongMuaVal;
   const apOk=totalCreditMax>0?apAfter<=totalCreditMax:null;
-  const allWeeks=[...new Set(cashFlowData.map(r=>r.tuan))];
-  const fB=(v)=>v!=null?(v/1e9).toFixed(1)+'B':'—';
+  const allWeeks=[...new Set(cashFlowData.map(r=>r.tuan).filter(t=>t&&String(t).trim()!==''))];
+  const fB=(v)=>{
+    if(v==null) return '—';
+    const abs=Math.abs(v);
+    const sign=v<0?'-':'';
+    if(abs>=1e9) return sign+(abs/1e9).toFixed(2).replace(/\.?0+$/,'')+' tỷ';
+    if(abs>=1e6) return sign+(abs/1e6).toFixed(1).replace(/\.?0+$/,'')+' triệu';
+    if(abs>=1e3) return sign+(abs/1e3).toFixed(0)+'k';
+    return sign+abs.toFixed(0);
+  };
   return(
   <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
     <div style={{maxWidth:'1100px',margin:'0 auto'}}>
@@ -993,24 +1001,34 @@ const CashFlowTab=({result,inputs,cashFlowData,cfMode,setCFMode,cfManualWeek,set
 
 // ─── CASH FLOW HELPERS ───────────────────────────────────────
 const parseCashFlowCSV=(rows)=>{
-  const pn=(v)=>{if(v==null||v==='') return null;const p=parseFloat(String(v).replace(/,/g,''));return isNaN(p)?null:p;};
-  const gv=(r,...ks)=>{for(const k of ks){const v=r[k];if(v!=null&&v!=='') return v;}return null;};
+  const pn=(v)=>{if(v==null||v==='') return null;const p=parseFloat(String(v).replace(/\./g,'').replace(/,/g,'.'));return isNaN(p)?null:p;};
+  // Normalize a key: lowercase, remove diacritics, remove non-alphanumeric
+  const norm=(s)=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9]/g,'');
+  const gv=(r,...candidates)=>{
+    const cands=candidates.map(norm);
+    for(const[rk,rv] of Object.entries(r)){
+      if(cands.includes(norm(rk))&&rv!=null&&rv!=='') return rv;
+    }
+    return null;
+  };
   const out=[];let lastThang='';
   rows.forEach(r=>{
-    const thang=String(gv(r,'thang','Thang')||'').trim()||lastThang;
+    const thang=String(gv(r,'thang','Tháng')||'').trim()||lastThang;
     if(thang) lastThang=thang;
-    const tuan=String(gv(r,'tuan','Tuan')||'').trim();
-    if(!tuan||!tuan.toLowerCase().startsWith('tu')) return;
+    const tuan=String(gv(r,'tuan','Tuần')||'').trim();
+    if(!tuan) return;
+    // Accept any week label that contains "tu" (e.g., "Tuần 20", "Tuan 20")
+    if(!norm(tuan).startsWith('tu')) return;
     out.push({thang,tuan,
-      nhapNgoai:pn(gv(r,'nhapngoai','NhapNgoai')),
-      muaNoi:pn(gv(r,'muanoi','MuaNoi')),
-      tongThu:pn(gv(r,'tongthu','TongThu')),
-      dtTM:pn(gv(r,'dttm','DTTM')),
-      thuCN:pn(gv(r,'thucn','ThuCN')),
-      balance:pn(gv(r,'balance','Balance')),
-      tongHM:pn(gv(r,'tonghm','TongHM')),
-      hmHD:pn(gv(r,'hmhd','HmHD')),
-      hmDD:pn(gv(r,'hmdd','HmDD')),
+      nhapNgoai:pn(gv(r,'nhapngoai','NhapNgoai','Nhập ngoại','nhap ngoai')),
+      muaNoi:pn(gv(r,'muanoi','MuaNoi','Mua nội','mua noi')),
+      tongThu:pn(gv(r,'tongthu','TongThu','Tổng thu','tong thu')),
+      dtTM:pn(gv(r,'dttm','DTTM','DT TM','dt tm')),
+      thuCN:pn(gv(r,'thucn','ThuCN','Thu CN','thu cn')),
+      balance:pn(gv(r,'balance','Balance','Cân đối','candoi')),
+      tongHM:pn(gv(r,'tonghm','TongHM','Tổng HM','tong hm')),
+      hmHD:pn(gv(r,'hmhd','HmHD','HM HĐ','hm hd')),
+      hmDD:pn(gv(r,'hmdd','HmDD','HM DD','hm dd')),
     });
   });
   return out;
@@ -1562,7 +1580,7 @@ const App=()=>{
   const exportHistoryCSV=useCallback(()=>{
     if(floorHistory.length===0){alert('Chua co lich su nao.');return;}
     const n=v=>v!=null&&v!==''?String(Math.round(Number(v))):'';
-    const titles=['LICH SU BAN HANH GIA SAN - PAKD 5.7'];
+    const titles=['LICH SU BAN HANH GIA SAN - PAKD 7.0'];
     // Đúng 23 cột theo thứ tự yêu cầu
     const headers=[
       'Ngày ban hành','Giờ','Người lập','Tỷ giá USD','LK%','CPTC%','HĐKD%',
@@ -1688,7 +1706,7 @@ URL.revokeObjectURL(url);
         <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
           <div style={{background:'linear-gradient(135deg,#0d9488,#2563eb)',borderRadius:'7px',width:'30px',height:'30px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:'15px',color:'#fff',fontFamily:'JetBrains Mono'}}>P</div>
           <div>
-            <div style={{fontWeight:900,fontSize:'15px',letterSpacing:'-.02em',color:'#0f172a'}}>PAKD BUY <span style={{color:'#0d9488',fontFamily:'JetBrains Mono',fontSize:'12px'}}>5.9</span></div>
+            <div style={{fontWeight:900,fontSize:'15px',letterSpacing:'-.02em',color:'#0f172a'}}>PAKD BUY <span style={{color:'#0d9488',fontFamily:'JetBrains Mono',fontSize:'12px'}}>7.0</span></div>
             <div style={{fontSize:'11px',color:'#475569',fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em'}}>Floor Price Engine v2</div>
           </div>
           <div style={{width:'1px',height:'24px',background:border1,margin:'0 4px'}}/>
@@ -3357,7 +3375,7 @@ URL.revokeObjectURL(url);
 
       {result&&(
         <div className="print-container">
-          <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD 5.9)</div>
+          <div className="print-title">BÁO CÁO PHƯƠNG ÁN MUA HÀNG (PAKD 7.0)</div>
           <div className="print-subtitle">Ngày in: {new Date().toLocaleDateString('vi-VN')} | Đơn vị: VNĐ & Kg</div>
           <div className="print-section">
             <div className="print-section-title">I. Thông số</div>
@@ -3441,6 +3459,46 @@ URL.revokeObjectURL(url);
               </div>
               <div className="print-box">
                 <div className="print-box-title">BQ Lãi/kg</div>
+                <div className="print-box-value" style={{color:result.avgProfitPerKg>=0?'#166534':'#991b1b',fontSize:'13pt'}}>
+                  {result.avgProfitPerKg!=null?(result.avgProfitPerKg>=0?'+':'')+fv(result.avgProfitPerKg)+'đ':'—'}
+                </div>
+              </div>
+              <div className="print-box">
+                <div className="print-box-title">% Lãi/GV BQ</div>
+                <div className="print-box-value" style={{fontSize:'13pt',color:(()=>{
+                  const pct=result.avgProfitPerKg!=null&&result.globalAvgAfter>0?(result.avgProfitPerKg/result.globalAvgAfter*100):null;
+                  return pct===null?'#334155':pct>=0?'#166534':'#991b1b';
+                })()}}>
+                  {(()=>{
+                    const pct=result.avgProfitPerKg!=null&&result.globalAvgAfter>0?(result.avgProfitPerKg/result.globalAvgAfter*100):null;
+                    return pct!==null?(pct>=0?'+':'')+pct.toFixed(2)+'%':'—';
+                  })()}
+                </div>
+              </div>
+              <div className="print-box">
+                <div className="print-box-title">Container</div>
+                <div className="print-box-value" style={{color:result.containerOk?'#166534':result.totalContainer<24?'#991b1b':'#92400e'}}>
+                  {result.totalContainer.toFixed(2)} T {result.containerOk?'✓':'⚠'}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style={{display:'flex',justifyContent:'space-around',marginTop:'40px',textAlign:'center',pageBreakInside:'avoid'}}>
+            <div><strong>Lập bảng</strong><br/><br/><br/><br/><span>{inputs.creator}</span></div>
+            <div><strong>Trưởng Phòng</strong><br/><br/><br/><br/><span>Ký tên</span></div>
+            <div><strong>Giám Đốc Duyệt</strong><br/><br/><br/><br/><span>Ký tên</span></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App/></ErrorBoundary>);
+</script>
+</body>
+</html>
+tle">BQ Lãi/kg</div>
                 <div className="print-box-value" style={{color:result.avgProfitPerKg>=0?'#166534':'#991b1b',fontSize:'13pt'}}>
                   {result.avgProfitPerKg!=null?(result.avgProfitPerKg>=0?'+':'')+fv(result.avgProfitPerKg)+'đ':'—'}
                 </div>
