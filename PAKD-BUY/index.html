@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PAKD BUY 6.0 – H&D Aluminum Strategy</title>
+<title>PAKD BUY 7.0 – H&D Aluminum Strategy + Cash Flow</title>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -119,7 +119,26 @@ select.inp option{background:#ffffff;}
 <body>
 <div id="root" style="height:100vh;display:flex;flex-direction:column;overflow:hidden;"></div>
 <script type="text/babel">
-const {useState,useEffect,useRef,useMemo,useCallback}=React;
+const {useState,useEffect,useRef,useMemo,useCallback,Component}=React;
+
+// ─── ERROR BOUNDARY ── tránh trắng trang khi 1 phần crash ──
+class ErrorBoundary extends Component{
+  constructor(props){super(props);this.state={hasError:false,error:null};}
+  static getDerivedStateFromError(error){return{hasError:true,error};}
+  componentDidCatch(error,info){console.error('PAKD Error Boundary:',error,info);}
+  render(){
+    if(this.state.hasError){
+      return(
+        <div style={{padding:'24px',maxWidth:'780px',margin:'40px auto',background:'#fff',border:'2px solid #fca5a5',borderRadius:'10px',fontFamily:'Inter,sans-serif'}}>
+          <h2 style={{color:'#991b1b',fontWeight:900,fontSize:'1.1rem',marginBottom:'10px'}}>⚠ Đã xảy ra lỗi khi hiển thị</h2>
+          <div style={{background:'#fef2f2',padding:'10px 14px',borderRadius:'6px',color:'#7f1d1d',fontFamily:'JetBrains Mono,monospace',fontSize:'.78rem',marginBottom:'12px',whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{String(this.state.error&&(this.state.error.stack||this.state.error.message||this.state.error))}</div>
+          <button onClick={()=>{this.setState({hasError:false,error:null});location.reload();}} style={{background:'#2563eb',color:'#fff',border:'none',padding:'8px 18px',borderRadius:'6px',fontWeight:800,cursor:'pointer'}}>🔄 Tải lại trang</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const ALLOYS=["A1050","A1052","A1060","A3003","A3003 CT","A3105","A5052","A5083","A6061","A6063"];
 const TEMPERS=["H14","H16","H18","H24","H32","H34","H111","O","T5","T6"];
@@ -142,6 +161,7 @@ const GSHEET_UPDATED_IMPORT="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rq
 const GSHEET_FLOOR_HISTORY="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=1904019501";
 // MonthlyRevenue: CSV export trực tiếp từ sheet gid=478887656
 const GSHEET_MONTHLY_REVENUE="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=478887656";
+const GSHEET_CASHFLOW="https://docs.google.com/spreadsheets/d/1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU/export?format=csv&gid=127496102";
 
 const skuKey=r=>`${r.alloy}|${r.temper}|${r.thickness}|${r.width}|${r.length}|${r.coating||'KP'}`;
 const skuLabel=r=>`${r.alloy} ${r.temper}  ${r.thickness}x${r.width}x${r.length} [${coatingShort(r.coating||'KP')}]`;
@@ -713,6 +733,300 @@ const CreditModeSelector=({inputs,setInp})=>{
   );
 };
 
+
+// ─── CASH FLOW TAB COMPONENT ─────────────────────────────────────────────
+const CashFlowTab=({result,inputs,cashFlowData,cfMode,setCFMode,cfManualWeek,setCFManualWeek,limitsData,syncGoogleSheet,dbStatus,bg1,bg2,border1,border2})=>{
+  const nhapNgoaiVal=result?(result.invoiceVND||0):0;
+  const tongMuaVal=nhapNgoaiVal;
+  const vatVal=result?(result.invoiceVND*0.1):0;
+  const totalPayVal=tongMuaVal+vatVal;
+  const autoWeek=getCurrentWeekLabel();
+  const targetWeek=cfMode==='manual'&&cfManualWeek?cfManualWeek:autoWeek;
+  const cfRow=cashFlowData.find(r=>matchWeekLabel(r.tuan,targetWeek));
+  const planned_nhapNgoai=cfRow?cfRow.nhapNgoai||0:0;
+  const planned_muaNoi=cfRow?cfRow.muaNoi||0:0;
+  const planned_tong=(cfRow?cfRow.nhapNgoai||0:0)+(cfRow?cfRow.muaNoi||0:0);
+  const planned_thu=cfRow?cfRow.tongThu||0:0;
+  const planned_dtTM=cfRow?cfRow.dtTM||0:0;
+  const planned_balance=cfRow?cfRow.balance||0:0;
+  const delta_nhapNgoai=nhapNgoaiVal-planned_nhapNgoai;
+  const delta_tong=tongMuaVal-planned_tong;
+  const tongThuKH=planned_thu;
+  const affordPct=tongThuKH>0?(tongMuaVal/tongThuKH*100):null;
+  const creditLimit=limitsData.length>0?limitsData[0]:null;
+  const totalCreditMax=creditLimit?creditLimit.totalCreditMax:0;
+  const actualAP=creditLimit?creditLimit.actualAccountsPayable:0;
+  const apAfter=actualAP+tongMuaVal;
+  const apOk=totalCreditMax>0?apAfter<=totalCreditMax:null;
+  const allWeeks=[...new Set(cashFlowData.map(r=>r.tuan))];
+  const fB=(v)=>v!=null?(v/1e9).toFixed(1)+'B':'—';
+  return(
+  <div style={{flex:1,padding:'18px',overflowY:'auto',background:bg1}}>
+    <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+        <div>
+          <h2 style={{fontWeight:900,fontSize:'1.05rem',color:'#0f172a'}}>💰 Phân tích Dòng Tiền – Phương án mua</h2>
+          <p style={{fontSize:'.72rem',color:'#475569',fontWeight:600,marginTop:2}}>So sánh PA mua với Kế hoạch dòng tiền (GSheet tab CashFlow · gid=127496102)</p>
+        </div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          <button className="btn btn-ghost btn-sm" onClick={()=>syncGoogleSheet('cf')} disabled={dbStatus.loading}>
+            {dbStatus.loading?<div className="spinner"/>:<Ic.Refresh/>} Sync CF
+          </button>
+          {cashFlowData.length===0
+            ?<span className="tag tr pulse">⚠ Chưa có dữ liệu – nhấn Sync</span>
+            :<span className="tag tg">✓ {cashFlowData.length} tuần</span>}
+        </div>
+      </div>
+      <div className="card" style={{marginBottom:12,background:'#eff6ff',border:'1px solid #bfdbfe',padding:'10px 14px'}}>
+        <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+          <span style={{fontSize:'.72rem',fontWeight:800,color:'#1e40af'}}>⏰ Tuần thanh toán:</span>
+          <div style={{display:'flex',border:'1px solid #93c5fd',borderRadius:6,overflow:'hidden',background:'#fff'}}>
+            <button onClick={()=>setCFMode('auto')} style={{padding:'4px 11px',fontSize:'.72rem',fontWeight:800,border:'none',background:cfMode==='auto'?'#2563eb':'transparent',color:cfMode==='auto'?'#fff':'#1d4ed8',cursor:'pointer'}}>🤖 Tuần hiện tại</button>
+            <button onClick={()=>setCFMode('manual')} style={{padding:'4px 11px',fontSize:'.72rem',fontWeight:800,border:'none',background:cfMode==='manual'?'#7c3aed':'transparent',color:cfMode==='manual'?'#fff':'#7c3aed',cursor:'pointer'}}>✏️ Chọn tuần</button>
+          </div>
+          {cfMode==='manual'&&(
+            <select className="inp" style={{width:'auto',minWidth:150}} value={cfManualWeek} onChange={e=>setCFManualWeek(e.target.value)}>
+              <option value="">-- Chọn tuần --</option>
+              {allWeeks.map(w=><option key={w} value={w}>{w}</option>)}
+            </select>
+          )}
+          <span className="tag tb" style={{fontSize:'.82rem',fontWeight:900}}>{targetWeek}</span>
+          {cfRow?<span className="tag tg" style={{fontSize:'.65rem'}}>✓ Có trong KH</span>:<span className="tag ty" style={{fontSize:'.65rem'}}>Không có dữ liệu tuần này</span>}
+        </div>
+      </div>
+      {!result&&(
+        <div className="card" style={{textAlign:'center',padding:44}}>
+          <div style={{fontSize:'2rem',marginBottom:8}}>📊</div>
+          <div style={{color:'#64748b',fontWeight:700}}>Chưa có Phương án mua</div>
+          <div style={{color:'#94a3b8',fontSize:'.75rem',marginTop:4}}>Vào tab 📊 PAKD Mua để nhập phương án</div>
+        </div>
+      )}
+      {result&&(
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          <div className="card">
+            <div className="sh"><Ic.Ship/>Phương án mua – Giá trị thanh toán</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:10}}>
+              {[
+                {l:'Giá trị hóa đơn (trước VAT)',v:fB(nhapNgoaiVal),sub:fu(result.invoiceUSD||0)+' USD',c:'#1d4ed8'},
+                {l:'Khối lượng',v:fv(result.totalKg)+' kg',sub:(result.totalKg/1000).toFixed(2)+' tấn',c:'#0369a1'},
+                {l:'VAT (10%)',v:fB(vatVal),c:'#475569'},
+                {l:'Tổng cần thanh toán',v:fB(totalPayVal),sub:'Bao gồm VAT',c:'#7c3aed'},
+              ].map((x,i)=>(
+                <div key={i} className="kpi" style={{borderColor:x.c,borderLeftWidth:4}}>
+                  <div className="kpi-l">{x.l}</div>
+                  <div className="kpi-v" style={{color:x.c,fontSize:'.95rem'}}>{x.v}</div>
+                  {x.sub&&<div className="kpi-s">{x.sub}</div>}
+                </div>
+              ))}
+            </div>
+            <table className="tbl" style={{fontSize:'.72rem'}}>
+              <thead><tr><th style={{textAlign:'left'}}>Mác</th><th>KL (kg)</th><th>Giá FC</th><th>VND</th></tr></thead>
+              <tbody>
+                {(result.rows||[]).map((r,i)=>(
+                  <tr key={i}>
+                    <td><div style={{fontWeight:700}}>{r.alloy} {r.temper}</div><div style={{fontSize:'.6rem',color:'#64748b'}}>{r.thickness}×{r.width}×{r.length}</div></td>
+                    <td className="mono" style={{textAlign:'right',fontWeight:700}}>{fv(r.qtyKg)}</td>
+                    <td className="mono" style={{textAlign:'right',color:'#0369a1',fontWeight:700}}>{fu(r.priceFC||0)}</td>
+                    <td className="mono" style={{textAlign:'right',color:'#1d4ed8',fontWeight:800}}>{fB((r.qtyKg/1000)*(r.priceFC||0)*(inputs.exchangeRate||26000))}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="card" style={{borderLeft:'4px solid '+(apOk===false?'#dc2626':apOk===true?'#16a34a':'#94a3b8')}}>
+            <div className="sh"><Ic.Alert/>Hạn mức tín dụng</div>
+            {creditLimit?(
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6}}>
+                  {[
+                    {l:'Tổng hạn mức',v:fB(totalCreditMax),c:'#1d4ed8'},
+                    {l:'CN hiện tại',v:fB(actualAP),c:'#475569'},
+                    {l:'CN sau khi mua',v:fB(apAfter),c:apOk===false?'#dc2626':'#16a34a'},
+                  ].map((x,i)=><div key={i} className="kpi" style={{borderColor:x.c,borderLeftWidth:3,padding:'8px 10px'}}><div className="kpi-l">{x.l}</div><div className="kpi-v" style={{color:x.c,fontSize:'.88rem'}}>{x.v}</div></div>)}
+                </div>
+                <div style={{background:apOk===false?'#fee2e2':apOk===true?'#dcfce7':'#f1f5f9',border:'1px solid '+(apOk===false?'#fca5a5':apOk===true?'#86efac':'#cbd5e1'),borderRadius:6,padding:'7px 12px',fontSize:'.75rem',fontWeight:700,color:apOk===false?'#991b1b':apOk===true?'#14532d':'#334155'}}>
+                  {apOk===false?'⚠ VƯỢT HẠN MỨC – thiếu '+fB(apAfter-totalCreditMax)
+                    :apOk===true?'✓ Còn dư '+fB(totalCreditMax-apAfter):'Không có dữ liệu hạn mức'}
+                </div>
+                {totalCreditMax>0&&<div>
+                  <div style={{fontSize:'.62rem',color:'#475569',fontWeight:700,marginBottom:2}}>Đã dùng: {(apAfter/totalCreditMax*100).toFixed(1)}%</div>
+                  <div className="stock-bar"><div className="stock-bar-fill" style={{width:Math.min(100,apAfter/totalCreditMax*100)+'%',background:apOk===false?'#dc2626':apAfter/totalCreditMax>0.85?'#f59e0b':'#16a34a'}}/></div>
+                </div>}
+              </div>
+            ):<div style={{color:'#94a3b8',fontSize:'.75rem',fontWeight:600}}>Sync GSheet để xem hạn mức</div>}
+          </div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          <div className="card" style={{borderLeft:'4px solid #7c3aed'}}>
+            <div className="sh" style={{color:'#7c3aed'}}>📅 So sánh KH dòng tiền – {targetWeek}</div>
+            {cashFlowData.length===0?(
+              <div style={{textAlign:'center',padding:16,color:'#94a3b8',fontSize:'.75rem',fontWeight:600}}>
+                <div style={{marginBottom:8}}>Chưa có dữ liệu KH dòng tiền</div>
+                <button className="btn btn-solid btn-sm" onClick={()=>syncGoogleSheet('cf')}>🔄 Sync ngay</button>
+              </div>
+            ):!cfRow?(
+              <div style={{background:'#fef9c3',border:'1px solid #fde047',borderRadius:6,padding:'10px 12px',fontSize:'.75rem',fontWeight:700,color:'#92400e'}}>
+                ⚠ Không có dữ liệu cho {targetWeek}. Chọn tuần khác hoặc kiểm tra GSheet.
+              </div>
+            ):(
+            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+              <div style={{background:'#faf5ff',border:'1px solid #e9d5ff',borderRadius:5,padding:'6px 10px',fontSize:'.7rem',fontWeight:700,color:'#6b21a8'}}>
+                {cfRow.thang} – {cfRow.tuan}
+              </div>
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th style={{textAlign:'left',width:'35%'}}>Chỉ tiêu</th>
+                    <th style={{background:'#dbeafe',color:'#1e3a8a'}}>KH ({targetWeek})</th>
+                    <th style={{background:'#f3e8ff',color:'#581c87'}}>PA Mua</th>
+                    <th style={{background:'#f0fdf4',color:'#14532d'}}>Chênh lệch</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    {l:'🛒 Nhập ngoại',kh:planned_nhapNgoai,tt:nhapNgoaiVal},
+                    {l:'🏭 Mua nội',kh:planned_muaNoi,tt:0},
+                    {l:'📦 Tổng mua',kh:planned_tong,tt:tongMuaVal,bold:true},
+                    {l:'💰 Tổng thu KH',kh:planned_thu,tt:null},
+                    {l:'📈 DT thương mại',kh:planned_dtTM,tt:null},
+                    {l:'⚖️ Balance KH',kh:planned_balance,tt:null,isBalance:true},
+                  ].map((row,i)=>{
+                    const delta=row.tt!=null?row.tt-(row.kh||0):null;
+                    return(
+                      <tr key={i} style={{background:i%2?'#f8fafc':'#fff',fontWeight:row.bold?800:500}}>
+                        <td style={{paddingLeft:8,fontSize:'.75rem'}}>{row.l}</td>
+                        <td style={{textAlign:'right',paddingRight:6}}>
+                          <span className="mono" style={{fontSize:'.75rem',fontWeight:700,color:'#1d4ed8'}}>{row.kh!=null?fB(row.kh):'—'}</span>
+                        </td>
+                        <td style={{textAlign:'right',paddingRight:6}}>
+                          {row.tt!=null?<span className="mono" style={{fontSize:'.75rem',fontWeight:800,color:'#7c3aed'}}>{fB(row.tt)}</span>
+                            :row.isBalance?<span className="mono" style={{fontSize:'.75rem',fontWeight:800,color:row.kh<0?'#dc2626':'#16a34a'}}>{fB(row.kh)}</span>
+                            :<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
+                        </td>
+                        <td style={{textAlign:'right',paddingRight:6}}>
+                          {delta!=null?<span className="mono" style={{fontSize:'.75rem',fontWeight:800,color:delta>0?'#dc2626':'#16a34a'}}>{delta>=0?'+':''}{fB(delta)}</span>:<span style={{color:'#94a3b8',fontSize:'.7rem'}}>—</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {affordPct!=null&&(
+                <div style={{background:affordPct>100?'#fee2e2':affordPct>80?'#fef9c3':'#dcfce7',border:'1px solid '+(affordPct>100?'#fca5a5':affordPct>80?'#fde047':'#86efac'),borderRadius:6,padding:'8px 12px'}}>
+                  <div style={{fontSize:'.72rem',fontWeight:800,color:'#0f172a',marginBottom:4}}>
+                    {affordPct>100?'⚠ Vượt KH thu '+(affordPct-100).toFixed(1)+'%'
+                      :affordPct>80?'⚡ Sát KH – chiếm '+affordPct.toFixed(1)+'%'
+                      :'✓ Trong KH – chiếm '+affordPct.toFixed(1)+'%'}
+                  </div>
+                  <div className="stock-bar" style={{height:7}}>
+                    <div className="stock-bar-fill" style={{width:Math.min(100,affordPct)+'%',background:affordPct>100?'#dc2626':affordPct>80?'#f59e0b':'#16a34a'}}/>
+                  </div>
+                  <div style={{display:'flex',justifyContent:'space-between',fontSize:'.6rem',color:'#64748b',marginTop:2}}>
+                    <span>0</span><span>KH Thu: {fB(tongThuKH)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            )}
+          </div>
+          <div className="card">
+            <div className="sh">📊 Timeline dòng tiền</div>
+            {cashFlowData.length===0?(
+              <div style={{color:'#94a3b8',fontSize:'.72rem',fontWeight:600,textAlign:'center',padding:16}}>Chưa có dữ liệu – nhấn Sync CF</div>
+            ):(
+            <div style={{overflowX:'auto'}}>
+              <table className="tbl" style={{fontSize:'.7rem'}}>
+                <thead>
+                  <tr>
+                    <th style={{textAlign:'left'}}>Tuần</th>
+                    <th style={{color:'#dc2626'}}>KH Nhập ngoại</th>
+                    <th style={{color:'#f59e0b'}}>KH Mua nội</th>
+                    <th style={{color:'#16a34a'}}>KH Tổng thu</th>
+                    <th>Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cashFlowData.map((r,i)=>{
+                    const isCur=matchWeekLabel(r.tuan,targetWeek);
+                    const showThang=i===0||r.thang!==cashFlowData[i-1].thang;
+                    return(
+                      <tr key={i} style={{background:isCur?'#eff6ff':'',fontWeight:isCur?800:400}}>
+                        <td style={{paddingLeft:6}}>
+                          {showThang&&<div style={{fontSize:'.57rem',color:'#7c3aed',fontWeight:900,marginBottom:1}}>{r.thang}</div>}
+                          {isCur&&<span style={{color:'#1d4ed8',marginRight:3}}>▶</span>}
+                          <span style={{color:isCur?'#1d4ed8':'#334155'}}>{r.tuan}</span>
+                        </td>
+                        <td style={{textAlign:'right',color:'#dc2626'}}>{fB(r.nhapNgoai)}</td>
+                        <td style={{textAlign:'right',color:'#f59e0b'}}>{fB(r.muaNoi)}</td>
+                        <td style={{textAlign:'right',color:'#16a34a'}}>{fB(r.tongThu)}</td>
+                        <td style={{textAlign:'right',fontWeight:700,color:r.balance!=null&&r.balance<0?'#dc2626':'#16a34a'}}>{fB(r.balance)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            )}
+          </div>
+        </div>
+      </div>
+      )}
+      {result&&(
+      <div style={{marginTop:12,background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8,padding:'10px 14px'}}>
+        <div style={{fontWeight:900,fontSize:'.75rem',color:'#1e40af',marginBottom:6}}>💡 Nhận xét</div>
+        <div style={{display:'flex',flexDirection:'column',gap:4,fontSize:'.73rem',fontWeight:600,color:'#1e3a8a'}}>
+          {cashFlowData.length===0&&<div>• ⚠ Chưa sync dữ liệu KH dòng tiền – nhấn <strong>Sync CF</strong> để tải từ GSheet</div>}
+          {cfRow&&delta_nhapNgoai>0&&<div>• ⚠ Nhập ngoại vượt KH <strong>{fB(delta_nhapNgoai)}</strong> – cân nhắc dời sang tuần khác</div>}
+          {cfRow&&delta_nhapNgoai<=0&&<div>• ✓ Nhập ngoại nằm trong KH (KH: {fB(planned_nhapNgoai)} · PA: {fB(nhapNgoaiVal)})</div>}
+          {cfRow&&planned_balance<0&&<div>• ℹ {targetWeek} có balance âm ({fB(planned_balance)}) – tuần căng thẳng dòng tiền</div>}
+          {apOk===false&&<div>• 🔴 Công nợ sau mua vượt hạn mức – cần thu hồi CN hoặc tăng hạn mức</div>}
+          {apOk===true&&<div>• ✓ Hạn mức tín dụng đủ (còn dư {fB(totalCreditMax-apAfter)})</div>}
+          {!cfRow&&cashFlowData.length>0&&<div>• ℹ Không có KH cho {targetWeek} – chọn tuần khác để xem so sánh</div>}
+        </div>
+      </div>
+      )}
+    </div>
+  </div>
+  );
+};
+
+// ─── CASH FLOW HELPERS ───────────────────────────────────────
+const parseCashFlowCSV=(rows)=>{
+  const pn=(v)=>{if(v==null||v==='') return null;const p=parseFloat(String(v).replace(/,/g,''));return isNaN(p)?null:p;};
+  const gv=(r,...ks)=>{for(const k of ks){const v=r[k];if(v!=null&&v!=='') return v;}return null;};
+  const out=[];let lastThang='';
+  rows.forEach(r=>{
+    const thang=String(gv(r,'thang','Thang')||'').trim()||lastThang;
+    if(thang) lastThang=thang;
+    const tuan=String(gv(r,'tuan','Tuan')||'').trim();
+    if(!tuan||!tuan.toLowerCase().startsWith('tu')) return;
+    out.push({thang,tuan,
+      nhapNgoai:pn(gv(r,'nhapngoai','NhapNgoai')),
+      muaNoi:pn(gv(r,'muanoi','MuaNoi')),
+      tongThu:pn(gv(r,'tongthu','TongThu')),
+      dtTM:pn(gv(r,'dttm','DTTM')),
+      thuCN:pn(gv(r,'thucn','ThuCN')),
+      balance:pn(gv(r,'balance','Balance')),
+      tongHM:pn(gv(r,'tonghm','TongHM')),
+      hmHD:pn(gv(r,'hmhd','HmHD')),
+      hmDD:pn(gv(r,'hmdd','HmDD')),
+    });
+  });
+  return out;
+};
+const getCurrentISOWeek=()=>{
+  const now=new Date();
+  const d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
+  const dayNum=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const wk=Math.ceil((((d-yearStart)/86400000)+1)/7);
+  return wk;
+};
+const getCurrentWeekLabel=()=>`Tuần ${String(getCurrentISOWeek()).padStart(2,'0')}`;
+const normWeek=(s)=>parseInt(String(s||'').replace(/[^0-9]/g,''))||0;
+const matchWeekLabel=(a,b)=>normWeek(a)===normWeek(b);
+
 // ─── APP ──────────────────────────────────────────────────────
 const App=()=>{
   const [tab,setTab]=useState('main');
@@ -739,6 +1053,9 @@ const App=()=>{
   const [floorHistory,setFloorHistory]=useState(()=>{try{const s=localStorage.getItem('pakd_floor_history');return s?JSON.parse(s):[];}catch(e){return [];}});
   const [histFilter,setHistFilter]=useState({group:'ALL',dateFrom:'',dateTo:''});
   const [monthlyRevenue,setMonthlyRevenue]=useState([]);
+  const [cashFlowData,setCashFlowData]=useState([]);
+  const [cfMode,setCFMode]=useState('auto');
+  const [cfManualWeek,setCFManualWeek]=useState('');
   const chartRef=useRef(null);const chartInst=useRef(null);
   const setInp=useCallback((f,v)=>setInputs(p=>({...p,[f]:v})),[]);
 
@@ -754,6 +1071,7 @@ const App=()=>{
       if(which==='all'||which==='lim') toFetch.push(fetchCsv(GSHEET_LIMITS).then(d=>({type:'lim',data:d})));
       if(which==='all'||which==='uip') toFetch.push(fetchCsv(GSHEET_UPDATED_IMPORT).then(d=>({type:'uip',data:d})));
       if(which==='all'||which==='fh') toFetch.push(fetchCsv(GSHEET_FLOOR_HISTORY).then(d=>({type:'fh',data:d})));
+      if(which==='all'||which==='cf') toFetch.push(fetchCsv(GSHEET_CASHFLOW).then(d=>({type:'cf',data:d})));
       const results=await Promise.allSettled(toFetch);
       let errMsg=null;
       results.forEach(r=>{
@@ -799,6 +1117,7 @@ const App=()=>{
           if(latestRows.length>0) setUpdatedImportPrices(latestRows);
           setAllRawImportPrices(rows);
         }
+        if(type==='cf'){const parsed=parseCashFlowCSV(data);if(parsed.length>0)setCashFlowData(parsed);}
         if(type==='fh'){
           // Parse GSheet Lịch sử Sàn — map đúng 23 cột theo thứ tự header
           const gv2=(r,keys)=>{for(const k of keys){const norm=k.toLowerCase().replace(/\s+/g,'').replace(/[()đ%\/]/g,'');const v=Object.entries(r).find(([rk])=>rk.toLowerCase().replace(/\s+/g,'').replace(/[()đ%\/]/g,'')===norm);if(v&&v[1]!='') return v[1];}return '';};
@@ -864,6 +1183,7 @@ const App=()=>{
     }catch(e){setDbStatus(p=>({...p,loading:false,error:e.message||'Lỗi'}));}
     // Fetch MonthlyRevenue từ CSV export (async riêng, không block)
     try{
+      try{const cfRows=await fetchCsv(GSHEET_CASHFLOW);const cfP=parseCashFlowCSV(cfRows);if(cfP.length>0)setCashFlowData(cfP);}catch(e){console.warn('CF:',e.message);}
       const resp=await fetch(GSHEET_MONTHLY_REVENUE);
       if(resp.ok){
         const text=await resp.text();
@@ -978,6 +1298,8 @@ const App=()=>{
 
   useEffect(()=>{
     if(!result||!chartRef.current) return;
+    if(typeof Chart==='undefined'){console.warn('Chart.js chưa được tải - bỏ qua vẽ biểu đồ');return;}
+    try{
     if(chartInst.current) chartInst.current.destroy();
     const labels=result.blends.map(b=>`${b.alloy} ${b.temper} ${b.thickness}mm`);
     chartInst.current=new Chart(chartRef.current.getContext('2d'),{type:'bar',data:{labels,datasets:[
@@ -985,6 +1307,7 @@ const App=()=>{
       {label:'GV BQ sau nhập',data:result.blends.map(b=>b.avgAfter),backgroundColor:'#2563eb',borderRadius:3},
       {label:'Giá bán KH',data:result.blends.map(b=>b.sellPrice||0),backgroundColor:'#15803d',borderRadius:3},
     ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:'#1e293b',font:{size:10,weight:'bold'},padding:8,usePointStyle:true}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fv(c.parsed.y)+' đ/kg'}}},scales:{x:{grid:{color:'#e2e8f0'},ticks:{color:'#334155',font:{size:9}}},y:{grid:{color:'#e2e8f0'},beginAtZero:false,ticks:{color:'#334155',font:{size:9},callback:v=>fv(v)}}}}});
+    }catch(err){console.error('Lỗi vẽ biểu đồ Chart.js:',err);}
   },[result]);
 
   const addProduct=()=>setProducts(p=>[...p,{id:uid(),alloy:'A1050',temper:'H14',thickness:'1.0',width:'1200',length:'C',coating:'KP',qtyKg:1000,priceFC:3870}]);
@@ -1377,9 +1700,10 @@ URL.revokeObjectURL(url);
             {k:'report',l:limitsWarnings.totalAlerts>0?`📈 BC ⚠${limitsWarnings.totalAlerts}`:'📈 Báo cáo'},
             {k:'scenario',l:'💾 Scenarios'},
             {k:'floorhistory',l:'🗓️ Lịch sử Sàn'},
+            {k:'cashflow',l:'💰 Dòng Tiền'},
           ].map(t=>(
             <button key={t.k} onClick={()=>setTab(t.k)} className={`nav-tab ${tab===t.k?'on':''}`}
-              style={t.k==='report'&&limitsWarnings.totalAlerts>0?{color:'#dc2626',borderColor:'#fca5a5'}:t.k==='floor'&&tab!=='floor'?{color:'#0d9488'}:{}}>
+              style={t.k==='report'&&limitsWarnings.totalAlerts>0?{color:'#dc2626',borderColor:'#fca5a5'}:t.k==='floor'&&tab!=='floor'?{color:'#0d9488'}:t.k==='cashflow'&&tab!=='cashflow'?{color:'#7c3aed'}:{}}>
               {t.l}
             </button>
           ))}
@@ -3027,6 +3351,8 @@ URL.revokeObjectURL(url);
             </div>
           </div>
         )}
+
+        {tab==='cashflow'&&<CashFlowTab result={result} inputs={inputs} cashFlowData={cashFlowData} cfMode={cfMode} setCFMode={setCFMode} cfManualWeek={cfManualWeek} setCFManualWeek={setCFManualWeek} limitsData={limitsData} syncGoogleSheet={syncGoogleSheet} dbStatus={dbStatus} bg1={bg1} bg2={bg2} border1={border1} border2={border2}/>}
       </div>
 
       {result&&(
@@ -3150,7 +3476,7 @@ URL.revokeObjectURL(url);
   );
 };
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App/></ErrorBoundary>);
 </script>
 </body>
 </html>
