@@ -509,6 +509,13 @@ const calcAlloySummary=(inventory,finPerKg,inputs,purchaseRows)=>{
   const allRows=inventory.map(r=>({qtyKg:parseFloat(r.qtyKg)||0,avgCost:parseFloat(r.avgCost)||0}));
   const globalKg=allRows.reduce((s,r)=>s+r.qtyKg,0);
   const globalCostValue=allRows.reduce((s,r)=>s+r.qtyKg*r.avgCost,0);
+  // Tách Trong kho (IN_STOCK) và Đi đường (IN_TRANSIT) để hiển thị KPI chi tiết
+  const inStockRows=inventory.filter(r=>(r.status||'IN_STOCK').toUpperCase()==='IN_STOCK');
+  const inTransitRows=inventory.filter(r=>(r.status||'').toUpperCase()==='IN_TRANSIT');
+  const stockKg=inStockRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+  const transitKg=inTransitRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
+  const stockCostValue=inStockRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0),0);
+  const transitCostValue=inTransitRows.reduce((s,r)=>s+(parseFloat(r.qtyKg)||0)*(parseFloat(r.avgCost)||0),0);
   const globalAvg=weightedAvg(allRows);
   const globalCoatedKg=inventory.filter(r=>(r.coating||'KP')==='1E').reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
   const globalPlainKg=inventory.filter(r=>(r.coating||'KP')!=='1E').reduce((s,r)=>s+(parseFloat(r.qtyKg)||0),0);
@@ -530,7 +537,7 @@ const calcAlloySummary=(inventory,finPerKg,inputs,purchaseRows)=>{
   const globalAfterValue=globalCostValue+allPRows.reduce((s,p)=>s+p.totalCost,0);
   const globalAvgAfter=globalAfterKg>0?globalAfterValue/globalAfterKg:globalAvg;
   const globalBreakEven=globalAvgAfter*(1+(inputs.businessRiskPercent||0)/100)+(finPerKg||0);
-  return{alloyStats,globalKg,globalCostValue,globalAvg,globalAvgAfter,globalBreakEven,globalAfterKg,globalAfterValue,globalCoatedKg,globalPlainKg,globalCoatedCostValue,globalPlainCostValue};
+  return{alloyStats,globalKg,globalCostValue,globalAvg,globalAvgAfter,globalBreakEven,globalAfterKg,globalAfterValue,globalCoatedKg,globalPlainKg,globalCoatedCostValue,globalPlainCostValue,stockKg,transitKg,stockCostValue,transitCostValue};
 };
 const calcLimitsWarnings=(limitsData,inventory)=>{
   const globalCostValue=calcInventoryValue(inventory);
@@ -1019,9 +1026,13 @@ const parseCashFlowCSV=(rows)=>{
     if(!tuan) return;
     // Accept any week label that contains "tu" (e.g., "Tuần 20", "Tuan 20")
     if(!norm(tuan).startsWith('tu')) return;
+    const nhapNgoai=pn(gv(r,'nhapngoai','NhapNgoai','Nhập ngoại','nhap ngoai'));
+    const muaNoi=pn(gv(r,'muanoi','MuaNoi','Mua nội','mua noi'));
+    // Tổng nhu cầu mua hàng = cột "Tổng" (nếu có) hoặc fallback = NhậpNgoại + MuaNội
+    const tongMuaRaw=pn(gv(r,'tongmua','TongMua','Tổng mua','Tổng','tong'));
+    const tongMua=tongMuaRaw!=null?tongMuaRaw:((nhapNgoai||0)+(muaNoi||0));
     out.push({thang,tuan,
-      nhapNgoai:pn(gv(r,'nhapngoai','NhapNgoai','Nhập ngoại','nhap ngoai')),
-      muaNoi:pn(gv(r,'muanoi','MuaNoi','Mua nội','mua noi')),
+      nhapNgoai,muaNoi,tongMua,
       tongThu:pn(gv(r,'tongthu','TongThu','Tổng thu','tong thu')),
       dtTM:pn(gv(r,'dttm','DTTM','DT TM','dt tm')),
       thuCN:pn(gv(r,'thucn','ThuCN','Thu CN','thu cn')),
@@ -2863,19 +2874,53 @@ URL.revokeObjectURL(url);
                   {monthlyRevenue.length===0&&<span style={{fontSize:'.65rem',color:'#b45309',fontWeight:700,background:'#fef3c7',border:'1px solid #fde047',borderRadius:4,padding:'2px 8px'}}>⚠ Chưa có DT — nhấn Sync All</span>}
                 </div>
 
-                {/* ROW 1: KPI toàn kho — Chỉ giữ KL & Vốn tồn kho (đã bỏ NOPE & PE theo yêu cầu) */}
-                <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:10,marginBottom:14}}>
-                  {[
-                    {l:'Tổng KL tồn kho (trong kho)',v:fv(reportData.globalKg)+' kg',c:'#15803d',bg:'#f0fdf4',br:'#bbf7d0'},
-                    {l:'Tổng vốn tồn kho (trong kho)',v:fv(reportData.globalCostValue)+'đ',c:'#1d4ed8',bg:'#eff6ff',br:'#bfdbfe'},
-                  ].map((x,i)=>(
-                    <div key={i} style={{background:x.bg,border:`1px solid ${x.br}`,borderRadius:8,padding:'10px 13px'}}>
-                      <div style={{fontSize:'.63rem',color:'#475569',fontWeight:700,marginBottom:5}}>{x.l}</div>
-                      <div className="mono" style={{fontSize:'1rem',fontWeight:900,color:x.c}}>{x.v}</div>
-                      {x.sub&&<div className="mono" style={{fontSize:'.75rem',fontWeight:700,color:x.c,marginTop:2}}>{x.sub}</div>}
+                {/* ROW 1: KPI toàn kho — Tổng KL & Vốn tồn kho (chi tiết Trong kho / Đi đường) */}
+                {(()=>{
+                  const stockKg=reportData.stockKg||0;
+                  const transitKg=reportData.transitKg||0;
+                  const totalKg=stockKg+transitKg;
+                  const stockVal=reportData.stockCostValue||0;
+                  const transitValRaw=reportData.transitCostValue||0;
+                  const transitValAdj=transitValRaw*0.9; // Đi đường x 0.9 theo yêu cầu giám đốc
+                  const totalValAdj=stockVal+transitValAdj;
+                  return(
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:10,marginBottom:14}}>
+                    {/* THẺ 1: TỔNG KL TỒN KHO */}
+                    <div style={{background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:8,padding:'10px 13px'}}>
+                      <div style={{fontSize:'.66rem',color:'#475569',fontWeight:800,marginBottom:6,textTransform:'uppercase',letterSpacing:'.04em'}}>📦 Tổng KL tồn kho</div>
+                      <div className="mono" style={{fontSize:'1.15rem',fontWeight:900,color:'#15803d',marginBottom:6}}>{fv(totalKg)} kg</div>
+                      <div style={{borderTop:'1px solid #bbf7d0',paddingTop:5,display:'flex',flexDirection:'column',gap:3}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                          <span style={{fontSize:'.62rem',fontWeight:700,color:'#15803d'}}>🟢 Trong kho</span>
+                          <span className="mono" style={{fontSize:'.78rem',fontWeight:900,color:'#15803d'}}>{fv(stockKg)} kg</span>
+                        </div>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                          <span style={{fontSize:'.62rem',fontWeight:700,color:'#b45309'}}>🟡 Đi đường</span>
+                          <span className="mono" style={{fontSize:'.78rem',fontWeight:900,color:'#b45309'}}>{fv(transitKg)} kg</span>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                    {/* THẺ 2: TỔNG VỐN TỒN KHO */}
+                    <div style={{background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:8,padding:'10px 13px'}}>
+                      <div style={{fontSize:'.66rem',color:'#475569',fontWeight:800,marginBottom:6,textTransform:'uppercase',letterSpacing:'.04em'}}>💰 Tổng vốn tồn kho</div>
+                      <div className="mono" style={{fontSize:'1.15rem',fontWeight:900,color:'#1d4ed8',marginBottom:6}}>{fv(totalValAdj)}đ</div>
+                      <div style={{borderTop:'1px solid #bfdbfe',paddingTop:5,display:'flex',flexDirection:'column',gap:3}}>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                          <span style={{fontSize:'.62rem',fontWeight:700,color:'#1d4ed8'}}>🟢 Vốn trong kho</span>
+                          <span className="mono" style={{fontSize:'.78rem',fontWeight:900,color:'#1d4ed8'}}>{fv(stockVal)}đ</span>
+                        </div>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                          <span style={{fontSize:'.62rem',fontWeight:700,color:'#b45309'}}>🟡 Vốn đi đường (×0.9)</span>
+                          <span className="mono" style={{fontSize:'.78rem',fontWeight:900,color:'#b45309'}}>{fv(transitValAdj)}đ</span>
+                        </div>
+                        <div style={{fontSize:'.55rem',fontStyle:'italic',color:'#64748b',marginTop:2,lineHeight:1.4}}>
+                          * Hàng đi đường nhân hệ số 0.9 do chưa về kho, giảm rủi ro định giá. Vốn gốc đi đường: {fv(transitValRaw)}đ
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  );
+                })()}
 
                 {/* ROW 1b: TỔNG DOANH THU NHÔM (A1050+A3003+A5052) — 3 cột: T hiện tại | T-1 | T-2 */}
                 {(()=>{
@@ -2887,6 +2932,22 @@ URL.revokeObjectURL(url);
                   // displayMonths: [T hiện tại, T-1, T-2]
                   const displayMonths=[curMonthLabel,...closedMonths];
                   if(displayMonths.filter(Boolean).length===0) return null;
+                  // Helper: trích M/YYYY từ chuỗi "Tháng 3/2026" hoặc "Tháng 03/2026"
+                  const parseThangLabel=(s)=>{
+                    if(!s) return null;
+                    const m=String(s).match(/(\d{1,2})\s*[\/\-]\s*(\d{4})/);
+                    if(!m) return null;
+                    return `${String(parseInt(m[1])).padStart(2,'0')}/${m[2]}`;
+                  };
+                  // Gộp CashFlow theo tháng: trả về {"03/2026":{tongThu,tongMua}, ...}
+                  const cfByMonth={};
+                  (cashFlowData||[]).forEach(r=>{
+                    const key=parseThangLabel(r.thang);
+                    if(!key) return;
+                    if(!cfByMonth[key]) cfByMonth[key]={tongThu:0,tongMua:0,hasData:false};
+                    if(r.tongThu!=null){cfByMonth[key].tongThu+=r.tongThu;cfByMonth[key].hasData=true;}
+                    if(r.tongMua!=null){cfByMonth[key].tongMua+=r.tongMua;cfByMonth[key].hasData=true;}
+                  });
                   // Tính KPI từng tháng
                   const totals=displayMonths.map(m=>{
                     if(!m) return null;
@@ -2896,13 +2957,13 @@ URL.revokeObjectURL(url);
                       sl+=rv.sanLuong; dt+=rv.doanhThu;
                     });
                     const donGia=sl>0?dt/sl:0;
-                    const md=monthlyManualData[m]||{};
-                    const tonCuoi=parseFloat(md.tonCuoi)||0;
-                    const muaTrongThang=parseFloat(md.muaTrongThang)||0;
-                    const hmCap=parseFloat(md.hmCap)||0;
-                    // Kết chuyển HM tháng này = HM cấp − Mua trong tháng (chỉ giữ số dương = còn dư)
-                    const ketChuyen=hmCap>0?Math.max(0,hmCap-muaTrongThang):0;
-                    return{m,sl,dt,donGia,tonCuoi,muaTrongThang,hmCap,ketChuyen};
+                    // Tự động lấy Tổng thu & Tổng mua trong tháng từ CashFlow (gộp các tuần)
+                    const cf=cfByMonth[m]||{tongThu:0,tongMua:0,hasData:false};
+                    const tongThu=cf.tongThu||0;
+                    const tongMua=cf.tongMua||0;
+                    // Kết chuyển sang T+1 = Tổng thu − Tổng nhu cầu mua trong tháng
+                    const ketChuyen=cf.hasData?(tongThu-tongMua):0;
+                    return{m,sl,dt,donGia,tongThu,tongMua,ketChuyen,hasCFData:cf.hasData};
                   });
                   // % chênh lệch so với tháng trước (kế tiếp trong mảng)
                   const pctChange=(cur,prev)=>(prev&&prev>0&&cur>0)?((cur-prev)/prev*100):null;
@@ -2911,7 +2972,7 @@ URL.revokeObjectURL(url);
                     <div style={{fontSize:'.68rem',color:'#3730a3',fontWeight:900,marginBottom:10,display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}>
                       📊 TỔNG DOANH THU NHÔM (A1050 + A3003 + A5052) — 3 tháng gần nhất
                       <span style={{fontSize:'.6rem',color:'#6366f1',fontWeight:700,background:'#e0e7ff',borderRadius:3,padding:'1px 7px'}}>T hiện tại · T-1 · T-2</span>
-                      <span style={{fontSize:'.58rem',color:'#92400e',fontWeight:600,background:'#fef3c7',borderRadius:3,padding:'1px 6px'}}>💾 Số liệu điền tay tự lưu trình duyệt</span>
+                      <span style={{fontSize:'.58rem',color:'#065f46',fontWeight:600,background:'#d1fae5',borderRadius:3,padding:'1px 6px'}}>🔗 Kết chuyển HM tự tính từ CashFlow</span>
                     </div>
                     <div style={{display:'grid',gridTemplateColumns:`repeat(${totals.length},1fr)`,gap:9}}>
                       {totals.map((t,ti)=>{
@@ -2960,36 +3021,46 @@ URL.revokeObjectURL(url);
                               </div>
                             </div>
                           </div>
-                          {/* INPUT điền tay: Tồn cuối tháng + Mua trong tháng + HM cấp */}
-                          <div style={{borderTop:'1px dashed '+(isCur?'#facc15':'#c7d2fe'),paddingTop:6,display:'flex',flexDirection:'column',gap:4}}>
-                            <div>
-                              <label style={{fontSize:'.55rem',fontWeight:700,color:'#475569',display:'block',marginBottom:2}}>📦 Giá trị tồn kho cuối tháng (đ)</label>
-                              <input type="text" className="inp inp-xs" placeholder="Điền tay…" value={monthlyManualData[t.m]?.tonCuoi||''} onChange={e=>setMonthlyManualField(t.m,'tonCuoi',e.target.value.replace(/[^0-9]/g,''))} style={{fontSize:'.7rem',fontFamily:'JetBrains Mono'}}/>
-                            </div>
-                            <div>
-                              <label style={{fontSize:'.55rem',fontWeight:700,color:'#475569',display:'block',marginBottom:2}}>🛒 Mua trong tháng (đ)</label>
-                              <input type="text" className="inp inp-xs" placeholder="Điền tay…" value={monthlyManualData[t.m]?.muaTrongThang||''} onChange={e=>setMonthlyManualField(t.m,'muaTrongThang',e.target.value.replace(/[^0-9]/g,''))} style={{fontSize:'.7rem',fontFamily:'JetBrains Mono'}}/>
-                            </div>
-                            <div>
-                              <label style={{fontSize:'.55rem',fontWeight:700,color:'#475569',display:'block',marginBottom:2}}>📊 Hạn mức cấp tháng (đ)</label>
-                              <input type="text" className="inp inp-xs" placeholder="Điền tay…" value={monthlyManualData[t.m]?.hmCap||''} onChange={e=>setMonthlyManualField(t.m,'hmCap',e.target.value.replace(/[^0-9]/g,''))} style={{fontSize:'.7rem',fontFamily:'JetBrains Mono'}}/>
-                            </div>
-                            {/* Kết chuyển HM = max(0, HM cấp - Mua trong tháng) */}
-                            <div style={{background:t.ketChuyen>0?'#dcfce7':'#f1f5f9',border:'1px solid '+(t.ketChuyen>0?'#86efac':'#cbd5e1'),borderRadius:4,padding:'3px 7px',marginTop:2}}>
-                              <div style={{fontSize:'.53rem',fontWeight:800,color:'#15803d',textTransform:'uppercase',letterSpacing:'.04em'}}>↪ Kết chuyển sang T+1</div>
-                              <div className="mono" style={{fontSize:'.72rem',fontWeight:900,color:t.ketChuyen>0?'#15803d':'#64748b'}}>
-                                {t.hmCap>0?fv(t.ketChuyen)+'đ':'—'}
+                          {/* Tự động: Tổng thu + Tổng nhu cầu mua + Kết chuyển HM (lấy từ CashFlow) */}
+                          <div style={{borderTop:'1px dashed '+(isCur?'#facc15':'#c7d2fe'),paddingTop:6,display:'flex',flexDirection:'column',gap:3}}>
+                            {!t.hasCFData?(
+                              <div style={{fontSize:'.58rem',color:'#92400e',fontWeight:700,background:'#fef3c7',border:'1px solid #fde047',borderRadius:4,padding:'4px 7px'}}>
+                                ⚠ Chưa có dữ liệu CashFlow tháng {t.m} – nhấn <strong>Sync CF</strong> ở tab Dòng Tiền
                               </div>
-                            </div>
+                            ):(
+                            <>
+                              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'#ecfdf5',border:'1px solid #a7f3d0',borderRadius:4,padding:'3px 7px'}}>
+                                <span style={{fontSize:'.58rem',fontWeight:700,color:'#065f46'}}>💰 Tổng thu</span>
+                                <span className="mono" style={{fontSize:'.72rem',fontWeight:900,color:'#065f46'}}>{t.tongThu>0?fv(t.tongThu)+'đ':'—'}</span>
+                              </div>
+                              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'#fef2f2',border:'1px solid #fecaca',borderRadius:4,padding:'3px 7px'}}>
+                                <span style={{fontSize:'.58rem',fontWeight:700,color:'#991b1b'}}>🛒 Tổng nhu cầu mua</span>
+                                <span className="mono" style={{fontSize:'.72rem',fontWeight:900,color:'#991b1b'}}>{t.tongMua>0?fv(t.tongMua)+'đ':'—'}</span>
+                              </div>
+                              <div style={{background:t.ketChuyen>=0?'#dcfce7':'#fee2e2',border:'1px solid '+(t.ketChuyen>=0?'#86efac':'#fca5a5'),borderRadius:4,padding:'4px 8px',marginTop:2}}>
+                                <div style={{fontSize:'.53rem',fontWeight:800,color:t.ketChuyen>=0?'#14532d':'#991b1b',textTransform:'uppercase',letterSpacing:'.04em',display:'flex',justifyContent:'space-between'}}>
+                                  <span>↪ Kết chuyển sang T+1</span>
+                                  <span style={{fontStyle:'italic',opacity:.75}}>= Thu − Mua</span>
+                                </div>
+                                <div className="mono" style={{fontSize:'.78rem',fontWeight:900,color:t.ketChuyen>=0?'#14532d':'#991b1b'}}>
+                                  {t.ketChuyen>=0?'+':''}{fv(t.ketChuyen)}đ
+                                </div>
+                              </div>
+                            </>
+                            )}
                           </div>
                         </div>
                         );
                       })}
                     </div>
-                    {/* Tổng kết HM hiệu lực tháng hiện tại */}
-                    {totals[0]&&totals[1]&&totals[0].hmCap>0&&totals[1].ketChuyen>0&&(
-                      <div style={{marginTop:10,background:'#fef3c7',border:'1px solid #fcd34d',borderRadius:6,padding:'7px 11px',fontSize:'.7rem',fontWeight:700,color:'#854d0e'}}>
-                        ⚡ <strong>HM hiệu lực {totals[0].m}</strong> = HM cấp ({fv(totals[0].hmCap)}đ) + Kết chuyển từ {totals[1].m} ({fv(totals[1].ketChuyen)}đ) = <span className="mono" style={{fontWeight:900,color:'#15803d'}}>{fv(totals[0].hmCap+totals[1].ketChuyen)}đ</span>
+                    {/* Tổng kết Kết chuyển từ tháng trước → cộng vào HM hiệu lực tháng hiện tại */}
+                    {totals[0]&&totals[1]&&totals[1].hasCFData&&(
+                      <div style={{marginTop:10,background:totals[1].ketChuyen>=0?'#fef3c7':'#fee2e2',border:'1px solid '+(totals[1].ketChuyen>=0?'#fcd34d':'#fca5a5'),borderRadius:6,padding:'8px 12px',fontSize:'.72rem',fontWeight:700,color:totals[1].ketChuyen>=0?'#854d0e':'#991b1b'}}>
+                        ⚡ <strong>Kết chuyển từ {totals[1].m} sang {totals[0].m}:</strong> <span className="mono" style={{fontWeight:900,color:totals[1].ketChuyen>=0?'#15803d':'#991b1b',marginLeft:4}}>{totals[1].ketChuyen>=0?'+':''}{fv(totals[1].ketChuyen)}đ</span>
+                        <div style={{fontSize:'.62rem',fontWeight:600,marginTop:3,color:'#475569'}}>
+                          = Tổng thu {totals[1].m} ({fv(totals[1].tongThu)}đ) − Tổng nhu cầu mua {totals[1].m} ({fv(totals[1].tongMua)}đ).
+                          {totals[1].ketChuyen>=0?' Phần dư này sẽ cộng vào HM hiệu lực tháng hiện tại.':' Phần thiếu này sẽ trừ vào HM hiệu lực tháng hiện tại.'}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -3561,7 +3632,6 @@ URL.revokeObjectURL(url);
     </div>
   );
 };
-
 
 ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App/></ErrorBoundary>);
 </script>
