@@ -607,7 +607,7 @@
                     result.byKey[key] = {
                         key, alloy: norm(alloy), temper: norm(temper), thickness: numVal(th),
                         width: norm(w), length: norm(l), coating: norm(co),
-                        avgCost: 0, stockKg: 0, transitKg: 0, transitInfo: [], sellRef: 0, minStock: 0
+                        avgCost: 0, stockCost: 0, transitCost: 0, stockKg: 0, transitKg: 0, transitInfo: [], sellRef: 0, minStock: 0
                     };
                 }
                 const it = result.byKey[key];
@@ -616,10 +616,11 @@
                 const status = norm(r.status);
                 if (status === 'IN_TRANSIT') {
                     it.transitKg += qty;
+                    if (cost > 0) it.transitCost = it.transitCost ? Math.round((it.transitCost + cost)/2) : cost; // giá vốn hàng đi đường
                     if (r.ExpectedDeliveryDate) it.transitInfo.push({ kg: qty, eta: r.ExpectedDeliveryDate });
                 } else {
                     it.stockKg += qty;
-                    if (cost > 0) it.avgCost = it.avgCost ? Math.round((it.avgCost + cost)/2) : cost; // bình quân thô
+                    if (cost > 0) it.stockCost = it.stockCost ? Math.round((it.stockCost + cost)/2) : cost; // giá vốn hàng tồn
                 }
             });
 
@@ -662,6 +663,17 @@
 
             // Tính giá nhập mới quy VNĐ cho từng item dựa importRules
             Object.values(result.byKey).forEach(it => {
+                // Giá vốn: ưu tiên hàng tồn; nếu hết tồn (stockKg=0) thì lấy giá vốn hàng đi đường
+                if (it.stockKg > 0 && it.stockCost > 0) {
+                    it.avgCost = it.stockCost;
+                    it.costSource = 'stock';
+                } else if (it.transitCost > 0) {
+                    it.avgCost = it.transitCost;
+                    it.costSource = 'transit';   // giá vốn lấy từ hàng đi đường
+                } else {
+                    it.avgCost = it.stockCost || 0;
+                    it.costSource = it.avgCost ? 'stock' : '';
+                }
                 const rules = result.importRules
                     .filter(rl => rl.alloy === it.alloy && (!rl.temper || rl.temper === it.temper)
                         && it.thickness >= rl.minThick && it.thickness <= rl.maxThick)
@@ -718,7 +730,7 @@
             const [inputs, setInputs] = useState({
                 customerName: 'CÔNG TY TNHH BUTRACO VIỆT NAM',
                 customerRank: 'VIP', buyFrequency: 'REGULAR',
-                inventoryAge: 7, interestRateYear: 7.6, riskProvision: 1.5, paymentDays: 30, vatRate: 10,
+                inventoryAge: 0, interestRateYear: 7.6, riskProvision: 1.5, paymentDays: 30, vatRate: 10,
                 costTransport: 0, costProcessing: 0, costPackaging: 0,
                 quoteDate: new Date().toISOString().split('T')[0],
                 receiverName: 'Bà Trần Thị Dung', receiverTitle: 'Giám đốc', receiverMST: '', receiverPhone: '', receiverEmail: '',
@@ -799,13 +811,24 @@
             };
 
             // Áp dữ liệu từ index vào 1 dòng hàng khi sale chọn mã (vẫn cho sửa tay sau đó)
+            // Diễn giải lớp phủ cho dễ đọc khi in
+            const coatingLabel = (co) => {
+                const c = norm(co);
+                if (c === '1E') return 'PE 1 mặt';
+                if (c === '2E') return 'PE 2 mặt';
+                if (c === 'KP' || c === 'NOPE' || c === 'NO PE') return 'Không phủ';
+                return co || '';
+            };
             const applySku = (id, key) => {
                 const it = index.byKey[key];
                 if (!it) { updateProduct(id, 'skuKey', key); return; }
+                // Tên hàng & kích thước LUÔN khớp mã đã chọn để in không phải sửa
+                const stdName = `Nhôm cuộn ${it.alloy}-${it.temper} (${coatingLabel(it.coating)})`;
+                const stdSpecs = `${it.thickness} x ${it.width} x ${it.length}`;
                 setProducts(prev => prev.map(p => p.id === id ? {
                     ...p, skuKey: key, autoFilled: true,
-                    name: p.name && p.name.trim() ? p.name : `Nhôm ${it.alloy}-${it.temper}`,
-                    specs: `${it.thickness} x ${it.width} x ${it.length}`,
+                    name: stdName,
+                    specs: stdSpecs,
                     historicalCost: it.avgCost || p.historicalCost,
                     replacementCost: it.replacementCost || p.replacementCost,
                     competitorPrice: it.competitorPrice || p.competitorPrice,
@@ -839,6 +862,10 @@
                     if (it.minStock > 0 && (it.stockKg - need) < it.minStock) {
                         W.msgs.push({ lv: 'blue', t: `Bán xong tồn còn ${Math.max(0,it.stockKg-need).toLocaleString('vi-VN')}kg < mức min ${it.minStock.toLocaleString('vi-VN')}kg → nên đặt mua bổ sung.` });
                     }
+                }
+                // Hết tồn nhưng có hàng đi đường: báo giá vốn đang lấy theo hàng đi đường
+                if (it.costSource === 'transit') {
+                    W.msgs.push({ lv: 'blue', t: `Hết tồn kho — giá vốn (${(it.avgCost||0).toLocaleString('vi-VN')}đ) đang lấy theo hàng đi đường.` });
                 }
                 // Giá sàn = max(giá vốn, giá nhập mới). Bán dưới = cảnh báo đỏ.
                 const floor = Math.max(it.avgCost || 0, it.replacementCost || 0);
