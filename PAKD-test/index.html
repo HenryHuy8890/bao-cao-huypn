@@ -98,6 +98,68 @@
             } catch { return false; }
         };
 
+        // ============================================================
+        // === ĐỒNG BỘ DỮ LIỆU GOOGLE SHEET (CSV EXPORT) ==============
+        // ============================================================
+        const SHEET_ID = '1iNyB0XTf3rqZyHcmujYuuKlXh6QXTQqr-LQ1f6IEGxU';
+        const CFG_KEY = 'pakd_sheet_config';   // lưu gid + tỷ giá
+        const DATA_KEY = 'pakd_sheet_data';     // cache dữ liệu đã đồng bộ
+
+        // gid mặc định = '' (anh dán vào ô cấu hình trên App). Nếu để trống App vẫn chạy, chỉ là không auto-điền.
+        const defaultConfig = {
+            gidInventory: '', gidMinStock: '', gidImportPrice: '', gidPO: '',
+            usdRate: 26359,            // tỷ giá USD mặc định, anh sửa trên App
+            lastSync: null
+        };
+        const getSheetConfig = () => {
+            try { const r = localStorage.getItem(CFG_KEY); return r ? {...defaultConfig, ...JSON.parse(r)} : {...defaultConfig}; }
+            catch { return {...defaultConfig}; }
+        };
+        const saveSheetConfig = (cfg) => { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch {} };
+        const getCachedData = () => {
+            try { const r = localStorage.getItem(DATA_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
+        };
+        const saveCachedData = (data) => { try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); } catch {} };
+
+        const csvUrl = (gid) => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+
+        // Parse CSV chuẩn (xử lý dấu phẩy trong ngoặc kép, xuống dòng trong ô)
+        const parseCsv = (text) => {
+            const rows = []; let row = [], cur = '', inQ = false;
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i], n = text[i+1];
+                if (inQ) {
+                    if (c === '"' && n === '"') { cur += '"'; i++; }
+                    else if (c === '"') inQ = false;
+                    else cur += c;
+                } else {
+                    if (c === '"') inQ = true;
+                    else if (c === ',') { row.push(cur); cur = ''; }
+                    else if (c === '\r') {}
+                    else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+                    else cur += c;
+                }
+            }
+            if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+            return rows;
+        };
+        // Chuyển CSV -> mảng object theo header dòng đầu
+        const csvToObjects = (text) => {
+            const rows = parseCsv(text).filter(r => r.some(c => c.trim() !== ''));
+            if (!rows.length) return [];
+            const header = rows[0].map(h => h.trim());
+            return rows.slice(1).map(r => {
+                const o = {}; header.forEach((h, i) => o[h] = (r[i] ?? '').trim()); return o;
+            });
+        };
+        const numVal = (v) => { const n = Number(String(v ?? '').replace(/[^\d.\-]/g, '')); return isNaN(n) ? 0 : n; };
+
+        // Chuẩn hoá -> khoá tra cứu SKU: MAC|TEMPER|DAY|RONG|DAI|PHU
+        const norm = (v) => String(v ?? '').trim().toUpperCase();
+        const normThick = (v) => { const n = numVal(v); return n ? String(n) : ''; };
+        const skuKey = (alloy, temper, thickness, width, length, coating) =>
+            [norm(alloy), norm(temper), normThick(thickness), norm(width), norm(length), norm(coating)].join('|');
+
         // --- ICONS ---
         const IconBase = ({ d, className, color }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={{color: color}}><path d={d} /></svg>);
         const Printer = (props) => <IconBase {...props} d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z" />;
@@ -124,7 +186,11 @@
         const FolderOpen = (props) => <IconBase {...props} d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />;
         const Edit = (props) => <IconBase {...props} d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />;
         const X = (props) => <IconBase {...props} d="M18 6L6 18M6 6l12 12" />;
-        
+        const Database = (props) => <IconBase {...props} d="M12 8c4.97 0 9-1.34 9-3s-4.03-3-9-3-9 1.34-9 3 4.03 3 9 3z M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5 M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" />;
+        const Search = (props) => <IconBase {...props} d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35" />;
+        const Truck = (props) => <IconBase {...props} d="M1 3h15v13H1z M16 8h4l3 3v5h-7V8z M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z M18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />;
+        const Lock = (props) => <IconBase {...props} d="M5 11h14v10H5z M7 11V7a5 5 0 0 1 10 0v4" />;
+
         const PakdManualLink = () => (
             <div className="mt-4 space-y-2 no-print">
                 <a href="https://docs.google.com/document/d/1AHCpd9XuVkD0r1KS-c7etbEUnsnVzvIv6C6xN7KTKdI/edit?tab=t.0" target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 px-3 py-2 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition text-slate-600 hover:text-slate-800">
@@ -437,6 +503,140 @@
             );
         };
 
+        // ============================================================
+        // === XÂY DỰNG INDEX TRA CỨU TỪ DỮ LIỆU SHEET ================
+        // ============================================================
+        // Trả về { byKey: {sku: {...}}, items: [...], importRules: [...], poByKey: {sku: [...]} }
+        const buildIndex = (data, usdRate) => {
+            const result = { byKey: {}, items: [], importRules: [], poByKey: {} };
+            if (!data) return result;
+
+            // 1) Inventory: gộp tồn IN_STOCK & IN_TRANSIT theo sku
+            (data.inventory || []).forEach(r => {
+                const alloy = r.alloy, temper = r.temper, th = r.thickness, w = r.width, l = r.length, co = r.Coating || r.coating;
+                if (!alloy) return;
+                const key = skuKey(alloy, temper, th, w, l, co);
+                if (!result.byKey[key]) {
+                    result.byKey[key] = {
+                        key, alloy: norm(alloy), temper: norm(temper), thickness: numVal(th),
+                        width: norm(w), length: norm(l), coating: norm(co),
+                        avgCost: 0, stockKg: 0, transitKg: 0, transitInfo: [], sellRef: 0, minStock: 0
+                    };
+                }
+                const it = result.byKey[key];
+                const qty = numVal(r.qtyKg);
+                const cost = numVal(r.avgCost);
+                const status = norm(r.status);
+                if (status === 'IN_TRANSIT') {
+                    it.transitKg += qty;
+                    if (r.ExpectedDeliveryDate) it.transitInfo.push({ kg: qty, eta: r.ExpectedDeliveryDate });
+                } else {
+                    it.stockKg += qty;
+                    if (cost > 0) it.avgCost = it.avgCost ? Math.round((it.avgCost + cost)/2) : cost; // bình quân thô
+                }
+            });
+
+            // 2) MinStock: giá bán tham chiếu + mức tồn min
+            (data.minstock || []).forEach(r => {
+                const key = skuKey(r.alloy, r.temper, r.thickness, r.width, r.length, r.Coating || r.coating);
+                if (!result.byKey[key]) {
+                    result.byKey[key] = {
+                        key, alloy: norm(r.alloy), temper: norm(r.temper), thickness: numVal(r.thickness),
+                        width: norm(r.width), length: norm(r.length), coating: norm(r.Coating || r.coating),
+                        avgCost: 0, stockKg: 0, transitKg: 0, transitInfo: [], sellRef: 0, minStock: 0
+                    };
+                }
+                const it = result.byKey[key];
+                it.sellRef = numVal(r.SellCost) || it.sellRef;
+                it.minStock = numVal(r.minStockKg) || it.minStock;
+                it.comment = r.Comment || it.comment;
+            });
+
+            // 3) UpdatedImportPrice: quy tắc giá nhập mới + giá đối thủ (theo mác + khoảng độ dày, lấy ngày mới nhất)
+            const parseD = (s) => { const m = String(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); return m ? new Date(+(m[3].length===2?'20'+m[3]:m[3]), +m[2]-1, +m[1]).getTime() : 0; };
+            (data.importprice || []).forEach(r => {
+                result.importRules.push({
+                    date: parseD(r.UpdateDate), alloy: norm(r.Alloy), temper: norm(r.Temper),
+                    minThick: numVal(r.MinThick), maxThick: numVal(r.MaxThick),
+                    priceFC: numVal(r.PriceFC), coef: numVal(r.ImportCoef) || 1,
+                    competitor: numVal(r.CompetitorPrice), competitorFloor: numVal(r.CompetitorFloorPrice)
+                });
+            });
+
+            // 4) PO: tồn đã bị giữ chỗ bởi đơn đặt chưa giao
+            (data.po || []).forEach(r => {
+                const key = skuKey(r['Mác'] || r.Mac, r.Temper, r['Dày'] || r.Day, r['Rộng'] || r.Rong, r['Dài'] || r.Dai, r['Phủ'] || r.Phu);
+                const remain = numVal(r['Tồn chưa giao (kg)'] || r['Còn thiếu (đặt−giao)']);
+                if (remain > 0) {
+                    if (!result.poByKey[key]) result.poByKey[key] = [];
+                    result.poByKey[key].push({ supplier: r['Nhà CC'] || r.NhaCC, po: r['Số PO'] || r.SoPO, remain });
+                }
+            });
+
+            // Tính giá nhập mới quy VNĐ cho từng item dựa importRules
+            Object.values(result.byKey).forEach(it => {
+                const rules = result.importRules
+                    .filter(rl => rl.alloy === it.alloy && (!rl.temper || rl.temper === it.temper)
+                        && it.thickness >= rl.minThick && it.thickness <= rl.maxThick)
+                    .sort((a,b) => b.date - a.date);
+                if (rules.length) {
+                    const rl = rules[0];
+                    // PriceFC là USD/tấn → chia 1000 ra USD/kg, rồi × hệ số nhập × tỷ giá USD
+                    it.replacementCost = Math.round(rl.priceFC / 1000 * rl.coef * usdRate);
+                    it.competitorPrice = rl.competitor;
+                    it.competitorFloor = rl.competitorFloor;
+                }
+                result.items.push(it);
+            });
+            return result;
+        };
+
+        // ============================================================
+        // === MODAL CẤU HÌNH ĐỒNG BỘ =================================
+        // ============================================================
+        const SyncConfigModal = ({ onClose, config, onSave, onSync, syncing, syncMsg }) => {
+            const [c, setC] = useState(config);
+            const fld = (label, key, ph) => (
+                <div>
+                    <label className="text-xs font-bold text-gray-600">{label}</label>
+                    <input type="text" value={c[key]} onChange={e => setC({...c, [key]: e.target.value.trim()})}
+                        className="w-full border rounded px-2 py-1.5 text-sm mt-0.5 font-mono" placeholder={ph}/>
+                </div>
+            );
+            return (
+                <div className="modal-overlay no-print" onClick={onClose}>
+                    <div className="modal-box" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-3">
+                            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2"><Database className="w-5 h-5 text-blue-600"/> Cấu hình đồng bộ Google Sheet</h2>
+                            <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5"/></button>
+                        </div>
+                        <div className="bg-amber-50 border border-amber-200 rounded p-2 text-[11px] text-amber-800 mb-3">
+                            Dán <b>gid</b> của từng tab (số sau <code>gid=</code> trên URL khi mở tab). Sheet phải bật <b>"Bất kỳ ai có link đều xem được"</b>.
+                        </div>
+                        <div className="space-y-2">
+                            {fld('gid tab Inventory (tồn kho + giá vốn)', 'gidInventory', 'VD: 0')}
+                            {fld('gid tab MinStock (giá bán + tồn min)', 'gidMinStock', 'VD: 123456')}
+                            {fld('gid tab UpdatedImportPrice (giá nhập + đối thủ)', 'gidImportPrice', 'VD: 234567')}
+                            {fld('gid tab PO (đơn đặt - giữ chỗ tồn)', 'gidPO', 'VD: 345678')}
+                            <div>
+                                <label className="text-xs font-bold text-gray-600">Tỷ giá USD (quy đổi giá nhập mới)</label>
+                                <input type="number" value={c.usdRate} onChange={e => setC({...c, usdRate: parseFloat(e.target.value)||0})}
+                                    className="w-full border rounded px-2 py-1.5 text-sm mt-0.5 font-bold text-blue-700"/>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                            <button onClick={() => onSave(c)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded text-sm">Lưu cấu hình</button>
+                            <button onClick={() => { onSave(c); onSync(c); }} disabled={syncing}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+                                <RefreshCcw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`}/> {syncing ? 'Đang đồng bộ...' : 'Lưu & Đồng bộ ngay'}
+                            </button>
+                        </div>
+                        {syncMsg && <div className={`mt-3 text-xs px-3 py-2 rounded ${syncMsg.ok ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>{syncMsg.text}</div>}
+                    </div>
+                </div>
+            );
+        };
+
         // ===================== APP CHÍNH =====================
         const PAKD_App = () => {
             const [products, setProducts] = useState([
@@ -472,12 +672,100 @@
             const [showSaveModal, setShowSaveModal] = useState(false);
             const [loadedFrom, setLoadedFrom] = useState(null); // Tên hồ sơ đang xem
 
+            // --- ĐỒNG BỘ SHEET ---
+            const [sheetConfig, setSheetConfig] = useState(getSheetConfig());
+            const [sheetData, setSheetData] = useState(getCachedData());
+            const [showSyncModal, setShowSyncModal] = useState(false);
+            const [syncing, setSyncing] = useState(false);
+            const [syncMsg, setSyncMsg] = useState(null);
+
+            // Index tra cứu, tính lại khi data hoặc tỷ giá đổi
+            const index = React.useMemo(() => buildIndex(sheetData, sheetConfig.usdRate), [sheetData, sheetConfig.usdRate]);
+
+            const handleSaveConfig = (c) => { setSheetConfig(c); saveSheetConfig(c); };
+
+            const handleSync = async (c) => {
+                const cfg = c || sheetConfig;
+                setSyncing(true); setSyncMsg(null);
+                try {
+                    const fetchTab = async (gid) => {
+                        if (!gid) return [];
+                        const res = await fetch(csvUrl(gid));
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        return csvToObjects(await res.text());
+                    };
+                    const [inventory, minstock, importprice, po] = await Promise.all([
+                        fetchTab(cfg.gidInventory), fetchTab(cfg.gidMinStock),
+                        fetchTab(cfg.gidImportPrice), fetchTab(cfg.gidPO)
+                    ]);
+                    const data = { inventory, minstock, importprice, po };
+                    setSheetData(data); saveCachedData(data);
+                    const newCfg = {...cfg, lastSync: Date.now()};
+                    setSheetConfig(newCfg); saveSheetConfig(newCfg);
+                    setSyncMsg({ ok: true, text: `✅ Đồng bộ xong: ${inventory.length} tồn kho, ${minstock.length} min-stock, ${importprice.length} giá nhập, ${po.length} dòng PO.` });
+                } catch (e) {
+                    setSyncMsg({ ok: false, text: `❌ Lỗi: ${e.message}. Kiểm tra gid & quyền chia sẻ công khai của Sheet.` });
+                } finally { setSyncing(false); }
+            };
+
             const addProduct = () => {
                 const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-                setProducts([...products, { id: newId, name: '', specs: '', unit: 'Cuộn', qtyUnit: 1, quantity: 0, sellPrice: 0, historicalCost: 0, replacementCost: 0, competitorPrice: 0 }]);
+                setProducts([...products, { id: newId, name: '', specs: '', unit: 'Cuộn', qtyUnit: 1, quantity: 0, sellPrice: 0, historicalCost: 0, replacementCost: 0, competitorPrice: 0, skuKey: '', autoFilled: false }]);
             };
             const removeProduct = (id) => { if (products.length > 1) setProducts(products.filter(p => p.id !== id)); };
             const updateProduct = (id, field, value) => { setProducts(products.map(p => p.id === id ? { ...p, [field]: value } : p)); };
+
+            // Áp dữ liệu từ index vào 1 dòng hàng khi sale chọn mã (vẫn cho sửa tay sau đó)
+            const applySku = (id, key) => {
+                const it = index.byKey[key];
+                if (!it) { updateProduct(id, 'skuKey', key); return; }
+                setProducts(prev => prev.map(p => p.id === id ? {
+                    ...p, skuKey: key, autoFilled: true,
+                    name: p.name && p.name.trim() ? p.name : `Nhôm ${it.alloy}-${it.temper}`,
+                    specs: `${it.thickness} x ${it.width} x ${it.length}`,
+                    historicalCost: it.avgCost || p.historicalCost,
+                    replacementCost: it.replacementCost || p.replacementCost,
+                    competitorPrice: it.competitorPrice || p.competitorPrice,
+                    sellPrice: p.sellPrice || it.sellRef || 0
+                } : p));
+            };
+
+            // Tính cảnh báo cho 1 dòng hàng: tồn / đi đường / PO giữ chỗ / giá sàn
+            const rowWarnings = (prod) => {
+                const it = prod.skuKey ? index.byKey[prod.skuKey] : null;
+                const W = { hasData: !!it, item: it, msgs: [], floor: 0, underFloor: false };
+                if (!it) return W;
+                const need = prod.quantity || 0;
+                const poList = index.poByKey[prod.skuKey] || [];
+                const reserved = poList.reduce((s, x) => s + x.remain, 0);
+                const available = it.stockKg - reserved; // tồn thực trừ đã giữ chỗ
+                W.stockKg = it.stockKg; W.transitKg = it.transitKg; W.reserved = reserved; W.available = available; W.poList = poList;
+
+                if (need > 0) {
+                    if (need > it.stockKg + it.transitKg) {
+                        W.msgs.push({ lv: 'red', t: `Bán ${need.toLocaleString('vi-VN')}kg nhưng tổng tồn+đi đường chỉ ${(it.stockKg+it.transitKg).toLocaleString('vi-VN')}kg → KHÔNG ĐỦ HÀNG.` });
+                    } else if (need > available) {
+                        if (need <= it.stockKg) {
+                            W.msgs.push({ lv: 'orange', t: `Tồn ${it.stockKg.toLocaleString('vi-VN')}kg nhưng ${reserved.toLocaleString('vi-VN')}kg đã bị PO khác giữ chỗ → còn ${Math.max(0,available).toLocaleString('vi-VN')}kg. Cần kiểm tra trước khi chốt.` });
+                        } else {
+                            const short = need - it.stockKg;
+                            const eta = it.transitInfo.map(x => x.eta).filter(Boolean)[0];
+                            W.msgs.push({ lv: 'orange', t: `Thiếu ${short.toLocaleString('vi-VN')}kg từ tồn kho, phải chờ hàng đi đường${eta ? ` (${eta})` : ''}.` });
+                        }
+                    }
+                    if (it.minStock > 0 && (it.stockKg - need) < it.minStock) {
+                        W.msgs.push({ lv: 'blue', t: `Bán xong tồn còn ${Math.max(0,it.stockKg-need).toLocaleString('vi-VN')}kg < mức min ${it.minStock.toLocaleString('vi-VN')}kg → nên đặt mua bổ sung.` });
+                    }
+                }
+                // Giá sàn = max(giá vốn, giá nhập mới). Bán dưới = cảnh báo đỏ.
+                const floor = Math.max(it.avgCost || 0, it.replacementCost || 0);
+                W.floor = floor;
+                if (prod.sellPrice > 0 && floor > 0 && prod.sellPrice < floor) {
+                    W.underFloor = true;
+                    W.msgs.push({ lv: 'red', t: `Giá bán ${prod.sellPrice.toLocaleString('vi-VN')} DƯỚI giá sàn ${floor.toLocaleString('vi-VN')} (max của giá vốn & giá nhập mới).` });
+                }
+                return W;
+            };
 
             // --- LOGIC TÍNH TOÁN ---
             useEffect(() => {
@@ -618,6 +906,18 @@
                         />
                     )}
 
+                    {/* MODAL CẤU HÌNH ĐỒNG BỘ */}
+                    {showSyncModal && (
+                        <SyncConfigModal
+                            onClose={() => { setShowSyncModal(false); setSyncMsg(null); }}
+                            config={sheetConfig}
+                            onSave={handleSaveConfig}
+                            onSync={handleSync}
+                            syncing={syncing}
+                            syncMsg={syncMsg}
+                        />
+                    )}
+
                     {/* GIAO DIỆN CHÍNH */}
                     <div className={`min-h-screen bg-slate-50 text-slate-800 font-sans pb-12 ${printMode ? 'no-print' : ''}`}>
                         <header className="bg-blue-900 text-white shadow-lg sticky top-0 z-50">
@@ -632,8 +932,22 @@
                                             <button onClick={() => setLoadedFrom(null)} className="ml-1 text-blue-400 hover:text-white">(xoá nhãn)</button>
                                         </div>
                                     )}
+                                    <div className="text-[11px] text-blue-300 flex items-center gap-1 mt-0.5">
+                                        <Database className="w-3 h-3" />
+                                        {index.items.length > 0
+                                            ? <span>Dữ liệu: <b className="text-emerald-300">{index.items.length} mã</b>{sheetConfig.lastSync ? ` · ĐB lúc ${formatDate(sheetConfig.lastSync).split(' ')[1]}` : ''}</span>
+                                            : <span className="text-amber-300">Chưa có dữ liệu Sheet — bấm "Đồng bộ" để cấu hình</span>}
+                                    </div>
                                 </div>
                                 <div className="flex gap-2 flex-wrap justify-end">
+                                    <button
+                                        onClick={() => setShowSyncModal(true)}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded flex items-center gap-2 text-sm shadow-lg border border-blue-400"
+                                    >
+                                        <RefreshCcw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+                                        <span className="hidden sm:inline">Đồng bộ DL</span>
+                                        <span className="sm:hidden">ĐB</span>
+                                    </button>
                                     <button
                                         onClick={() => setShowSaveModal(true)}
                                         className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3 rounded flex items-center gap-2 text-sm shadow-lg border border-emerald-400"
@@ -666,9 +980,30 @@
                                         <button onClick={addProduct} className="text-xs bg-blue-600 text-white px-2 py-1 rounded flex items-center gap-1 hover:bg-blue-700"><Plus className="w-3 h-3"/> Thêm dòng</button>
                                     </div>
                                     <div className="p-3 space-y-4 max-h-[500px] overflow-y-auto">
-                                        {products.map((prod, idx) => (
-                                            <div key={prod.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50 relative group">
+                                        {products.map((prod, idx) => {
+                                            const W = rowWarnings(prod);
+                                            return (
+                                            <div key={prod.id} className={`border rounded-lg p-3 relative group ${W.underFloor ? 'border-red-300 bg-red-50' : W.msgs.some(m=>m.lv==='red') ? 'border-red-200 bg-red-50' : W.msgs.length ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-gray-50'}`}>
                                                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => removeProduct(prod.id)} className="text-red-500 hover:text-red-700"><Trash className="w-4 h-4"/></button></div>
+
+                                                {/* CHỌN MÃ HÀNG TỪ KHO (auto-điền) */}
+                                                <div className="mb-2 flex items-center gap-2">
+                                                    <div className="flex-1">
+                                                        <label className="text-[10px] uppercase font-bold text-blue-600 flex items-center gap-1"><Search className="w-3 h-3"/> Chọn mã hàng từ kho (tự điền giá & tồn)</label>
+                                                        <select value={prod.skuKey || ''} onChange={(e) => applySku(prod.id, e.target.value)}
+                                                            disabled={index.items.length === 0}
+                                                            className="w-full border-2 border-blue-300 rounded px-2 py-1 text-sm bg-white disabled:bg-gray-100 disabled:text-gray-400">
+                                                            <option value="">{index.items.length ? '— Chọn mã (hoặc nhập tay bên dưới) —' : '⚠ Chưa đồng bộ dữ liệu Sheet'}</option>
+                                                            {index.items.map(it => (
+                                                                <option key={it.key} value={it.key}>
+                                                                    {it.alloy} {it.temper} · {it.thickness}×{it.width}×{it.length} · {it.coating} · tồn {it.stockKg.toLocaleString('vi-VN')}kg
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    {prod.autoFilled && <span className="text-[9px] bg-emerald-100 text-emerald-700 border border-emerald-300 px-1.5 py-0.5 rounded font-bold mt-3 whitespace-nowrap">⚡ Tự điền</span>}
+                                                </div>
+
                                                 <div className="grid grid-cols-12 gap-2 mb-2">
                                                     <div className="col-span-1 flex items-center justify-center font-bold text-gray-400">#{idx + 1}</div>
                                                     <div className="col-span-7"><label className="text-[10px] uppercase font-bold text-gray-500">Tên hàng</label><input type="text" value={prod.name} onChange={(e) => updateProduct(prod.id, 'name', e.target.value)} className="w-full border rounded px-2 py-1 text-sm font-medium" placeholder="Nhập tên hàng..."/></div>
@@ -684,8 +1019,46 @@
                                                     <div><label className="text-[10px] text-purple-400 font-bold">Giá Thay thế</label><input type="text" value={prod.replacementCost ? new Intl.NumberFormat('vi-VN').format(prod.replacementCost) : ''} onChange={(e) => updateProduct(prod.id, 'replacementCost', parseVNCurrency(e.target.value))} className="w-full border border-purple-200 bg-purple-50 rounded px-2 py-1 text-xs font-medium text-purple-700"/></div>
                                                     <div><label className="text-[10px] text-gray-500">ĐVT / SL</label><div className="flex gap-1"><input type="text" value={prod.unit} onChange={(e) => updateProduct(prod.id, 'unit', e.target.value)} className="w-1/2 border rounded px-1 py-1 text-xs"/><input type="number" value={prod.qtyUnit} onChange={(e) => updateProduct(prod.id, 'qtyUnit', e.target.value)} className="w-1/2 border rounded px-1 py-1 text-xs text-center"/></div></div>
                                                 </div>
+
+                                                {/* TỒN / ĐI ĐƯỜNG / PO / GIÁ SÀN */}
+                                                {W.hasData && (
+                                                    <div className="mt-2 grid grid-cols-4 gap-1.5 text-center">
+                                                        <div className="bg-white border border-gray-200 rounded px-1 py-1">
+                                                            <div className="text-[9px] text-gray-400 uppercase">Tồn kho</div>
+                                                            <div className={`text-xs font-bold ${W.available < (prod.quantity||0) ? 'text-amber-600' : 'text-gray-700'}`}>{W.stockKg.toLocaleString('vi-VN')}</div>
+                                                        </div>
+                                                        <div className="bg-white border border-gray-200 rounded px-1 py-1" title="Đã bị PO khác giữ chỗ">
+                                                            <div className="text-[9px] text-gray-400 uppercase">PO giữ chỗ</div>
+                                                            <div className={`text-xs font-bold ${W.reserved > 0 ? 'text-red-600' : 'text-gray-400'}`}>{W.reserved.toLocaleString('vi-VN')}</div>
+                                                        </div>
+                                                        <div className="bg-white border border-gray-200 rounded px-1 py-1">
+                                                            <div className="text-[9px] text-gray-400 uppercase flex items-center justify-center gap-0.5"><Truck className="w-2.5 h-2.5"/>Đi đường</div>
+                                                            <div className="text-xs font-bold text-blue-600">{W.transitKg.toLocaleString('vi-VN')}</div>
+                                                        </div>
+                                                        <div className="bg-white border border-gray-200 rounded px-1 py-1" title="Giá sàn = max(giá vốn, giá nhập mới)">
+                                                            <div className="text-[9px] text-gray-400 uppercase flex items-center justify-center gap-0.5"><Lock className="w-2.5 h-2.5"/>Giá sàn</div>
+                                                            <div className={`text-xs font-bold ${W.underFloor ? 'text-red-600' : 'text-emerald-700'}`}>{W.floor.toLocaleString('vi-VN')}</div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {W.poList && W.poList.length > 0 && (
+                                                    <div className="mt-1.5 text-[10px] text-gray-500 italic">
+                                                        Đang trong PO: {W.poList.map((x,i) => `${x.supplier||'?'} ${x.po||''} (${x.remain.toLocaleString('vi-VN')}kg)`).join(' · ')}
+                                                    </div>
+                                                )}
+                                                {W.msgs.length > 0 && (
+                                                    <div className="mt-2 space-y-1">
+                                                        {W.msgs.map((m, i) => (
+                                                            <div key={i} className={`text-[11px] px-2 py-1 rounded flex items-start gap-1 ${m.lv==='red' ? 'bg-red-100 text-red-800 border border-red-200' : m.lv==='orange' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}`}>
+                                                                {m.lv==='red' ? <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0"/> : m.lv==='orange' ? <Truck className="w-3 h-3 mt-0.5 flex-shrink-0"/> : <ShieldAlert className="w-3 h-3 mt-0.5 flex-shrink-0"/>}
+                                                                <span>{m.t}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
